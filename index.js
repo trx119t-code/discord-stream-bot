@@ -38,31 +38,46 @@ function getHtmlFile() {
     return null;
 }
 
+// دالة جلب البيانات مع دعم إخفاء الهوية وتخطي قيود الحظر
+function fetchJson(url) {
+    return new Promise((resolve, reject) => {
+        const parsedUrl = new URL(url);
+        const protocol = parsedUrl.protocol === 'https:' ? https : http;
+
+        const options = {
+            hostname: parsedUrl.hostname,
+            path: parsedUrl.pathname + parsedUrl.search,
+            method: 'GET',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'application/json, text/plain, */*'
+            }
+        };
+
+        const req = protocol.request(options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    resolve(JSON.parse(data));
+                } catch (e) {
+                    resolve(null);
+                }
+            });
+        });
+
+        req.on('error', err => reject(err));
+        req.end();
+    });
+}
+
 const server = http.createServer(async (req, res) => {
-    // تصاريح كاملة لتخطي قيود ديسكورد
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.removeHeader('X-Frame-Options');
 
-    // 1. بروكسي تدفق الفيديو المباشر (حل حظر تشغيل الفيديو في ديسكورد)
-    if (req.url.startsWith('/api/stream/proxy')) {
-        const videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-        https.get(videoUrl, (videoRes) => {
-            res.writeHead(videoRes.statusCode, {
-                'Content-Type': 'video/mp4',
-                'Access-Control-Allow-Origin': '*',
-                'Accept-Ranges': 'bytes'
-            });
-            videoRes.pipe(res);
-        }).on('error', () => {
-            res.writeHead(500);
-            res.end();
-        });
-        return;
-    }
-
-    // 2. بروكسي الصور
+    // 1. بروكسي الصور
     if (req.url.startsWith('/api/image')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const imgPath = urlParams.searchParams.get('path');
@@ -86,7 +101,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 3. البحث
+    // 2. البحث في TMDB
     if (req.url.startsWith('/api/search')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const q = urlParams.searchParams.get('q') || '';
@@ -102,7 +117,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 4. المحتوى الرائج
+    // 3. المحتوى الرائج
     if (req.url.startsWith('/api/trending')) {
         try {
             const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
@@ -116,7 +131,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 5. تفاصيل المسلسل
+    // 4. تفاصيل المسلسل
     if (req.url.startsWith('/api/tv/details')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
@@ -132,7 +147,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 6. حلقات الموسم
+    // 5. حلقات الموسم
     if (req.url.startsWith('/api/tv/season')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
@@ -149,13 +164,48 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 7. توفير رابط الفيديو عبر البروكسي الداخلي مباشرة
-    if (req.url.startsWith('/api/stream/source')) {
-        const streamData = {
-            videoSource: '/api/stream/proxy'
-        };
-        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-        return res.end(JSON.stringify(streamData));
+    // 6. محرك استخراج البث المباشر (Stream Scraper API)
+    if (req.url.startsWith('/api/stream/extract')) {
+        const urlParams = new URL(req.url, `http://${req.headers.host}`);
+        const id = urlParams.searchParams.get('id');
+        const isTv = urlParams.searchParams.get('isTv') === 'true';
+        const season = urlParams.searchParams.get('season') || '1';
+        const episode = urlParams.searchParams.get('episode') || '1';
+
+        try {
+            // محاولة جلب الرابط المباشر من واجهة استخراج مفتوحة متوافقة مع HLS
+            const apiUrl = isTv 
+                ? `https://api.streamembed.cc/tv/${id}/${season}/${episode}`
+                : `https://api.streamembed.cc/movie/${id}`;
+
+            const response = await fetchJson(apiUrl);
+
+            let streamUrl = '';
+            let subtitleTrack = null;
+
+            if (response && response.stream) {
+                streamUrl = response.stream;
+                if (response.subtitles && Array.isArray(response.subtitles)) {
+                    subtitleTrack = response.subtitles.find(s => s.lang === 'ar' || s.label === 'Arabic');
+                }
+            }
+
+            // في حال عدم توفر البث من المزود الأول، نوفر مسار احتياطي موثوق
+            if (!streamUrl) {
+                streamUrl = isTv 
+                    ? `https://vidsrc.stream/hls/tv/${id}/${season}/${episode}/playlist.m3u8`
+                    : `https://vidsrc.stream/hls/movie/${id}/playlist.m3u8`;
+            }
+
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            return res.end(JSON.stringify({
+                url: streamUrl,
+                subtitle: subtitleTrack ? subtitleTrack.url : `https://sub.wyzie.ru/sub/${id}.vtt`
+            }));
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ url: '', subtitle: '' }));
+        }
     }
 
     // تقديم صفحة HTML
