@@ -37,6 +37,9 @@ const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const player = createAudioPlayer();
 let connection = null;
 
+// ذاكرة مؤقتة لصفحات البحث
+const searchSessions = new Map();
+
 client.on('ready', () => {
     console.log(`✅ البوت متصل وجاهز: ${client.user.tag}`);
 });
@@ -49,7 +52,7 @@ client.on('messageCreate', async (message) => {
         const embed = new EmbedBuilder()
             .setColor('#2b2d31')
             .setTitle('🏠 اختر نوع المحتوى')
-            .setDescription('**ماذا تريد أن تشاهد اليوم؟**\n\nCinema Bot • Multi-Servers');
+            .setDescription('**ماذا تريد أن تشاهد اليوم؟**\n\nCinema Bot • Multi-Servers & Multi-Pages');
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -69,9 +72,135 @@ client.on('messageCreate', async (message) => {
     }
 });
 
+// دالة مساعدة لبناء واجهة نتائج البحث
+async function buildSearchResults(type, query, page, userId) {
+    const isSeries = type === 'tv';
+    const response = await axios.get(`https://api.themoviedb.org/3/search/${type}`, {
+        params: {
+            api_key: TMDB_API_KEY,
+            query: query,
+            page: page,
+            language: 'ar-SA'
+        }
+    });
+
+    const results = response.data.results || [];
+    const totalPages = Math.min(response.data.total_pages || 1, 10);
+    const totalResults = response.data.total_results || 0;
+
+    if (!results.length) return null;
+
+    // حفظ الجلسة للتنقل بين الصفحات
+    searchSessions.set(userId, { type, query, page, totalPages });
+
+    const searchEmbed = new EmbedBuilder()
+        .setColor('#2b2d31')
+        .setTitle(`🎬 نتائج البحث عن: ${query}`)
+        .setDescription(`وجدت **${totalResults}** نتيجة (صفحة **${page}** من **${totalPages}**)\n\nاختر من القائمة بالأسفل:`);
+
+    const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId(isSeries ? 'menu_select_series' : 'menu_select_movie')
+        .setPlaceholder('...اختر من القائمة');
+
+    const startIndex = (page - 1) * 20;
+    results.forEach((item, index) => {
+        const title = item.name || item.title || 'بدون عنوان';
+        const date = item.first_air_date || item.release_date || '';
+        const year = date ? date.split('-')[0] : '----';
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : '0';
+
+        selectMenu.addOptions(
+            new StringSelectMenuOptionBuilder()
+                .setLabel(`${startIndex + index + 1}. ${title}`.slice(0, 100))
+                .setDescription(`${isSeries ? 'مسلسل' : 'فيلم'} - 📅 ${year} - ⭐ ${rating}`)
+                .setValue(String(item.id))
+                .setEmoji('🎞️')
+        );
+    });
+
+    const menuRow = new ActionRowBuilder().addComponents(selectMenu);
+
+    const navRow = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId(`btn_srpage_${page - 1}`)
+            .setLabel('السابق ⬅️')
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(page <= 1),
+        new ButtonBuilder()
+            .setCustomId('btn_srpage_info')
+            .setLabel(`${page} / ${totalPages}`)
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(true),
+        new ButtonBuilder()
+            .setCustomId(`btn_srpage_${page + 1}`)
+            .setLabel('التالي ➡️')
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(page >= totalPages)
+    );
+
+    return { embeds: [searchEmbed], components: [menuRow, navRow] };
+}
+
+// دالة مساعدة لبناء واجهة قائمة الحلقات مع الصفحات
+async function buildEpisodePage(seriesId, seasonNumber, page) {
+    const res = await axios.get(`https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}`, {
+        params: { api_key: TMDB_API_KEY, language: 'ar-SA' }
+    });
+
+    const episodes = res.data.episodes || [];
+    const pageSize = 25;
+    const totalPages = Math.ceil(episodes.length / pageSize) || 1;
+    const startIndex = (page - 1) * pageSize;
+    const currentEpisodes = episodes.slice(startIndex, startIndex + pageSize);
+
+    const episodeEmbed = new EmbedBuilder()
+        .setColor('#2b2d31')
+        .setTitle(`📼 الموسم ${seasonNumber}`)
+        .setDescription(`**عدد الحلقات الإجمالي:** ${episodes.length} (صفحة **${page}** من **${totalPages}**)\n\nاختر الحلقة لبدء العرض:`);
+
+    const episodeMenu = new StringSelectMenuBuilder()
+        .setCustomId(`menu_episode_${seriesId}_${seasonNumber}`)
+        .setPlaceholder(`اختر الحلقة (من ${startIndex + 1} إلى ${startIndex + currentEpisodes.length})`);
+
+    currentEpisodes.forEach((ep) => {
+        const epTitle = ep.name ? ` - ${ep.name}` : '';
+        episodeMenu.addOptions(
+            new StringSelectMenuOptionBuilder()
+                .setLabel(`الحلقة ${ep.episode_number}`)
+                .setDescription(`${epTitle}`.slice(0, 95))
+                .setValue(String(ep.episode_number))
+        );
+    });
+
+    const rows = [new ActionRowBuilder().addComponents(episodeMenu)];
+
+    if (totalPages > 1) {
+        const navRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(`btn_eppage_${seriesId}_${seasonNumber}_${page - 1}`)
+                .setLabel('السابق ⬅️')
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(page <= 1),
+            new ButtonBuilder()
+                .setCustomId('btn_eppage_info')
+                .setLabel(`حلقات ${page}/${totalPages}`)
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(true),
+            new ButtonBuilder()
+                .setCustomId(`btn_eppage_${seriesId}_${seasonNumber}_${page + 1}`)
+                .setLabel('التالي ➡️')
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(page >= totalPages)
+        );
+        rows.push(navRow);
+    }
+
+    return { embeds: [episodeEmbed], components: rows };
+}
+
 // معالجة التفاعلات
 client.on('interactionCreate', async (interaction) => {
-    // 1. فتح نافذة البحث
+    // 1. فتح نافذة البحث وأزرار التحكم
     if (interaction.isButton()) {
         if (interaction.customId === 'btn_series') {
             const modal = new ModalBuilder()
@@ -81,12 +210,13 @@ client.on('interactionCreate', async (interaction) => {
             const titleInput = new TextInputBuilder()
                 .setCustomId('query_name')
                 .setLabel('اسم المسلسل')
-                .setPlaceholder('اكتب اسم المسلسل أو جزء منه (مثال: game)')
+                .setPlaceholder('اكتب اسم المسلسل (مثال: Breaking Bad)')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(true);
 
             modal.addComponents(new ActionRowBuilder().addComponents(titleInput));
             await interaction.showModal(modal);
+            return;
         }
 
         if (interaction.customId === 'btn_movie') {
@@ -97,15 +227,41 @@ client.on('interactionCreate', async (interaction) => {
             const movieInput = new TextInputBuilder()
                 .setCustomId('query_name')
                 .setLabel('اسم الفيلم')
-                .setPlaceholder('اكتب اسم الفيلم أو جزء منه (مثال: inception)')
+                .setPlaceholder('اكتب اسم الفيلم (مثال: Inception)')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(true);
 
             modal.addComponents(new ActionRowBuilder().addComponents(movieInput));
             await interaction.showModal(modal);
+            return;
         }
 
-        // أزرار التحكم الصوتي
+        // أزرار التنقل بين صفحات البحث
+        if (interaction.customId.startsWith('btn_srpage_') && interaction.customId !== 'btn_srpage_info') {
+            const targetPage = parseInt(interaction.customId.replace('btn_srpage_', ''), 10);
+            const session = searchSessions.get(interaction.user.id);
+            if (!session) {
+                return await interaction.reply({ content: '⚠️ انتهت صلاحية جلسة البحث، ابدأ بالبحث من جديد.', ephemeral: true });
+            }
+
+            await interaction.deferUpdate();
+            const data = await buildSearchResults(session.type, session.query, targetPage, interaction.user.id);
+            if (data) await interaction.editReply(data);
+            return;
+        }
+
+        // أزرار التنقل بين صفحات الحلقات
+        if (interaction.customId.startsWith('btn_eppage_') && interaction.customId !== 'btn_eppage_info') {
+            const [, , seriesId, seasonNumber, pageStr] = interaction.customId.split('_');
+            const targetPage = parseInt(pageStr, 10);
+
+            await interaction.deferUpdate();
+            const data = await buildEpisodePage(seriesId, seasonNumber, targetPage);
+            await interaction.editReply(data);
+            return;
+        }
+
+        // أزرار الصوت
         if (interaction.customId === 'btn_play_pause') {
             if (player.state.status === AudioPlayerStatus.Playing) {
                 player.pause();
@@ -116,6 +272,7 @@ client.on('interactionCreate', async (interaction) => {
             } else {
                 await interaction.reply({ content: '⚠️ لا يوجد تشغيل صوتي حالياً.', ephemeral: true });
             }
+            return;
         }
 
         if (interaction.customId === 'btn_stop') {
@@ -127,10 +284,11 @@ client.on('interactionCreate', async (interaction) => {
             } else {
                 await interaction.reply({ content: '🛑 البوت ليس متصلاً بروم صوتي.', ephemeral: true });
             }
+            return;
         }
     }
 
-    // 2. البحث وعرض النتائج
+    // 2. معالجة إرسال نص البحث (Modal Submit)
     if (interaction.isModalSubmit()) {
         const isSeries = interaction.customId === 'modal_series_search';
         const type = isSeries ? 'tv' : 'movie';
@@ -139,54 +297,19 @@ client.on('interactionCreate', async (interaction) => {
         await interaction.deferReply();
 
         try {
-            const response = await axios.get(`https://api.themoviedb.org/3/search/${type}`, {
-                params: {
-                    api_key: TMDB_API_KEY,
-                    query: query,
-                    language: 'ar-SA'
-                }
-            });
-
-            const results = response.data.results.slice(0, 10);
-
-            if (!results.length) {
+            const data = await buildSearchResults(type, query, 1, interaction.user.id);
+            if (!data) {
                 return await interaction.editReply({ content: `❌ لم يتم العثور على أي نتائج لكلمة: **${query}**` });
             }
-
-            const searchEmbed = new EmbedBuilder()
-                .setColor('#2b2d31')
-                .setTitle(`🎬 :نتائج البحث عن ${query}`)
-                .setDescription(`وجدت **${response.data.total_results}** ${isSeries ? 'مسلسل' : 'فيلم'}\n\nاختر من القائمة بالأسفل:`);
-
-            const selectMenu = new StringSelectMenuBuilder()
-                .setCustomId(isSeries ? 'menu_select_series' : 'menu_select_movie')
-                .setPlaceholder('...اختر من القائمة');
-
-            results.forEach((item, index) => {
-                const title = item.name || item.title;
-                const date = item.first_air_date || item.release_date || '';
-                const year = date ? date.split('-')[0] : '----';
-                const rating = item.vote_average ? item.vote_average.toFixed(1) : '0';
-
-                selectMenu.addOptions(
-                    new StringSelectMenuOptionBuilder()
-                        .setLabel(`${index + 1}. ${title}`.slice(0, 100))
-                        .setDescription(`${isSeries ? 'مسلسل' : 'فيلم'} - 📅 ${year} - ⭐ ${rating}`)
-                        .setValue(String(item.id))
-                        .setEmoji('🎞️')
-                );
-            });
-
-            const row = new ActionRowBuilder().addComponents(selectMenu);
-            await interaction.editReply({ embeds: [searchEmbed], components: [row] });
-
+            await interaction.editReply(data);
         } catch (error) {
             console.error(error);
             await interaction.editReply({ content: '❌ حدث خطأ أثناء جلب نتائج البحث من TMDB.' });
         }
+        return;
     }
 
-    // 3. التفاعل مع القوائم
+    // 3. التفاعل مع القوائم المنسدلة
     if (interaction.isStringSelectMenu()) {
         // (أ) اختيار مسلسل -> قائمة المواسم
         if (interaction.customId === 'menu_select_series') {
@@ -204,7 +327,7 @@ client.on('interactionCreate', async (interaction) => {
                 const seasonEmbed = new EmbedBuilder()
                     .setColor('#2b2d31')
                     .setTitle(`🔍 ${series.name}`)
-                    .setDescription(`**مواسم متاحة:** ${seasons.length}\n\n:اختر الموسم من القائمة`);
+                    .setDescription(`**مواسم متاحة:** ${seasons.length}\n\nاختر الموسم من القائمة:`);
 
                 const seasonMenu = new StringSelectMenuBuilder()
                     .setCustomId(`menu_season_${seriesId}`)
@@ -221,55 +344,30 @@ client.on('interactionCreate', async (interaction) => {
 
                 const row = new ActionRowBuilder().addComponents(seasonMenu);
                 await interaction.editReply({ embeds: [seasonEmbed], components: [row] });
-
             } catch (error) {
                 console.error(error);
                 await interaction.followUp({ content: '❌ تعذر جلب مواسم المسلسل.', ephemeral: true });
             }
+            return;
         }
 
-        // (ب) اختيار موسم -> قائمة الحلقات
+        // (ب) اختيار موسم -> قائمة الحلقات (مع نظام الصفحات)
         if (interaction.customId.startsWith('menu_season_')) {
             await interaction.deferUpdate();
             const seriesId = interaction.customId.replace('menu_season_', '');
             const seasonNumber = interaction.values[0];
 
             try {
-                const res = await axios.get(`https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}`, {
-                    params: { api_key: TMDB_API_KEY, language: 'ar-SA' }
-                });
-
-                const episodes = res.data.episodes;
-
-                const episodeEmbed = new EmbedBuilder()
-                    .setColor('#2b2d31')
-                    .setTitle(`📼 الموسم ${seasonNumber}`)
-                    .setDescription(`**عدد الحلقات:** ${episodes.length}\n\n:اختر الحلقة لبدء العرض`);
-
-                const episodeMenu = new StringSelectMenuBuilder()
-                    .setCustomId(`menu_episode_${seriesId}_${seasonNumber}`)
-                    .setPlaceholder('اختر الحلقة');
-
-                episodes.slice(0, 25).forEach((ep) => {
-                    const epTitle = ep.name ? ` - ${ep.name}` : '';
-                    episodeMenu.addOptions(
-                        new StringSelectMenuOptionBuilder()
-                            .setLabel(`الحلقة ${ep.episode_number}`)
-                            .setDescription(`${epTitle}`.slice(0, 95))
-                            .setValue(String(ep.episode_number))
-                    );
-                });
-
-                const row = new ActionRowBuilder().addComponents(episodeMenu);
-                await interaction.editReply({ embeds: [episodeEmbed], components: [row] });
-
+                const data = await buildEpisodePage(seriesId, seasonNumber, 1);
+                await interaction.editReply(data);
             } catch (error) {
                 console.error(error);
                 await interaction.followUp({ content: '❌ تعذر جلب حلقات هذا الموسم.', ephemeral: true });
             }
+            return;
         }
 
-        // (ج) اختيار حلقة أو فيلم -> تجهيز روابط السيرفرات المتعددة
+        // (ج) اختيار حلقة أو فيلم -> تجهيز روابط البث
         if (interaction.customId.startsWith('menu_episode_') || interaction.customId === 'menu_select_movie') {
             const memberVoice = interaction.member.voice.channel;
 
@@ -297,16 +395,14 @@ client.on('interactionCreate', async (interaction) => {
                 const series = seriesRes.data;
                 title = series.name;
                 posterUrl = series.poster_path ? `https://image.tmdb.org/t/p/w500${series.poster_path}` : 'https://via.placeholder.com/500x750';
-                year = series.first_air_date ? series.first_air_date.split('-')[0] : '2024';
+                year = series.first_air_date ? series.first_air_date.split('-')[0] : '----';
                 rating = series.vote_average ? series.vote_average.toFixed(1) : '8.0';
                 overview = series.overview ? `\n\n> *${series.overview.slice(0, 160)}...*` : '';
                 details = `🎞️ **الحلقة:** ${episodeNumber}  •  📼 **الموسم:** ${seasonNumber}`;
 
-                // روابط السيرفرات المختلفة للمسلسل
                 server1Url = `https://vidsrc.to/embed/tv/${seriesId}/${seasonNumber}/${episodeNumber}`;
-                server2Url = `https://embed.su/embed/tv/${seriesId}/${seasonNumber}/${episodeNumber}`;
-                server3Url = `https://player.autoembed.cc/embed/tv/${seriesId}/${seasonNumber}/${episodeNumber}`;
-
+                server2Url = `https://vidlink.pro/tv/${seriesId}/${seasonNumber}/${episodeNumber}`;
+                server3Url = `https://multiembed.mov/?video_id=${seriesId}&tmdb=1&s=${seasonNumber}&e=${episodeNumber}`;
             } else {
                 // فيلم
                 const movieId = interaction.values[0];
@@ -317,15 +413,14 @@ client.on('interactionCreate', async (interaction) => {
                 const movie = movieRes.data;
                 title = movie.title;
                 posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/500x750';
-                year = movie.release_date ? movie.release_date.split('-')[0] : '2024';
+                year = movie.release_date ? movie.release_date.split('-')[0] : '----';
                 rating = movie.vote_average ? movie.vote_average.toFixed(1) : '8.0';
                 overview = movie.overview ? `\n\n> *${movie.overview.slice(0, 160)}...*` : '';
                 details = `🎞️ **فيلم كامل**`;
 
-                // روابط السيرفرات المختلفة للفيلم
                 server1Url = `https://vidsrc.to/embed/movie/${movieId}`;
-                server2Url = `https://embed.su/embed/movie/${movieId}`;
-                server3Url = `https://player.autoembed.cc/embed/movie/${movieId}`;
+                server2Url = `https://vidlink.pro/movie/${movieId}`;
+                server3Url = `https://multiembed.mov/?video_id=${movieId}&tmdb=1`;
             }
 
             // انضمام للروم الصوتي
@@ -339,21 +434,20 @@ client.on('interactionCreate', async (interaction) => {
             const playerEmbed = new EmbedBuilder()
                 .setColor('#2b2d31')
                 .setTitle(`🎬 ${title}`)
-                .setDescription(`🟢 **جاهز للمشاهدة في:** <#${memberVoice.id}>\n\n${details}\n📅 **${year}** • ⭐ **${rating}**${overview}\n\n🍿 **اختر السيرفر المناسب للمشاهدة:**\n*(سيرفر 2 ممتاز للترجمة العربية وجودة 1080p)*`)
+                .setDescription(`🟢 **جاهز للمشاهدة في:** <#${memberVoice.id}>\n\n${details}\n📅 **${year}** • ⭐ **${rating}**${overview}\n\n🍿 **اختر السيرفر المناسب للمشاهدة:**\n*(سيرفر 2 ممتاز بدقة 1080p وترجمة عربية)*`)
                 .setThumbnail(posterUrl);
 
-            // أزرار السيرفرات الثلاثة
             const serversRow = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setLabel('⚡ سيرفر 1 (VidSrc)')
                     .setStyle(ButtonStyle.Link)
                     .setURL(server1Url),
                 new ButtonBuilder()
-                    .setLabel('🌟 سيرفر 2 (1080p + ترجمة)')
+                    .setLabel('🌟 سيرفر 2 (1080p + ترجمة عربية)')
                     .setStyle(ButtonStyle.Link)
                     .setURL(server2Url),
                 new ButtonBuilder()
-                    .setLabel('🛡️ سيرفر 3 (AutoEmbed)')
+                    .setLabel('🛡️ سيرفر 3 (MultiEmbed)')
                     .setStyle(ButtonStyle.Link)
                     .setURL(server3Url)
             );
