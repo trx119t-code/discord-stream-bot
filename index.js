@@ -3,7 +3,6 @@ require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
-const https = require('https');
 const { 
     Client, 
     GatewayIntentBits, 
@@ -38,46 +37,13 @@ function getHtmlFile() {
     return null;
 }
 
-// دالة جلب البيانات مع دعم إخفاء الهوية وتخطي قيود الحظر
-function fetchJson(url) {
-    return new Promise((resolve, reject) => {
-        const parsedUrl = new URL(url);
-        const protocol = parsedUrl.protocol === 'https:' ? https : http;
-
-        const options = {
-            hostname: parsedUrl.hostname,
-            path: parsedUrl.pathname + parsedUrl.search,
-            method: 'GET',
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'application/json, text/plain, */*'
-            }
-        };
-
-        const req = protocol.request(options, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
-                try {
-                    resolve(JSON.parse(data));
-                } catch (e) {
-                    resolve(null);
-                }
-            });
-        });
-
-        req.on('error', err => reject(err));
-        req.end();
-    });
-}
-
 const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.removeHeader('X-Frame-Options');
 
-    // 1. بروكسي الصور
+    // 1. بروكسي الصور لتخطي حجب ديسكورد للبوسترات
     if (req.url.startsWith('/api/image')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const imgPath = urlParams.searchParams.get('path');
@@ -101,7 +67,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 2. البحث في TMDB
+    // 2. البحث
     if (req.url.startsWith('/api/search')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const q = urlParams.searchParams.get('q') || '';
@@ -131,7 +97,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 4. تفاصيل المسلسل
+    // 4. تفاصيل المسلسل ومواسمه
     if (req.url.startsWith('/api/tv/details')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
@@ -164,51 +130,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 6. محرك استخراج البث المباشر (Stream Scraper API)
-    if (req.url.startsWith('/api/stream/extract')) {
-        const urlParams = new URL(req.url, `http://${req.headers.host}`);
-        const id = urlParams.searchParams.get('id');
-        const isTv = urlParams.searchParams.get('isTv') === 'true';
-        const season = urlParams.searchParams.get('season') || '1';
-        const episode = urlParams.searchParams.get('episode') || '1';
-
-        try {
-            // محاولة جلب الرابط المباشر من واجهة استخراج مفتوحة متوافقة مع HLS
-            const apiUrl = isTv 
-                ? `https://api.streamembed.cc/tv/${id}/${season}/${episode}`
-                : `https://api.streamembed.cc/movie/${id}`;
-
-            const response = await fetchJson(apiUrl);
-
-            let streamUrl = '';
-            let subtitleTrack = null;
-
-            if (response && response.stream) {
-                streamUrl = response.stream;
-                if (response.subtitles && Array.isArray(response.subtitles)) {
-                    subtitleTrack = response.subtitles.find(s => s.lang === 'ar' || s.label === 'Arabic');
-                }
-            }
-
-            // في حال عدم توفر البث من المزود الأول، نوفر مسار احتياطي موثوق
-            if (!streamUrl) {
-                streamUrl = isTv 
-                    ? `https://vidsrc.stream/hls/tv/${id}/${season}/${episode}/playlist.m3u8`
-                    : `https://vidsrc.stream/hls/movie/${id}/playlist.m3u8`;
-            }
-
-            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            return res.end(JSON.stringify({
-                url: streamUrl,
-                subtitle: subtitleTrack ? subtitleTrack.url : `https://sub.wyzie.ru/sub/${id}.vtt`
-            }));
-        } catch (err) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            return res.end(JSON.stringify({ url: '', subtitle: '' }));
-        }
-    }
-
-    // تقديم صفحة HTML
+    // تقديم الواجهة
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
