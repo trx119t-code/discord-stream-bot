@@ -26,7 +26,6 @@ const client = new Client({
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const TMDB_API_KEY = '2da39b910e34eeb919f6f92b25637d43';
 
-// دالة العثور على ملف HTML
 function getHtmlFile() {
     const paths = [
         path.join(__dirname, 'public', 'index.html'),
@@ -38,19 +37,11 @@ function getHtmlFile() {
     return null;
 }
 
-// خادم الويب الشامل
 const server = http.createServer(async (req, res) => {
-    // ترويسات الصلاحيات الكاملة لمشغلات الفيديو وديسكورد
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader(
-        'Content-Security-Policy', 
-        "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
-        "frame-src * blob: data:; " +
-        "frame-ancestors 'self' https://discord.com https://*.discord.com https://*.discordsays.com;"
-    );
     res.removeHeader('X-Frame-Options');
 
-    // 1. وسيط الصور (بروكسي لحل حجب ديسكورد للبوسترات)
+    // 1. بروكسي الصور لتخطي حجب ديسكورد للبوسترات
     if (req.url.startsWith('/api/image')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const imgPath = urlParams.searchParams.get('path');
@@ -73,7 +64,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 2. وسيط البحث عن الأفلام والمسلسلات
+    // 2. البحث في TMDB
     if (req.url.startsWith('/api/search')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const q = urlParams.searchParams.get('q') || '';
@@ -89,7 +80,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 3. وسيط جلب الأعمال الرائجة
+    // 3. جلب الأفلام والمسلسلات الرائجة
     if (req.url.startsWith('/api/trending')) {
         try {
             const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
@@ -103,9 +94,13 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 4. تقديم صفحة الواجهة index.html
-    const htmlData = getHtmlFile();
+    // 4. تقديم الواجهة مع حقن معرّف البوت لتشغيل أوامر ديسكورد
+    let htmlData = getHtmlFile();
     if (htmlData) {
+        const appId = client.user ? client.user.id : '';
+        const injectScript = `<script>window.DISCORD_APP_ID = "${appId}";</script>`;
+        htmlData = htmlData.replace('</head>', `${injectScript}</head>`);
+
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(htmlData);
     } else {
@@ -119,7 +114,6 @@ server.listen(PORT, () => {
     console.log(`🌐 خادم الويب يعمل على المنفذ: ${PORT}`);
 });
 
-// تسجيل أمر Activity لدى ديسكورد
 async function registerActivityCommand() {
     if (!client.user) return;
     const rest = new REST({ version: '10' }).setToken(BOT_TOKEN);
@@ -150,7 +144,6 @@ client.on('ready', async () => {
     await registerActivityCommand();
 });
 
-// أمر التشغيل داخل الشات
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
