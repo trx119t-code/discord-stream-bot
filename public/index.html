@@ -1,176 +1,493 @@
-require('dotenv').config();
-
-const path = require('path');
-const fs = require('fs');
-const http = require('http');
-const https = require('https');
-const { 
-    Client, 
-    GatewayIntentBits, 
-    EmbedBuilder, 
-    ActionRowBuilder, 
-    ButtonBuilder, 
-    ButtonStyle,
-    REST,
-    Routes
-} = require('discord.js');
-
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildVoiceStates
-    ]
-});
-
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const TMDB_API_KEY = '2da39b910e34eeb919f6f92b25637d43';
-
-function getHtmlFile() {
-    const paths = [
-        path.join(__dirname, 'public', 'index.html'),
-        path.join(__dirname, 'index.html')
-    ];
-    for (const p of paths) {
-        if (fs.existsSync(p)) return fs.readFileSync(p, 'utf-8');
-    }
-    return null;
-}
-
-const server = http.createServer(async (req, res) => {
-    // إزالة قيود الأمان ليعمل المحتوى داخل ديسكورد
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', '*');
-    res.removeHeader('X-Frame-Options');
-
-    // بروكسي الصور
-    if (req.url.startsWith('/api/image')) {
-        const urlParams = new URL(req.url, `http://${req.headers.host}`);
-        const imgPath = urlParams.searchParams.get('path');
-        if (!imgPath) {
-            res.writeHead(400);
-            return res.end();
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbit Cinema</title>
+    <style>
+        :root {
+            --primary: #FF2228;
+            --primary-hover: #B8202A;
+            --bg-main: #0F0A0D;
+            --bg-surface: #151316;
+            --card-bg: #2B171D;
+            --card-hover: #341920;
+            --border-color: #5E3B46;
+            --text-main: #FFF5F5;
+            --text-muted: #D8CAD0;
         }
-        try {
-            const imgRes = await fetch(`https://image.tmdb.org/t/p/w500${imgPath}`);
-            const buffer = await imgRes.arrayBuffer();
-            res.writeHead(200, {
-                'Content-Type': imgRes.headers.get('content-type') || 'image/jpeg',
-                'Cache-Control': 'public, max-age=86400'
-            });
-            res.end(Buffer.from(buffer));
-        } catch (err) {
-            res.writeHead(404);
-            res.end();
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            user-select: none;
         }
-        return;
-    }
 
-    // البحث
-    if (req.url.startsWith('/api/search')) {
-        const urlParams = new URL(req.url, `http://${req.headers.host}`);
-        const q = urlParams.searchParams.get('q') || '';
-        try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=ar-SA`);
-            const data = await tmdbRes.text();
-            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
-        } catch (err) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ results: [] }));
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-        return;
-    }
 
-    // الأفلام الرائجة
-    if (req.url.startsWith('/api/trending')) {
-        try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
-            const data = await tmdbRes.text();
-            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
-        } catch (err) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ results: [] }));
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 28px;
+            background: linear-gradient(180deg, var(--bg-surface) 0%, rgba(15, 10, 13, 0.95) 100%);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
-        return;
-    }
 
-    // عرض الواجهة الرئيسية
-    const htmlData = getHtmlFile();
-    if (htmlData) {
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(htmlData);
-    } else {
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end('<body style="background:#0f1015;color:#fff;text-align:center;padding-top:50px;"><h1>⚠️ ملف index.html غير موجود</h1></body>');
-    }
-});
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 0 12px rgba(255, 34, 40, 0.4);
+        }
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`🌐 خادم الويب يعمل على المنفذ: ${PORT}`);
-});
+        .search-box {
+            display: flex;
+            gap: 10px;
+            width: 50%;
+            max-width: 480px;
+        }
 
-async function registerActivityCommand() {
-    if (!client.user) return;
-    const rest = new REST({ version: '10' }).setToken(BOT_TOKEN);
-    try {
-        await rest.put(
-            Routes.applicationCommands(client.user.id),
-            {
-                body: [
-                    {
-                        name: 'cinema',
-                        description: 'تشغيل سينما ديسكورد التفاعلية',
-                        type: 4,
-                        handler: 2,
-                        integration_types: [0, 1],
-                        contexts: [0, 1, 2]
-                    }
-                ]
+        .search-box input {
+            width: 100%;
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-surface);
+            color: var(--text-main);
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+        }
+
+        .search-box button {
+            padding: 10px 22px;
+            border-radius: 8px;
+            border: none;
+            background: var(--primary);
+            color: var(--text-main);
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-box button:hover {
+            background: var(--primary-hover);
+        }
+
+        /* نافذة العرض السينمائي */
+        #theater-panel {
+            display: none;
+            width: 100%;
+            background: #000;
+            padding: 20px 28px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .theater-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .movie-heading {
+            font-size: 1.25rem;
+            color: var(--text-main);
+            font-weight: bold;
+        }
+
+        .controls-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .control-item label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .controls-toolbar select {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            outline: none;
+            font-weight: bold;
+        }
+
+        .stream-frame-container {
+            width: 100%;
+            height: 68vh;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            position: relative;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .theater-footer {
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .theater-btn {
+            background: var(--primary);
+            color: var(--text-main);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .theater-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .theater-btn.alt {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .theater-btn.alt:hover {
+            border-color: var(--primary);
+        }
+
+        .content-area {
+            padding: 24px 28px;
+            flex-grow: 1;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 18px;
+        }
+
+        .movie-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.25s, background 0.25s;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-6px);
+            background: var(--card-hover);
+            border-color: var(--primary);
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            display: block;
+            background: #1a1a1a;
+        }
+
+        .movie-info {
+            padding: 12px;
+        }
+
+        .movie-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-main);
+        }
+
+        .movie-meta {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .rating-badge {
+            color: #ffd700;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">🍿 Orbit Cinema</div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="ابحث عن فيلم أو مسلسل...">
+            <button onclick="performSearch()">بحث</button>
+        </div>
+    </header>
+
+    <div id="theater-panel">
+        <div class="theater-header">
+            <div id="mediaTitleDisplay" class="movie-heading">جاري التجهيز...</div>
+            
+            <div class="controls-toolbar">
+                <div id="seriesOptions" style="display:none; gap:10px;">
+                    <div class="control-item">
+                        <label>الموسم:</label>
+                        <select id="seasonSelect" onchange="loadPlayer()"></select>
+                    </div>
+                    <div class="control-item">
+                        <label>الحلقة:</label>
+                        <select id="episodeSelect" onchange="loadPlayer()"></select>
+                    </div>
+                </div>
+
+                <div class="control-item">
+                    <label>السيرفر:</label>
+                    <select id="serverSelect" onchange="loadPlayer()">
+                        <option value="vidsrc_net">سيرفر 1 (VidSrc Pro - أصلي)</option>
+                        <option value="embed_soap">سيرفر 2 (Soap2Day Embed - مترجم)</option>
+                        <option value="smashy">سيرفر 3 (SmashyStream)</option>
+                    </select>
+                </div>
+
+                <button class="theater-btn alt" onclick="copyShareLink()">📋 نسخ الرابط</button>
+                <button class="theater-btn alt" onclick="closeTheater()">إغلاق ✕</button>
+            </div>
+        </div>
+
+        <div class="stream-frame-container">
+            <iframe 
+                id="theaterIframe" 
+                src="" 
+                allowfullscreen="true" 
+                webkitallowfullscreen="true" 
+                mozallowfullscreen="true"
+                allow="autoplay; fullscreen; encrypted-media; picture-in-picture">
+            </iframe>
+        </div>
+
+        <div class="theater-footer">
+            <span>💡 لتشغيل الترجمة: اضغط على زر <b>CC</b> في أسفل مشغل الفيديو واختر <b>Arabic</b>.</span>
+            <span>🚀 في حال حجب ديسكورد للشاشة، انسخ الرابط وافتحه في المتصفح لمشاركة الشاشة بالروم الصوتي.</span>
+        </div>
+    </div>
+
+    <main class="content-area">
+        <h2 class="section-title" id="gridTitle">الأفلام والمسلسلات الرائجة الآن</h2>
+        <div class="movies-grid" id="moviesGrid">
+            <p style="color:var(--text-muted); padding:20px;">جاري تحميل العروض...</p>
+        </div>
+    </main>
+
+    <script>
+        let selectedItem = { id: null, isTv: false, title: '' };
+        let activePlaybackUrl = '';
+
+        function renderCards(items) {
+            const grid = document.getElementById('moviesGrid');
+            grid.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                grid.innerHTML = '<p style="color:var(--text-muted)">لا توجد نتائج متاحة.</p>';
+                return;
             }
-        );
-        console.log('✅ تم تسجيل Entry Point Command بنجاح!');
-    } catch (error) {
-        console.error('ملاحظة:', error.message);
-    }
-}
 
-client.on('ready', async () => {
-    console.log(`✅ البوت متصل: ${client.user.tag}`);
-    await registerActivityCommand();
-});
+            items.filter(i => i.media_type !== 'person' && i.poster_path).forEach(item => {
+                const isTv = item.media_type === 'tv' || (!item.title && item.name);
+                const title = item.title || item.name;
+                const year = (item.release_date || item.first_air_date || '').split('-')[0] || '----';
+                const rating = item.vote_average ? item.vote_average.toFixed(1) : '0';
+                const poster = `/api/image?path=${encodeURIComponent(item.poster_path)}`;
 
-client.on('messageCreate', async (message) => {
-    if (message.author.bot) return;
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+                card.innerHTML = `
+                    <img src="${poster}" alt="${title}" loading="lazy">
+                    <div class="movie-info">
+                        <div class="movie-title">${title}</div>
+                        <div class="movie-meta">
+                            <span>${isTv ? 'مسلسل' : 'فيلم'} • ${year}</span>
+                            <span class="rating-badge">⭐ ${rating}</span>
+                        </div>
+                    </div>
+                `;
 
-    if (message.content === 'dplay') {
-        const voiceChannel = message.member?.voice?.channel;
-
-        if (!voiceChannel) {
-            return message.reply('⚠️ يرجى دخول أي روم صوتي أولاً لتشغيل سينما ديسكورد!');
+                card.onclick = () => openTheater(item.id, isTv, title);
+                grid.appendChild(card);
+            });
         }
 
-        const embed = new EmbedBuilder()
-            .setColor('#FF2228')
-            .setTitle('🍿 سينما ديسكورد التفاعلية (Orbit Cinema)')
-            .setDescription(`جاهز للعرض داخل: <#${voiceChannel.id}>\n\nاضغط على الزر بالأسفل لبدء المشاهدة مباشرة!`)
-            .setImage('https://image.tmdb.org/t/p/w1280/8Z8W5pE2u4bX9QG5N0oP7jH8XvW.jpg');
+        async function fetchTrendingContent() {
+            try {
+                const res = await fetch('/api/trending');
+                const data = await res.json();
+                if (data.results && data.results.length > 0) {
+                    renderCards(data.results);
+                }
+            } catch (err) {
+                console.error("خطأ جلب البيانات:", err);
+            }
+        }
 
-        const activityUrl = `https://discord.com/activities/${client.user.id}/${voiceChannel.id}`;
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
 
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setLabel('🚀 فتح السينما')
-                .setStyle(ButtonStyle.Link)
-                .setURL(activityUrl)
-        );
+            document.getElementById('gridTitle').innerText = `نتائج البحث عن: ${query}`;
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                if (data.results) renderCards(data.results);
+            } catch (err) {
+                console.error(err);
+            }
+        }
 
-        await message.reply({ embeds: [embed], components: [row] });
-    }
-});
+        function openTheater(id, isTv, title) {
+            selectedItem = { id, isTv, title };
+            document.getElementById('mediaTitleDisplay').innerText = `🎬 تشغيل: ${title}`;
 
-client.login(BOT_TOKEN);
+            const seriesBlock = document.getElementById('seriesOptions');
+            if (isTv) {
+                seriesBlock.style.display = 'inline-flex';
+                initSeriesSelectors();
+            } else {
+                seriesBlock.style.display = 'none';
+            }
+
+            loadPlayer();
+            document.getElementById('theater-panel').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function initSeriesSelectors() {
+            const sSelect = document.getElementById('seasonSelect');
+            const eSelect = document.getElementById('episodeSelect');
+            
+            sSelect.innerHTML = '';
+            for (let s = 1; s <= 15; s++) {
+                sSelect.innerHTML += `<option value="${s}">الموسم ${s}</option>`;
+            }
+
+            eSelect.innerHTML = '';
+            for (let e = 1; e <= 30; e++) {
+                eSelect.innerHTML += `<option value="${e}">الحلقة ${e}</option>`;
+            }
+        }
+
+        function loadPlayer() {
+            const server = document.getElementById('serverSelect').value;
+            const season = document.getElementById('seasonSelect').value || 1;
+            const episode = document.getElementById('episodeSelect').value || 1;
+            const frame = document.getElementById('theaterIframe');
+
+            let url = '';
+
+            if (selectedItem.isTv) {
+                if (server === 'vidsrc_net') {
+                    url = `https://vidsrc.net/embed/tv/${selectedItem.id}/${season}/${episode}`;
+                } else if (server === 'embed_soap') {
+                    url = `https://soapertv.com/embed/tv/${selectedItem.id}/${season}/${episode}`;
+                } else {
+                    url = `https://embed.smashystream.com/playere.php?tmdb=${selectedItem.id}&season=${season}&episode=${episode}`;
+                }
+            } else {
+                if (server === 'vidsrc_net') {
+                    url = `https://vidsrc.net/embed/movie/${selectedItem.id}`;
+                } else if (server === 'embed_soap') {
+                    url = `https://soapertv.com/embed/movie/${selectedItem.id}`;
+                } else {
+                    url = `https://embed.smashystream.com/playere.php?tmdb=${selectedItem.id}`;
+                }
+            }
+
+            activePlaybackUrl = url;
+            frame.src = url;
+        }
+
+        function copyShareLink() {
+            if (!activePlaybackUrl) return;
+            navigator.clipboard.writeText(activePlaybackUrl).then(() => {
+                alert('✅ تم نسخ رابط المشاهدة! افتحه بالمتصفح أو شاركه مع الروم.');
+            }).catch(() => {
+                prompt('انسخ الرابط:', activePlaybackUrl);
+            });
+        }
+
+        function closeTheater() {
+            document.getElementById('theaterIframe').src = '';
+            document.getElementById('theater-panel').style.display = 'none';
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+
+        fetchTrendingContent();
+    </script>
+</body>
+</html>
