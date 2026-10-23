@@ -93,6 +93,7 @@
             background: var(--primary-hover);
         }
 
+        /* نافذة التحكم والمشاهدة */
         #player-wrapper {
             display: none;
             width: 100%;
@@ -145,34 +146,49 @@
             font-size: 0.9rem;
         }
 
-        .external-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--primary);
+        .action-btn {
+            background: var(--primary);
+            border: none;
             color: var(--text-main);
-            padding: 7px 14px;
+            padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             font-size: 0.88rem;
-            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s, transform 0.1s;
         }
 
-        .external-btn:hover {
-            background: var(--primary);
+        .action-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .action-btn.secondary {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .action-btn.secondary:hover {
+            background: var(--card-hover);
+            border-color: var(--primary);
         }
 
         .close-player-btn {
-            background: var(--primary);
-            border: none;
-            color: var(--text-main);
-            padding: 7px 16px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 7px 14px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
         }
 
         .close-player-btn:hover {
-            background: var(--primary-hover);
+            color: var(--primary);
+            border-color: var(--primary);
         }
 
         .video-container {
@@ -182,6 +198,7 @@
             border-radius: 12px;
             overflow: hidden;
             background: #050505;
+            position: relative;
         }
 
         iframe {
@@ -190,11 +207,19 @@
             border: none;
         }
 
-        .discord-hint {
-            margin-top: 8px;
-            font-size: 0.82rem;
+        .discord-notice {
+            background: rgba(43, 23, 29, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 16px;
+            margin-top: 10px;
+            font-size: 0.85rem;
             color: var(--text-muted);
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .content-area {
@@ -306,23 +331,20 @@
                 <div class="control-group">
                     <label>السيرفر:</label>
                     <select id="serverSelect" onchange="refreshStream()">
-                        <option value="vidlink">سيرفر 1 (VidLink - ترجمة عربية CC)</option>
-                        <option value="vidsrc_xyz">سيرفر 2 (VidSrc XYZ - متعدد الجودات)</option>
-                        <option value="vidsrc_icu">سيرفر 3 (VidSrc ICU - سريع)</option>
+                        <option value="embed_su">سيرفر 1 (Embed.su - سريع + ترجمة عربي)</option>
+                        <option value="vidsrc_cc">سيرفر 2 (VidSrc v2 - جودة فائقة)</option>
+                        <option value="vidlink">سيرفر 3 (VidLink - جودة أصلية)</option>
                         <option value="multiembed">سيرفر 4 (SuperEmbed)</option>
                     </select>
                 </div>
 
-                <button class="external-btn" onclick="openInBrowser()">
-                    ↗ فتح المشغل مباشرة (لتخطي حظر ديسكورد)
-                </button>
-
+                <button class="action-btn secondary" onclick="copyStreamLink()">📋 نسخ الرابط</button>
+                <a id="directWatchBtn" href="#" target="_blank" class="action-btn">🚀 فتح المشاهدة</a>
                 <button class="close-player-btn" onclick="closePlayer()">إغلاق ✕</button>
             </div>
         </div>
 
         <div class="video-container">
-            <!-- تمت إزالة خاصية sandbox نهائياً لمنع ظهور رسالة Please Disable Sandbox -->
             <iframe 
                 id="mainIframe" 
                 src="" 
@@ -332,8 +354,10 @@
                 allow="autoplay; fullscreen; encrypted-media; picture-in-picture">
             </iframe>
         </div>
-        <div class="discord-hint">
-            💡 ملاحظة: إذا ظهر تنبيه "Sandbox" داخل ديسكورد بسبب حماية ديسكورد الإجبارية، اضغط على زر <b>"↗ فتح المشغل مباشرة"</b> بالأعلى ليعمل معك بكامل الجودات والترجمة.
+
+        <div class="discord-notice">
+            <span>🛡️ إذا كنت داخل ديسكورد وظهرت شاشة سوداء بسبب حماية الديسكورد، اضغط على <b>"🚀 فتح المشاهدة"</b> أو <b>"📋 نسخ الرابط"</b> لبدء العرض فوراً ومشاركته في الروم.</span>
+            <span>💡 لتفعيل الترجمة العربية: اضغط على أيقونة <b>CC</b> في شريط الفيديو واختر <b>Arabic</b>.</span>
         </div>
     </div>
 
@@ -347,40 +371,6 @@
     <script>
         let currentMedia = { id: null, isTv: false, title: '' };
         let currentStreamUrl = '';
-
-        // تهيئة اتصال مباشر مع تطبيق ديسكورد بدون مكتبات خارجية
-        const urlParams = new URLSearchParams(window.location.search);
-        const frameId = urlParams.get('frame_id');
-
-        function initDiscordHandshake() {
-            if (frameId && window.DISCORD_APP_ID) {
-                try {
-                    window.parent.postMessage([1, {
-                        v: 1,
-                        encoding: 'json',
-                        client_id: window.DISCORD_APP_ID,
-                        frame_id: frameId
-                    }], '*');
-                } catch (e) {}
-            }
-        }
-        initDiscordHandshake();
-
-        // فتح الرابط عبر أمر ديسكورد الداخلي أو المتصفح
-        function openInBrowser() {
-            if (!currentStreamUrl) return;
-
-            if (frameId) {
-                try {
-                    window.parent.postMessage([0, {
-                        cmd: 'OPEN_EXTERNAL_LINK',
-                        args: { url: currentStreamUrl },
-                        nonce: String(Date.now())
-                    }], '*');
-                } catch (e) {}
-            }
-            window.open(currentStreamUrl, '_blank');
-        }
 
         function renderCards(items) {
             const grid = document.getElementById('moviesGrid');
@@ -479,26 +469,27 @@
             const season = document.getElementById('seasonSelect').value || 1;
             const episode = document.getElementById('episodeSelect').value || 1;
             const iframe = document.getElementById('mainIframe');
+            const directBtn = document.getElementById('directWatchBtn');
 
             let src = '';
 
             if (currentMedia.isTv) {
-                if (server === 'vidlink') {
-                    src = `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}?primaryColor=FF2228&autoplay=true`;
-                } else if (server === 'vidsrc_xyz') {
-                    src = `https://vidsrc.xyz/embed/tv?tmdb=${currentMedia.id}&season=${season}&episode=${episode}&ds_lang=ar`;
-                } else if (server === 'vidsrc_icu') {
-                    src = `https://vidsrc.icu/embed/tv/${currentMedia.id}/${season}/${episode}`;
+                if (server === 'embed_su') {
+                    src = `https://embed.su/embed/tv/${currentMedia.id}/${season}/${episode}`;
+                } else if (server === 'vidsrc_cc') {
+                    src = `https://vidsrc.cc/v2/embed/tv/${currentMedia.id}/${season}/${episode}`;
+                } else if (server === 'vidlink') {
+                    src = `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}?primaryColor=FF2228`;
                 } else {
                     src = `https://multiembed.mov/?video_id=${currentMedia.id}&tmdb=1&s=${season}&e=${episode}`;
                 }
             } else {
-                if (server === 'vidlink') {
-                    src = `https://vidlink.pro/movie/${currentMedia.id}?primaryColor=FF2228&autoplay=true`;
-                } else if (server === 'vidsrc_xyz') {
-                    src = `https://vidsrc.xyz/embed/movie?tmdb=${currentMedia.id}&ds_lang=ar`;
-                } else if (server === 'vidsrc_icu') {
-                    src = `https://vidsrc.icu/embed/movie/${currentMedia.id}`;
+                if (server === 'embed_su') {
+                    src = `https://embed.su/embed/movie/${currentMedia.id}`;
+                } else if (server === 'vidsrc_cc') {
+                    src = `https://vidsrc.cc/v2/embed/movie/${currentMedia.id}`;
+                } else if (server === 'vidlink') {
+                    src = `https://vidlink.pro/movie/${currentMedia.id}?primaryColor=FF2228`;
                 } else {
                     src = `https://multiembed.mov/?video_id=${currentMedia.id}&tmdb=1`;
                 }
@@ -506,6 +497,16 @@
 
             currentStreamUrl = src;
             iframe.src = src;
+            directBtn.href = src;
+        }
+
+        function copyStreamLink() {
+            if (!currentStreamUrl) return;
+            navigator.clipboard.writeText(currentStreamUrl).then(() => {
+                alert('✅ تم نسخ رابط المشاهدة بنجاح! يمكنك إرساله في شات الديسكورد.');
+            }).catch(() => {
+                prompt('انسخ الرابط التالي:', currentStreamUrl);
+            });
         }
 
         function closePlayer() {
