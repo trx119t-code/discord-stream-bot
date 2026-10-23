@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orbit TV</title>
+    <!-- مكتبة HLS لدعم البث المباشر داخل المشغل الأصلي -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.7/hls.min.js"></script>
     <style>
         :root {
             --primary: #FF2228;
@@ -447,12 +449,12 @@
             text-overflow: ellipsis;
         }
 
-        /* نافذة المشغل المدمج */
+        /* نافذة مشغل الفيديو الداخلي الفخم */
         #player-modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.96);
             z-index: 200;
             flex-direction: column;
             justify-content: center;
@@ -494,12 +496,24 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
             border: 1px solid var(--border);
             background: #000;
+            position: relative;
         }
 
         video {
             width: 100%;
             height: 100%;
             outline: none;
+            background: #000;
+        }
+
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-main);
+            font-weight: bold;
+            display: none;
         }
     </style>
 </head>
@@ -568,21 +582,22 @@
         <div class="episodes-grid" id="episodesGrid"></div>
     </div>
 
-    <!-- نافذة المشغل الأصلي -->
+    <!-- نافذة المشغل المدمج الصافي -->
     <div id="player-modal">
         <div class="player-top-bar">
             <div class="player-media-title" id="playerTitle">تشغيل...</div>
             <button class="btn-close-player" onclick="destroyPlayer()">إغلاق ✕</button>
         </div>
         <div class="native-video-box">
-            <!-- خاصية muted مبدئياً تسمح للمتصفح بالبدء فوراً دون تعليق أو منع -->
-            <video id="nativeVideo" controls autoplay playsinline muted></video>
+            <div class="loading-spinner" id="videoLoader">جاري استخراج وتجهيز البث...</div>
+            <video id="nativeVideo" controls autoplay playsinline crossorigin="anonymous"></video>
         </div>
     </div>
 
     <script>
         let allItems = [];
         let currentDetailSeries = null;
+        let hlsInstance = null;
 
         async function loadTrending() {
             try {
@@ -734,24 +749,63 @@
             }
         }
 
+        // تشغيل البث المباشر عبر محرك HLS المدمج
         async function launchNativePlayer(id, isTv, season, episode, title) {
             document.getElementById('playerTitle').innerText = title;
             document.getElementById('player-modal').style.display = 'flex';
+            const loader = document.getElementById('videoLoader');
+            loader.style.display = 'block';
 
             const video = document.getElementById('nativeVideo');
+
+            // تنظيف أي بث سابق
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
+
             try {
-                const res = await fetch(`/api/stream/source?id=${id}&isTv=${isTv}&season=${season}&episode=${episode}`);
+                const res = await fetch(`/api/stream/extract?id=${id}&isTv=${isTv}&season=${season}&episode=${episode}`);
                 const data = await res.json();
-                video.src = data.videoSource;
-                video.load();
-                video.play().then(() => {
-                    // إلغاء كتم الصوت بعد بدء التشغيل بنجاح
-                    setTimeout(() => { video.muted = false; }, 200);
-                }).catch(() => {
-                    video.controls = true;
-                });
+                loader.style.display = 'none';
+
+                if (!data.url) {
+                    alert('⚠️ لم نتمكن من استخراج رابط البث لهذا المحتوى حالياً.');
+                    return;
+                }
+
+                // إضافة مسار الترجمة العربية
+                video.innerHTML = '';
+                if (data.subtitle) {
+                    const track = document.createElement('track');
+                    track.kind = 'subtitles';
+                    track.label = 'العربية';
+                    track.srclang = 'ar';
+                    track.src = data.subtitle;
+                    track.default = true;
+                    video.appendChild(track);
+                }
+
+                // تشغيل HLS داخل المشغل
+                if (window.Hls && Hls.isSupported()) {
+                    hlsInstance = new Hls({
+                        enableWorker: true,
+                        lowLatencyMode: true
+                    });
+                    hlsInstance.loadSource(data.url);
+                    hlsInstance.attachMedia(video);
+                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
+                        video.play().catch(() => {});
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = data.url;
+                    video.addEventListener('loadedmetadata', function () {
+                        video.play().catch(() => {});
+                    });
+                }
             } catch (err) {
-                console.error("فشل التشغيل:", err);
+                loader.style.display = 'none';
+                console.error("خطأ استخراج البث:", err);
             }
         }
 
@@ -759,6 +813,10 @@
             const video = document.getElementById('nativeVideo');
             video.pause();
             video.src = '';
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
             document.getElementById('player-modal').style.display = 'none';
         }
 
