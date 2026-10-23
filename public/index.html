@@ -93,110 +93,86 @@
             background: var(--primary-hover);
         }
 
-        /* نافذة العرض السينمائي */
-        #theater-panel {
+        #player-wrapper {
             display: none;
             width: 100%;
             background: #000;
-            padding: 20px 28px;
+            padding: 16px 28px 24px 28px;
             border-bottom: 2px solid var(--border-color);
         }
 
-        .theater-header {
+        .player-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
             gap: 12px;
         }
 
-        .movie-heading {
-            font-size: 1.25rem;
+        .player-title {
             color: var(--text-main);
+            font-size: 1.15rem;
             font-weight: bold;
         }
 
-        .controls-toolbar {
+        .player-actions {
             display: flex;
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
         }
 
-        .control-item {
+        .control-group {
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
-        .control-item label {
+        .control-group label {
             font-size: 0.85rem;
             color: var(--text-muted);
         }
 
-        .controls-toolbar select {
+        .player-actions select {
             background: var(--card-bg);
             color: var(--text-main);
             border: 1px solid var(--border-color);
-            padding: 8px 12px;
+            padding: 7px 12px;
             border-radius: 6px;
             outline: none;
             font-weight: bold;
+            font-size: 0.9rem;
         }
 
-        .stream-frame-container {
+        .close-player-btn {
+            background: var(--primary);
+            border: none;
+            color: var(--text-main);
+            padding: 7px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .close-player-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .video-container {
             width: 100%;
-            height: 68vh;
+            height: 65vh;
             border: 1px solid var(--border-color);
             border-radius: 12px;
             overflow: hidden;
-            background: #000;
-            position: relative;
+            background: #050505;
         }
 
+        /* iframe نظيف تماماً وبدون أي وسوم sandbox تسبب حظر المشغل */
         iframe {
             width: 100%;
             height: 100%;
             border: none;
-        }
-
-        .theater-footer {
-            margin-top: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .theater-btn {
-            background: var(--primary);
-            color: var(--text-main);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .theater-btn:hover {
-            background: var(--primary-hover);
-        }
-
-        .theater-btn.alt {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-        }
-
-        .theater-btn.alt:hover {
-            border-color: var(--primary);
         }
 
         .content-area {
@@ -289,50 +265,44 @@
         </div>
     </header>
 
-    <div id="theater-panel">
-        <div class="theater-header">
-            <div id="mediaTitleDisplay" class="movie-heading">جاري التجهيز...</div>
+    <div id="player-wrapper">
+        <div class="player-bar">
+            <div id="playerTitle" class="player-title">جاري التشغيل...</div>
             
-            <div class="controls-toolbar">
-                <div id="seriesOptions" style="display:none; gap:10px;">
-                    <div class="control-item">
+            <div class="player-actions">
+                <div id="tvOptions" style="display:none; gap:10px;">
+                    <div class="control-group">
                         <label>الموسم:</label>
-                        <select id="seasonSelect" onchange="loadPlayer()"></select>
+                        <select id="seasonSelect" onchange="refreshStream()"></select>
                     </div>
-                    <div class="control-item">
+                    <div class="control-group">
                         <label>الحلقة:</label>
-                        <select id="episodeSelect" onchange="loadPlayer()"></select>
+                        <select id="episodeSelect" onchange="refreshStream()"></select>
                     </div>
                 </div>
 
-                <div class="control-item">
+                <div class="control-group">
                     <label>السيرفر:</label>
-                    <select id="serverSelect" onchange="loadPlayer()">
-                        <option value="vidsrc_net">سيرفر 1 (VidSrc Pro - أصلي)</option>
-                        <option value="embed_soap">سيرفر 2 (Soap2Day Embed - مترجم)</option>
-                        <option value="smashy">سيرفر 3 (SmashyStream)</option>
+                    <select id="serverSelect" onchange="refreshStream()">
+                        <option value="vidsrc_in">سيرفر 1 (VidSrc In - متوافق مع ديسكورد)</option>
+                        <option value="moviesapi">سيرفر 2 (MoviesAPI - بدون حظر)</option>
+                        <option value="embed_su">سيرفر 3 (Embed.su - سريع)</option>
                     </select>
                 </div>
 
-                <button class="theater-btn alt" onclick="copyShareLink()">📋 نسخ الرابط</button>
-                <button class="theater-btn alt" onclick="closeTheater()">إغلاق ✕</button>
+                <button class="close-player-btn" onclick="closePlayer()">إغلاق ✕</button>
             </div>
         </div>
 
-        <div class="stream-frame-container">
+        <div class="video-container">
             <iframe 
-                id="theaterIframe" 
+                id="mainIframe" 
                 src="" 
                 allowfullscreen="true" 
                 webkitallowfullscreen="true" 
                 mozallowfullscreen="true"
-                allow="autoplay; fullscreen; encrypted-media; picture-in-picture">
+                allow="autoplay; fullscreen; encrypted-media">
             </iframe>
-        </div>
-
-        <div class="theater-footer">
-            <span>💡 لتشغيل الترجمة: اضغط على زر <b>CC</b> في أسفل مشغل الفيديو واختر <b>Arabic</b>.</span>
-            <span>🚀 في حال حجب ديسكورد للشاشة، انسخ الرابط وافتحه في المتصفح لمشاركة الشاشة بالروم الصوتي.</span>
         </div>
     </div>
 
@@ -344,8 +314,7 @@
     </main>
 
     <script>
-        let selectedItem = { id: null, isTv: false, title: '' };
-        let activePlaybackUrl = '';
+        let currentMedia = { id: null, isTv: false, title: '' };
 
         function renderCards(items) {
             const grid = document.getElementById('moviesGrid');
@@ -361,12 +330,12 @@
                 const title = item.title || item.name;
                 const year = (item.release_date || item.first_air_date || '').split('-')[0] || '----';
                 const rating = item.vote_average ? item.vote_average.toFixed(1) : '0';
-                const poster = `/api/image?path=${encodeURIComponent(item.poster_path)}`;
+                const posterUrl = `/api/image?path=${encodeURIComponent(item.poster_path)}`;
 
                 const card = document.createElement('div');
                 card.className = 'movie-card';
                 card.innerHTML = `
-                    <img src="${poster}" alt="${title}" loading="lazy">
+                    <img src="${posterUrl}" alt="${title}" loading="lazy">
                     <div class="movie-info">
                         <div class="movie-title">${title}</div>
                         <div class="movie-meta">
@@ -376,12 +345,12 @@
                     </div>
                 `;
 
-                card.onclick = () => openTheater(item.id, isTv, title);
+                card.onclick = () => playInstantly(item.id, isTv, title);
                 grid.appendChild(card);
             });
         }
 
-        async function fetchTrendingContent() {
+        async function loadMovies() {
             try {
                 const res = await fetch('/api/trending');
                 const data = await res.json();
@@ -389,7 +358,7 @@
                     renderCards(data.results);
                 }
             } catch (err) {
-                console.error("خطأ جلب البيانات:", err);
+                console.error("خطأ:", err);
             }
         }
 
@@ -407,87 +376,79 @@
             }
         }
 
-        function openTheater(id, isTv, title) {
-            selectedItem = { id, isTv, title };
-            document.getElementById('mediaTitleDisplay').innerText = `🎬 تشغيل: ${title}`;
+        function playInstantly(id, isTv, title) {
+            currentMedia = { id, isTv, title };
+            document.getElementById('playerTitle').innerText = `🎬 تشغيل: ${title}`;
 
-            const seriesBlock = document.getElementById('seriesOptions');
+            const tvOptions = document.getElementById('tvOptions');
             if (isTv) {
-                seriesBlock.style.display = 'inline-flex';
-                initSeriesSelectors();
+                tvOptions.style.display = 'inline-flex';
+                buildTvSelectors();
             } else {
-                seriesBlock.style.display = 'none';
+                tvOptions.style.display = 'none';
             }
 
-            loadPlayer();
-            document.getElementById('theater-panel').style.display = 'block';
+            refreshStream();
+            document.getElementById('player-wrapper').style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function initSeriesSelectors() {
-            const sSelect = document.getElementById('seasonSelect');
-            const eSelect = document.getElementById('episodeSelect');
+        function buildTvSelectors() {
+            const seasonSelect = document.getElementById('seasonSelect');
+            const episodeSelect = document.getElementById('episodeSelect');
             
-            sSelect.innerHTML = '';
+            seasonSelect.innerHTML = '';
             for (let s = 1; s <= 15; s++) {
-                sSelect.innerHTML += `<option value="${s}">الموسم ${s}</option>`;
+                seasonSelect.innerHTML += `<option value="${s}">موسم ${s}</option>`;
             }
 
-            eSelect.innerHTML = '';
+            episodeSelect.innerHTML = '';
             for (let e = 1; e <= 30; e++) {
-                eSelect.innerHTML += `<option value="${e}">الحلقة ${e}</option>`;
+                episodeSelect.innerHTML += `<option value="${e}">حلقة ${e}</option>`;
             }
         }
 
-        function loadPlayer() {
+        function refreshStream() {
             const server = document.getElementById('serverSelect').value;
             const season = document.getElementById('seasonSelect').value || 1;
             const episode = document.getElementById('episodeSelect').value || 1;
-            const frame = document.getElementById('theaterIframe');
+            const iframe = document.getElementById('mainIframe');
 
-            let url = '';
+            let src = '';
 
-            if (selectedItem.isTv) {
-                if (server === 'vidsrc_net') {
-                    url = `https://vidsrc.net/embed/tv/${selectedItem.id}/${season}/${episode}`;
-                } else if (server === 'embed_soap') {
-                    url = `https://soapertv.com/embed/tv/${selectedItem.id}/${season}/${episode}`;
+            if (currentMedia.isTv) {
+                if (server === 'vidsrc_in') {
+                    src = `https://vidsrc.in/embed/tv?tmdb=${currentMedia.id}&season=${season}&episode=${episode}`;
+                } else if (server === 'moviesapi') {
+                    src = `https://moviesapi.club/tv/${currentMedia.id}-${season}-${episode}`;
                 } else {
-                    url = `https://embed.smashystream.com/playere.php?tmdb=${selectedItem.id}&season=${season}&episode=${episode}`;
+                    src = `https://embed.su/embed/tv/${currentMedia.id}/${season}/${episode}`;
                 }
             } else {
-                if (server === 'vidsrc_net') {
-                    url = `https://vidsrc.net/embed/movie/${selectedItem.id}`;
-                } else if (server === 'embed_soap') {
-                    url = `https://soapertv.com/embed/movie/${selectedItem.id}`;
+                if (server === 'vidsrc_in') {
+                    src = `https://vidsrc.in/embed/movie?tmdb=${currentMedia.id}`;
+                } else if (server === 'moviesapi') {
+                    src = `https://moviesapi.club/movie/${currentMedia.id}`;
                 } else {
-                    url = `https://embed.smashystream.com/playere.php?tmdb=${selectedItem.id}`;
+                    src = `https://embed.su/embed/movie/${currentMedia.id}`;
                 }
             }
 
-            activePlaybackUrl = url;
-            frame.src = url;
+            iframe.src = src;
         }
 
-        function copyShareLink() {
-            if (!activePlaybackUrl) return;
-            navigator.clipboard.writeText(activePlaybackUrl).then(() => {
-                alert('✅ تم نسخ رابط المشاهدة! افتحه بالمتصفح أو شاركه مع الروم.');
-            }).catch(() => {
-                prompt('انسخ الرابط:', activePlaybackUrl);
-            });
-        }
-
-        function closeTheater() {
-            document.getElementById('theaterIframe').src = '';
-            document.getElementById('theater-panel').style.display = 'none';
+        function closePlayer() {
+            const wrapper = document.getElementById('player-wrapper');
+            const iframe = document.getElementById('mainIframe');
+            iframe.src = '';
+            wrapper.style.display = 'none';
         }
 
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') performSearch();
         });
 
-        fetchTrendingContent();
+        loadMovies();
     </script>
 </body>
 </html>
