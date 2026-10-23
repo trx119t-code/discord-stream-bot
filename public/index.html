@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- مكتبة مشغل الفيديو المتقدم Hls.js و Artplayer المعتمدة -->
+    <!-- مكتبة Hls.js و Artplayer -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
 
@@ -132,7 +132,6 @@
             font-size: 0.9rem;
         }
 
-        /* البنر الرئيسي */
         .hero-banner {
             position: relative;
             width: 100%;
@@ -312,7 +311,6 @@
             font-weight: 700;
         }
 
-        /* صفحة تفاصيل المسلسل وقائمة الحلقات */
         #details-view {
             display: none;
             position: fixed;
@@ -458,7 +456,6 @@
             text-overflow: ellipsis;
         }
 
-        /* 3. نافذة مشغل الفيديو السينمائي الأصلي (Demir TV Player Modal) */
         #player-modal {
             display: none;
             position: fixed;
@@ -553,7 +550,6 @@
         </div>
     </main>
 
-    <!-- صفحة تفاصيل المسلسل والمواسم -->
     <div id="details-view">
         <div class="details-hero" id="detailsHero">
             <div class="hero-overlay"></div>
@@ -573,7 +569,6 @@
         <div class="episodes-grid" id="episodesGrid"></div>
     </div>
 
-    <!-- نافذة المشغل الأصلي (Native Video Player) -->
     <div id="player-modal">
         <div class="player-top-bar">
             <div class="player-media-title" id="playerTitle">تشغيل...</div>
@@ -726,7 +721,6 @@
                         </div>
                     `;
 
-                    // تشغيل الحلقة في المشغل الأصلي مباشرة
                     card.onclick = () => {
                         launchNativePlayer(tvId, true, seasonNum, ep.episode_number, `${currentDetailSeries.name} - م${seasonNum} ح${ep.episode_number}`);
                     };
@@ -738,7 +732,7 @@
             }
         }
 
-        // تشغيل الفيديو عبر Artplayer الأصلي (بدون إعلانات وبدون شاشة سوداء داخل ديسكورد)
+        // تشغيل الفيديو عبر Artplayer الأصلي مع دعم الترجمة العربية المدمجة
         async function launchNativePlayer(id, isTv, season, episode, title) {
             document.getElementById('playerTitle').innerText = title;
             document.getElementById('player-modal').style.display = 'flex';
@@ -746,7 +740,8 @@
             try {
                 const res = await fetch(`/api/stream/source?id=${id}&isTv=${isTv}&season=${season}&episode=${episode}`);
                 const data = await res.json();
-                const sourceUrl = data.sources[0].url;
+                const sourceUrl = data.sources && data.sources.length > 0 ? data.sources[0].url : '';
+                const subtitleTrack = (data.subtitles && data.subtitles.length > 0) ? data.subtitles[0] : null;
 
                 if (art) {
                     art.destroy();
@@ -759,7 +754,10 @@
                     customType: {
                         m3u8: function (video, url) {
                             if (Hls.isSupported()) {
-                                const hls = new Hls();
+                                const hls = new Hls({
+                                    enableWorker: true,
+                                    lowLatencyMode: true
+                                });
                                 hls.loadSource(url);
                                 hls.attachMedia(video);
                             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -774,6 +772,16 @@
                     fullscreen: true,
                     fullscreenWeb: true,
                     theme: '#FF2228',
+                    subtitle: subtitleTrack ? {
+                        url: subtitleTrack.url,
+                        type: 'vtt',
+                        style: {
+                            color: '#FFF',
+                            fontSize: '24px',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.9)'
+                        },
+                        encoding: 'utf-8'
+                    } : {},
                     icons: {
                         state: '<div class="play-circle" style="width:60px;height:60px;font-size:1.6rem;">▶</div>'
                     }
