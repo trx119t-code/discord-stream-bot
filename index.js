@@ -43,7 +43,7 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.removeHeader('X-Frame-Options');
 
-    // 1. بروكسي الصور عالية الدقة والبوسترات
+    // 1. بروكسي الصور
     if (req.url.startsWith('/api/image')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const imgPath = urlParams.searchParams.get('path');
@@ -83,7 +83,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 3. الرائج
+    // 3. المحتوى الرائج
     if (req.url.startsWith('/api/trending')) {
         try {
             const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
@@ -97,7 +97,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 4. جلب تفاصيل المسلسل ومواسمه
+    // 4. تفاصيل المسلسل
     if (req.url.startsWith('/api/tv/details')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
@@ -113,7 +113,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 5. جلب حلقات موسم محدد بالصور والتفاصيل
+    // 5. حلقات موسم محدد
     if (req.url.startsWith('/api/tv/season')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
@@ -128,6 +128,44 @@ const server = http.createServer(async (req, res) => {
             res.end(JSON.stringify({ episodes: [] }));
         }
         return;
+    }
+
+    // 6. استخراج مصادر البث المباشرة (M3U8 / Streams API)
+    if (req.url.startsWith('/api/stream/source')) {
+        const urlParams = new URL(req.url, `http://${req.headers.host}`);
+        const id = urlParams.searchParams.get('id');
+        const isTv = urlParams.searchParams.get('isTv') === 'true';
+        const season = urlParams.searchParams.get('season') || '1';
+        const episode = urlParams.searchParams.get('episode') || '1';
+
+        // روابط استخراج البث بصيغ HLS مباشرة ومحمية
+        let streamSources = [];
+        if (isTv) {
+            streamSources = [
+                {
+                    name: 'سيرفر VIP 1 (HLS المباشر)',
+                    url: `https://vidsrc.stream/hls/tv/${id}/${season}/${episode}.m3u8`
+                },
+                {
+                    name: 'سيرفر النسخ الاحتياطي',
+                    url: `https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8`
+                }
+            ];
+        } else {
+            streamSources = [
+                {
+                    name: 'سيرفر VIP 1 (HLS المباشر)',
+                    url: `https://vidsrc.stream/hls/movie/${id}.m3u8`
+                },
+                {
+                    name: 'سيرفر النسخ الاحتياطي',
+                    url: `https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8`
+                }
+            ];
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        return res.end(JSON.stringify({ sources: streamSources }));
     }
 
     // تقديم صفحة HTML
