@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orbit TV</title>
-    <!-- تضمين خط Tajawal العربي الأنيق -->
+    <!-- تضمين خط Tajawal -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     
+    <!-- مكتبة مشغل الفيديو المتقدم Hls.js و Artplayer المعتمدة -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
+
     <style>
         :root {
             --primary: #FF2228;
@@ -17,7 +21,6 @@
             --bg-black: #080708;
             --bg-surface: #121013;
             --bg-card: #1C181D;
-            --bg-card-hover: #29232B;
             --border: rgba(255, 255, 255, 0.08);
             --text-main: #FFFFFF;
             --text-muted: #A39B9F;
@@ -40,7 +43,6 @@
             min-height: 100vh;
         }
 
-        /* 1. الشريط العلوي الفخم */
         header {
             display: flex;
             align-items: center;
@@ -52,7 +54,6 @@
             left: 0;
             right: 0;
             z-index: 100;
-            transition: background 0.3s;
         }
 
         .nav-left {
@@ -68,7 +69,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            letter-spacing: -0.5px;
             cursor: pointer;
         }
 
@@ -87,7 +87,6 @@
             text-decoration: none;
             font-weight: 500;
             font-size: 0.95rem;
-            transition: color 0.2s;
             cursor: pointer;
         }
 
@@ -117,8 +116,6 @@
             color: var(--text-main);
             outline: none;
             font-size: 0.9rem;
-            backdrop-filter: blur(10px);
-            transition: background 0.2s, border-color 0.2s;
         }
 
         .search-container input:focus {
@@ -133,10 +130,9 @@
             transform: translateY(-50%);
             color: var(--text-muted);
             font-size: 0.9rem;
-            pointer-events: none;
         }
 
-        /* 2. بنر العرض الرئيسي (Hero Banner) */
+        /* البنر الرئيسي */
         .hero-banner {
             position: relative;
             width: 100%;
@@ -147,7 +143,6 @@
             padding: 0 48px 60px 48px;
             background-size: cover;
             background-position: center top;
-            transition: background-image 0.6s ease-in-out;
         }
 
         .hero-overlay {
@@ -170,7 +165,6 @@
             font-size: 3rem;
             font-weight: 900;
             line-height: 1.15;
-            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
         }
 
         .hero-meta {
@@ -210,7 +204,6 @@
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
         }
 
         .hero-buttons {
@@ -232,32 +225,12 @@
             align-items: center;
             gap: 8px;
             box-shadow: 0 4px 20px rgba(255, 34, 40, 0.4);
-            transition: transform 0.2s, background 0.2s;
         }
 
         .btn-play-primary:hover {
             background: var(--primary-hover);
-            transform: scale(1.03);
         }
 
-        .btn-details {
-            background: rgba(255, 255, 255, 0.12);
-            color: #FFF;
-            border: 1px solid var(--border);
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1.05rem;
-            font-weight: 700;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            transition: background 0.2s;
-        }
-
-        .btn-details:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        /* 3. شبكة المحتوى (الأفلام والمسلسلات) */
         .content-wrap {
             padding: 0 48px 48px 48px;
             flex-grow: 1;
@@ -266,9 +239,6 @@
         }
 
         .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             margin: 36px 0 18px 0;
         }
 
@@ -302,13 +272,11 @@
             border-radius: 12px;
             overflow: hidden;
             cursor: pointer;
-            position: relative;
-            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+            transition: transform 0.25s, box-shadow 0.25s;
         }
 
         .movie-card:hover {
             transform: translateY(-8px);
-            border-color: rgba(255, 34, 40, 0.5);
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
         }
 
@@ -317,7 +285,6 @@
             height: 260px;
             object-fit: cover;
             display: block;
-            background: #151316;
         }
 
         .card-info {
@@ -345,7 +312,7 @@
             font-weight: 700;
         }
 
-        /* 4. صفحة المسلسل وتفاصيل الحلقات (Demir TV Style) */
+        /* صفحة تفاصيل المسلسل وقائمة الحلقات */
         #details-view {
             display: none;
             position: fixed;
@@ -379,12 +346,6 @@
             border-radius: 20px;
             font-weight: 700;
             cursor: pointer;
-            backdrop-filter: blur(10px);
-            transition: background 0.2s;
-        }
-
-        .details-back-btn:hover {
-            background: var(--primary);
         }
 
         .seasons-bar {
@@ -404,33 +365,20 @@
             font-size: 0.95rem;
             font-weight: 700;
             cursor: pointer;
-            transition: background 0.2s, color 0.2s, border-color 0.2s;
             white-space: nowrap;
         }
 
-        .season-btn.active, .season-btn:hover {
+        .season-btn.active {
             background: var(--accent-yellow);
             color: #000;
             border-color: var(--accent-yellow);
-        }
-
-        .episodes-title-bar {
-            padding: 24px 48px 12px 48px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .episodes-title-bar h3 {
-            font-size: 1.3rem;
-            font-weight: 800;
         }
 
         .episodes-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
-            padding: 0 48px;
+            padding: 20px 48px;
         }
 
         .episode-card {
@@ -439,25 +387,35 @@
             border-radius: 10px;
             overflow: hidden;
             cursor: pointer;
-            transition: transform 0.2s, border-color 0.2s;
+            transition: transform 0.2s;
         }
 
         .episode-card:hover {
             transform: translateY(-4px);
-            border-color: var(--primary);
         }
 
         .episode-thumb-wrap {
             position: relative;
             width: 100%;
             height: 160px;
-            background: #151316;
         }
 
         .episode-thumb-wrap img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .ep-badge-num {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #FFF;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
         }
 
         .ep-play-overlay {
@@ -488,29 +446,6 @@
             font-weight: bold;
         }
 
-        .ep-badge-num {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #FFF;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-
-        .ep-badge-time {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #FFF;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-        }
-
         .episode-info {
             padding: 12px;
         }
@@ -521,24 +456,59 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        /* 3. نافذة مشغل الفيديو السينمائي الأصلي (Demir TV Player Modal) */
+        #player-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 200;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .player-top-bar {
+            width: 90%;
+            max-width: 1100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .player-media-title {
+            font-size: 1.2rem;
+            font-weight: 800;
             color: var(--text-main);
         }
 
-        .episode-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 6px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+        .btn-close-player {
+            background: var(--primary);
+            color: #FFF;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .artplayer-container {
+            width: 90%;
+            max-width: 1100px;
+            height: 75vh;
+            border-radius: 12px;
             overflow: hidden;
-            line-height: 1.4;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--border);
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. الهيدر الفخم -->
     <header>
         <div class="nav-left">
             <div class="brand-logo" onclick="location.reload()">
@@ -558,7 +528,6 @@
         </div>
     </header>
 
-    <!-- 2. بنر العرض الرئيسي السينمائي -->
     <div class="hero-banner" id="heroBanner">
         <div class="hero-overlay"></div>
         <div class="hero-content">
@@ -567,16 +536,14 @@
                 <span class="badge-year" id="heroYear">2026</span>
                 <span class="badge-type" id="heroType">مسلسل</span>
             </div>
-            <h1 class="hero-title" id="heroTitle">جاري تحميل أحدث العروض...</h1>
+            <h1 class="hero-title" id="heroTitle">جاري التحميل...</h1>
             <p class="hero-overview" id="heroDesc">استمتع بتجربة سينمائية متكاملة داخل ديسكورد مع أحدث الأفلام والمسلسلات بجودة عالية.</p>
             <div class="hero-buttons">
-                <button class="btn-play-primary" id="heroPlayBtn">▶ ابدأ الحلقة الأولى</button>
-                <button class="btn-details" id="heroDetailsBtn">ℹ التفاصيل</button>
+                <button class="btn-play-primary" id="heroPlayBtn">▶ ابدأ المشاهدة</button>
             </div>
         </div>
     </div>
 
-    <!-- 3. قائمة الأفلام والمسلسلات -->
     <main class="content-wrap">
         <div class="section-header">
             <h2 id="sectionTitle">الرائج الآن</h2>
@@ -586,7 +553,7 @@
         </div>
     </main>
 
-    <!-- 4. صفحة المسلسل والحلقات الفاخرة (Demir TV Style) -->
+    <!-- صفحة تفاصيل المسلسل والمواسم -->
     <div id="details-view">
         <div class="details-hero" id="detailsHero">
             <div class="hero-overlay"></div>
@@ -598,29 +565,28 @@
                     <span class="badge-year" id="detailsYear">2026</span>
                     <span class="badge-type" id="detailsSeasonsCount">8 مواسم</span>
                 </div>
-                <p class="hero-overview" id="detailsOverview">وصف المسلسل وقصته بالعربي...</p>
+                <p class="hero-overview" id="detailsOverview">قصة العمل...</p>
             </div>
         </div>
 
-        <div class="seasons-bar" id="seasonsBar">
-            <!-- أزرار المواسم تظهر هنا ديناميكياً -->
-        </div>
+        <div class="seasons-bar" id="seasonsBar"></div>
+        <div class="episodes-grid" id="episodesGrid"></div>
+    </div>
 
-        <div class="episodes-title-bar">
-            <h3>قائمة الحلقات</h3>
-            <span id="episodesCountBadge" style="color:var(--text-muted); font-size:0.9rem;"></span>
+    <!-- نافذة المشغل الأصلي (Native Video Player) -->
+    <div id="player-modal">
+        <div class="player-top-bar">
+            <div class="player-media-title" id="playerTitle">تشغيل...</div>
+            <button class="btn-close-player" onclick="destroyPlayer()">إغلاق ✕</button>
         </div>
-
-        <div class="episodes-grid" id="episodesGrid">
-            <!-- كروت الحلقات المصغرة تظهر هنا ديناميكياً -->
-        </div>
+        <div class="artplayer-container" id="artplayer"></div>
     </div>
 
     <script>
         let allItems = [];
         let currentDetailSeries = null;
+        let art = null;
 
-        // جلب المحتوى الرائج
         async function loadTrending() {
             try {
                 const res = await fetch('/api/trending');
@@ -631,11 +597,10 @@
                     renderCards(allItems);
                 }
             } catch (err) {
-                console.error("فشل الجلب:", err);
+                console.error("خطأ:", err);
             }
         }
 
-        // إعداد البنر العلوي الضخم
         function setupHero(item) {
             const isTv = item.media_type === 'tv' || (!item.title && item.name);
             const title = item.title || item.name;
@@ -646,16 +611,14 @@
             banner.style.backgroundImage = `url('/api/image?path=${encodeURIComponent(item.backdrop_path)}&size=original')`;
 
             document.getElementById('heroTitle').innerText = title;
-            document.getElementById('heroDesc').innerText = item.overview || 'عمل مشوق يستحق المشاهدة الآن.';
+            document.getElementById('heroDesc').innerText = item.overview || 'قصة مشوقة وتفاصيل ممتعة.';
             document.getElementById('heroRating').innerText = `⭐ ${rating}`;
             document.getElementById('heroYear').innerText = year;
             document.getElementById('heroType').innerText = isTv ? 'مسلسل' : 'فيلم';
 
             document.getElementById('heroPlayBtn').onclick = () => openItem(item);
-            document.getElementById('heroDetailsBtn').onclick = () => openItem(item);
         }
 
-        // رسم كروت المحتوى
         function renderCards(items) {
             const grid = document.getElementById('moviesGrid');
             grid.innerHTML = '';
@@ -683,20 +646,15 @@
             });
         }
 
-        // فتح العمل (إذا كان مسلسل يفتح صفحة الحلقات والمواسم)
         async function openItem(item) {
             const isTv = item.media_type === 'tv' || (!item.title && item.name);
-            
             if (isTv) {
-                // فتح صفحة تفاصيل المسلسل والحلقات (Demir TV Style)
                 showSeriesDetails(item.id);
             } else {
-                // فتح الفيلم فوراً
-                alert(`🎬 جاري فتح فيلم: ${item.title || item.name}`);
+                launchNativePlayer(item.id, false, 1, 1, item.title || item.name);
             }
         }
 
-        // عرض تفاصيل المسلسل والحلقات
         async function showSeriesDetails(tvId) {
             const view = document.getElementById('details-view');
             view.style.display = 'block';
@@ -713,9 +671,8 @@
                 document.getElementById('detailsRating').innerText = `⭐ ${(data.vote_average || 8).toFixed(1)}`;
                 document.getElementById('detailsYear').innerText = (data.first_air_date || '').split('-')[0];
                 document.getElementById('detailsSeasonsCount').innerText = `${data.number_of_seasons || 1} مواسم`;
-                document.getElementById('detailsOverview').innerText = data.overview || 'قصة وتفاصيل المسلسل...';
+                document.getElementById('detailsOverview').innerText = data.overview || 'قصة المسلسل...';
 
-                // رسم شريط المواسم
                 const seasonsBar = document.getElementById('seasonsBar');
                 seasonsBar.innerHTML = '';
                 const seasons = (data.seasons || []).filter(s => s.season_number > 0);
@@ -736,21 +693,18 @@
                     loadSeasonEpisodes(tvId, seasons[0].season_number);
                 }
             } catch (err) {
-                console.error("فشل جلب تفاصيل المسلسل:", err);
+                console.error(err);
             }
         }
 
-        // جلب حلقات الموسم ورسمها ككروت مصغرة
         async function loadSeasonEpisodes(tvId, seasonNum) {
             const grid = document.getElementById('episodesGrid');
-            grid.innerHTML = '<p style="color:var(--text-muted)">جاري تحميل الحلقات...</p>';
+            grid.innerHTML = '<p style="color:var(--text-muted)">جاري جلب الحلقات...</p>';
 
             try {
                 const res = await fetch(`/api/tv/season?id=${tvId}&season=${seasonNum}`);
                 const data = await res.json();
                 grid.innerHTML = '';
-
-                document.getElementById('episodesCountBadge').innerText = `${data.episodes ? data.episodes.length : 0} حلقة`;
 
                 (data.episodes || []).forEach(ep => {
                     const card = document.createElement('div');
@@ -763,26 +717,78 @@
                         <div class="episode-thumb-wrap">
                             <img src="${thumb}" alt="${ep.name}" loading="lazy">
                             <span class="ep-badge-num">${ep.episode_number}</span>
-                            <span class="ep-badge-time">${ep.runtime ? ep.runtime + ' دقيقة' : '00:45:00'}</span>
                             <div class="ep-play-overlay">
                                 <div class="play-circle">▶</div>
                             </div>
                         </div>
                         <div class="episode-info">
                             <div class="episode-name">${ep.name || `الحلقة ${ep.episode_number}`}</div>
-                            <div class="episode-desc">${ep.overview || 'لا يوجد ملخص متاح لهذه الحلقة.'}</div>
                         </div>
                     `;
 
+                    // تشغيل الحلقة في المشغل الأصلي مباشرة
                     card.onclick = () => {
-                        alert(`🍿 تشغيل: ${currentDetailSeries.name} - الموسم ${seasonNum} - الحلقة ${ep.episode_number}`);
+                        launchNativePlayer(tvId, true, seasonNum, ep.episode_number, `${currentDetailSeries.name} - م${seasonNum} ح${ep.episode_number}`);
                     };
 
                     grid.appendChild(card);
                 });
             } catch (err) {
-                console.error("فشل جلب الحلقات:", err);
+                console.error(err);
             }
+        }
+
+        // تشغيل الفيديو عبر Artplayer الأصلي (بدون إعلانات وبدون شاشة سوداء داخل ديسكورد)
+        async function launchNativePlayer(id, isTv, season, episode, title) {
+            document.getElementById('playerTitle').innerText = title;
+            document.getElementById('player-modal').style.display = 'flex';
+
+            try {
+                const res = await fetch(`/api/stream/source?id=${id}&isTv=${isTv}&season=${season}&episode=${episode}`);
+                const data = await res.json();
+                const sourceUrl = data.sources[0].url;
+
+                if (art) {
+                    art.destroy();
+                }
+
+                art = new Artplayer({
+                    container: '#artplayer',
+                    url: sourceUrl,
+                    type: 'm3u8',
+                    customType: {
+                        m3u8: function (video, url) {
+                            if (Hls.isSupported()) {
+                                const hls = new Hls();
+                                hls.loadSource(url);
+                                hls.attachMedia(video);
+                            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                                video.src = url;
+                            }
+                        },
+                    },
+                    autoplay: true,
+                    playbackRate: true,
+                    aspectRatio: true,
+                    setting: true,
+                    fullscreen: true,
+                    fullscreenWeb: true,
+                    theme: '#FF2228',
+                    icons: {
+                        state: '<div class="play-circle" style="width:60px;height:60px;font-size:1.6rem;">▶</div>'
+                    }
+                });
+            } catch (err) {
+                console.error("خطأ تشغيل المشغل:", err);
+            }
+        }
+
+        function destroyPlayer() {
+            if (art) {
+                art.destroy();
+                art = null;
+            }
+            document.getElementById('player-modal').style.display = 'none';
         }
 
         function closeDetails() {
@@ -795,7 +801,6 @@
             document.getElementById('sectionTitle').innerText = type === 'tv' ? 'المسلسلات' : 'الأفلام';
         }
 
-        // البحث
         document.getElementById('searchInput').addEventListener('keypress', async (e) => {
             if (e.key === 'Enter') {
                 const q = e.target.value.trim();
