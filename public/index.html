@@ -1,9 +1,11 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orbit Cinema</title>
+    <!-- تضمين سكريبت ديسكورد الرسمي المعتمد -->
+    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1.1.0/output/index.js"></script>
     <style>
         :root {
             --primary: #FF2228;
@@ -93,86 +95,117 @@
             background: var(--primary-hover);
         }
 
-        #player-wrapper {
+        /* نافذة التحكم بالعرض */
+        #media-modal {
             display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            background: #000;
-            padding: 16px 28px 24px 28px;
-            border-bottom: 2px solid var(--border-color);
+            height: 100%;
+            background: rgba(15, 10, 13, 0.92);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
-        .player-bar {
+        .modal-box {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            max-width: 520px;
+            width: 100%;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            color: var(--text-main);
+            font-weight: bold;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.3rem;
+            cursor: pointer;
+        }
+
+        .modal-controls {
+            display: flex;
+            flex-direction: column;
             gap: 12px;
         }
 
-        .player-title {
-            color: var(--text-main);
-            font-size: 1.15rem;
-            font-weight: bold;
-        }
-
-        .player-actions {
+        .control-row {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
         }
 
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .control-group label {
-            font-size: 0.85rem;
+        .control-row label {
             color: var(--text-muted);
+            font-size: 0.95rem;
         }
 
-        .player-actions select {
-            background: var(--card-bg);
+        .control-row select {
+            background: var(--bg-surface);
             color: var(--text-main);
             border: 1px solid var(--border-color);
-            padding: 7px 12px;
-            border-radius: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
             outline: none;
             font-weight: bold;
-            font-size: 0.9rem;
+            width: 60%;
         }
 
-        .close-player-btn {
+        .launch-btn {
             background: var(--primary);
-            border: none;
             color: var(--text-main);
-            padding: 7px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .close-player-btn:hover {
-            background: var(--primary-hover);
-        }
-
-        .video-container {
-            width: 100%;
-            height: 65vh;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-            background: #050505;
-        }
-
-        /* iframe نظيف تماماً وبدون أي وسوم sandbox تسبب حظر المشغل */
-        iframe {
-            width: 100%;
-            height: 100%;
+            padding: 14px;
+            border-radius: 10px;
             border: none;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1.05rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(255, 34, 40, 0.4);
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 8px;
+        }
+
+        .launch-btn:hover {
+            background: var(--primary-hover);
+            transform: scale(1.02);
+        }
+
+        .copy-btn {
+            background: var(--bg-surface);
+            color: var(--text-muted);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .copy-btn:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
         }
 
         .content-area {
@@ -265,44 +298,38 @@
         </div>
     </header>
 
-    <div id="player-wrapper">
-        <div class="player-bar">
-            <div id="playerTitle" class="player-title">جاري التشغيل...</div>
-            
-            <div class="player-actions">
-                <div id="tvOptions" style="display:none; gap:10px;">
-                    <div class="control-group">
+    <!-- نافذة العرض المنبثقة -->
+    <div id="media-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div id="modalTitle" class="modal-title">عنوان العمل</div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+
+            <div class="modal-controls">
+                <div id="seriesFields" style="display:none; flex-direction:column; gap:10px;">
+                    <div class="control-row">
                         <label>الموسم:</label>
-                        <select id="seasonSelect" onchange="refreshStream()"></select>
+                        <select id="seasonSelect" onchange="updateLinks()"></select>
                     </div>
-                    <div class="control-group">
+                    <div class="control-row">
                         <label>الحلقة:</label>
-                        <select id="episodeSelect" onchange="refreshStream()"></select>
+                        <select id="episodeSelect" onchange="updateLinks()"></select>
                     </div>
                 </div>
 
-                <div class="control-group">
+                <div class="control-row">
                     <label>السيرفر:</label>
-                    <select id="serverSelect" onchange="refreshStream()">
-                        <option value="vidsrc_in">سيرفر 1 (VidSrc In - متوافق مع ديسكورد)</option>
-                        <option value="moviesapi">سيرفر 2 (MoviesAPI - بدون حظر)</option>
-                        <option value="embed_su">سيرفر 3 (Embed.su - سريع)</option>
+                    <select id="serverSelect" onchange="updateLinks()">
+                        <option value="vidlink">سيرفر 1 (VidLink - جودة 1080p + CC)</option>
+                        <option value="embedsu">سيرفر 2 (Embed.su - ترجمة تلقائية)</option>
+                        <option value="vidsrc">سيرفر 3 (VidSrc Pro)</option>
                     </select>
                 </div>
 
-                <button class="close-player-btn" onclick="closePlayer()">إغلاق ✕</button>
+                <button class="launch-btn" onclick="startPlayback()">▶ بدء المشاهدة الفورية</button>
+                <button class="copy-btn" onclick="copyCurrentLink()">📋 نسخ الرابط للمشاركة بالروم</button>
             </div>
-        </div>
-
-        <div class="video-container">
-            <iframe 
-                id="mainIframe" 
-                src="" 
-                allowfullscreen="true" 
-                webkitallowfullscreen="true" 
-                mozallowfullscreen="true"
-                allow="autoplay; fullscreen; encrypted-media">
-            </iframe>
         </div>
     </div>
 
@@ -314,7 +341,22 @@
     </main>
 
     <script>
-        let currentMedia = { id: null, isTv: false, title: '' };
+        let discordSdk = null;
+        let activeItem = { id: null, isTv: false, title: '' };
+        let generatedStreamUrl = '';
+
+        // تهيئة ربط Discord SDK الرسمي
+        async function setupDiscord() {
+            try {
+                if (window.DiscordSDK) {
+                    discordSdk = new window.DiscordSDK.DiscordSDK();
+                    await discordSdk.ready();
+                }
+            } catch (e) {
+                console.log("Discord SDK ready bypass");
+            }
+        }
+        setupDiscord();
 
         function renderCards(items) {
             const grid = document.getElementById('moviesGrid');
@@ -330,12 +372,12 @@
                 const title = item.title || item.name;
                 const year = (item.release_date || item.first_air_date || '').split('-')[0] || '----';
                 const rating = item.vote_average ? item.vote_average.toFixed(1) : '0';
-                const posterUrl = `/api/image?path=${encodeURIComponent(item.poster_path)}`;
+                const poster = `/api/image?path=${encodeURIComponent(item.poster_path)}`;
 
                 const card = document.createElement('div');
                 card.className = 'movie-card';
                 card.innerHTML = `
-                    <img src="${posterUrl}" alt="${title}" loading="lazy">
+                    <img src="${poster}" alt="${title}" loading="lazy">
                     <div class="movie-info">
                         <div class="movie-title">${title}</div>
                         <div class="movie-meta">
@@ -345,12 +387,12 @@
                     </div>
                 `;
 
-                card.onclick = () => playInstantly(item.id, isTv, title);
+                card.onclick = () => openModal(item.id, isTv, title);
                 grid.appendChild(card);
             });
         }
 
-        async function loadMovies() {
+        async function fetchTrendingContent() {
             try {
                 const res = await fetch('/api/trending');
                 const data = await res.json();
@@ -358,7 +400,7 @@
                     renderCards(data.results);
                 }
             } catch (err) {
-                console.error("خطأ:", err);
+                console.error(err);
             }
         }
 
@@ -376,79 +418,96 @@
             }
         }
 
-        function playInstantly(id, isTv, title) {
-            currentMedia = { id, isTv, title };
-            document.getElementById('playerTitle').innerText = `🎬 تشغيل: ${title}`;
+        function openModal(id, isTv, title) {
+            activeItem = { id, isTv, title };
+            document.getElementById('modalTitle').innerText = title;
 
-            const tvOptions = document.getElementById('tvOptions');
+            const seriesBlock = document.getElementById('seriesFields');
             if (isTv) {
-                tvOptions.style.display = 'inline-flex';
-                buildTvSelectors();
+                seriesBlock.style.display = 'flex';
+                initSeriesSelectors();
             } else {
-                tvOptions.style.display = 'none';
+                seriesBlock.style.display = 'none';
             }
 
-            refreshStream();
-            document.getElementById('player-wrapper').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            updateLinks();
+            document.getElementById('media-modal').style.display = 'flex';
         }
 
-        function buildTvSelectors() {
-            const seasonSelect = document.getElementById('seasonSelect');
-            const episodeSelect = document.getElementById('episodeSelect');
+        function initSeriesSelectors() {
+            const sSelect = document.getElementById('seasonSelect');
+            const eSelect = document.getElementById('episodeSelect');
             
-            seasonSelect.innerHTML = '';
+            sSelect.innerHTML = '';
             for (let s = 1; s <= 15; s++) {
-                seasonSelect.innerHTML += `<option value="${s}">موسم ${s}</option>`;
+                sSelect.innerHTML += `<option value="${s}">الموسم ${s}</option>`;
             }
 
-            episodeSelect.innerHTML = '';
+            eSelect.innerHTML = '';
             for (let e = 1; e <= 30; e++) {
-                episodeSelect.innerHTML += `<option value="${e}">حلقة ${e}</option>`;
+                eSelect.innerHTML += `<option value="${e}">الحلقة ${e}</option>`;
             }
         }
 
-        function refreshStream() {
+        function updateLinks() {
             const server = document.getElementById('serverSelect').value;
             const season = document.getElementById('seasonSelect').value || 1;
             const episode = document.getElementById('episodeSelect').value || 1;
-            const iframe = document.getElementById('mainIframe');
 
-            let src = '';
-
-            if (currentMedia.isTv) {
-                if (server === 'vidsrc_in') {
-                    src = `https://vidsrc.in/embed/tv?tmdb=${currentMedia.id}&season=${season}&episode=${episode}`;
-                } else if (server === 'moviesapi') {
-                    src = `https://moviesapi.club/tv/${currentMedia.id}-${season}-${episode}`;
+            if (activeItem.isTv) {
+                if (server === 'vidlink') {
+                    generatedStreamUrl = `https://vidlink.pro/tv/${activeItem.id}/${season}/${episode}`;
+                } else if (server === 'embedsu') {
+                    generatedStreamUrl = `https://embed.su/embed/tv/${activeItem.id}/${season}/${episode}`;
                 } else {
-                    src = `https://embed.su/embed/tv/${currentMedia.id}/${season}/${episode}`;
+                    generatedStreamUrl = `https://vidsrc.in/embed/tv?tmdb=${activeItem.id}&season=${season}&episode=${episode}`;
                 }
             } else {
-                if (server === 'vidsrc_in') {
-                    src = `https://vidsrc.in/embed/movie?tmdb=${currentMedia.id}`;
-                } else if (server === 'moviesapi') {
-                    src = `https://moviesapi.club/movie/${currentMedia.id}`;
+                if (server === 'vidlink') {
+                    generatedStreamUrl = `https://vidlink.pro/movie/${activeItem.id}`;
+                } else if (server === 'embedsu') {
+                    generatedStreamUrl = `https://embed.su/embed/movie/${activeItem.id}`;
                 } else {
-                    src = `https://embed.su/embed/movie/${currentMedia.id}`;
+                    generatedStreamUrl = `https://vidsrc.in/embed/movie?tmdb=${activeItem.id}`;
                 }
             }
-
-            iframe.src = src;
         }
 
-        function closePlayer() {
-            const wrapper = document.getElementById('player-wrapper');
-            const iframe = document.getElementById('mainIframe');
-            iframe.src = '';
-            wrapper.style.display = 'none';
+        async function startPlayback() {
+            if (!generatedStreamUrl) return;
+
+            // 1. استخدام أمر Discord SDK الرسمي لفتح المشغل
+            try {
+                if (discordSdk && discordSdk.commands && discordSdk.commands.openExternalLink) {
+                    await discordSdk.commands.openExternalLink({ url: generatedStreamUrl });
+                    return;
+                }
+            } catch (err) {
+                console.log("Discord open link direct:", err);
+            }
+
+            // 2. الفتح التلقائي المباشر
+            window.open(generatedStreamUrl, '_blank');
+        }
+
+        function copyCurrentLink() {
+            if (!generatedStreamUrl) return;
+            navigator.clipboard.writeText(generatedStreamUrl).then(() => {
+                alert('✅ تم نسخ رابط العرض! أرسله في الروم الصوتي وابدأ المشاهدة.');
+            }).catch(() => {
+                prompt('انسخ الرابط:', generatedStreamUrl);
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('media-modal').style.display = 'none';
         }
 
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') performSearch();
         });
 
-        loadMovies();
+        fetchTrendingContent();
     </script>
 </body>
 </html>
