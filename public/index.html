@@ -93,86 +93,101 @@
             background: var(--primary-hover);
         }
 
-        #player-container {
+        /* نافذة العرض السينمائي والتحكم */
+        #playback-banner {
             display: none;
             width: 100%;
-            background: #000;
-            padding: 14px 28px 24px 28px;
+            background: linear-gradient(180deg, var(--bg-surface) 0%, #000 100%);
+            padding: 24px 28px;
             border-bottom: 2px solid var(--border-color);
+            position: relative;
         }
 
-        .player-header {
+        .banner-content {
             display: flex;
-            justify-content: space-between;
+            gap: 24px;
             align-items: center;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .banner-poster {
+            width: 130px;
+            height: 190px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .banner-details {
+            display: flex;
+            flex-direction: column;
             gap: 12px;
+            flex-grow: 1;
         }
 
-        .player-header h3 {
+        .banner-details h2 {
+            font-size: 1.4rem;
             color: var(--text-main);
-            font-size: 1.1rem;
         }
 
-        .player-controls {
+        .selectors-row {
             display: flex;
+            gap: 12px;
             align-items: center;
-            gap: 10px;
             flex-wrap: wrap;
         }
 
-        .player-controls select {
+        .selectors-row select {
             background: var(--card-bg);
             color: var(--text-main);
             border: 1px solid var(--border-color);
-            padding: 6px 12px;
+            padding: 8px 14px;
             border-radius: 6px;
             outline: none;
             font-weight: bold;
         }
 
-        .action-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
+        .play-btn {
+            background: var(--primary);
             color: var(--text-main);
-            padding: 6px 14px;
-            border-radius: 6px;
+            padding: 12px 28px;
+            border-radius: 8px;
+            border: none;
             cursor: pointer;
-            font-weight: bold;
+            font-size: 1.05rem;
+            font-weight: 800;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            transition: background 0.2s, border-color 0.2s;
+            gap: 8px;
+            width: fit-content;
+            box-shadow: 0 4px 15px rgba(255, 34, 40, 0.4);
+            transition: background 0.2s, transform 0.1s;
         }
 
-        .action-btn:hover {
-            background: var(--card-hover);
-            border-color: var(--primary);
-        }
-
-        .close-btn {
-            background: var(--primary);
-            border: none;
-            color: var(--text-main);
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .close-btn:hover {
+        .play-btn:hover {
             background: var(--primary-hover);
+            transform: scale(1.03);
         }
 
-        iframe {
-            width: 100%;
-            height: 65vh;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            background: #000;
+        .close-banner-btn {
+            position: absolute;
+            top: 16px;
+            left: 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
         }
 
+        .close-banner-btn:hover {
+            color: var(--primary);
+        }
+
+        /* شبكة المحتوى */
         .content-area {
             padding: 24px 28px;
             flex-grow: 1;
@@ -263,31 +278,37 @@
         </div>
     </header>
 
-    <div id="player-container">
-        <div class="player-header">
-            <h3 id="currentPlayingTitle">جاري المشاهدة...</h3>
-            
-            <div class="player-controls">
-                <div id="tvControls" style="display:none; gap:10px;">
-                    <label>الموسم: 
-                        <select id="seasonSelect" onchange="updateStream()"></select>
+    <!-- واجهة اختيار وتشغيل العمل المختارة -->
+    <div id="playback-banner">
+        <button class="close-banner-btn" onclick="closeBanner()">✕ إغلاق</button>
+        <div class="banner-content">
+            <img id="bannerPoster" class="banner-poster" src="" alt="Poster">
+            <div class="banner-details">
+                <h2 id="bannerTitle">عنوان العمل</h2>
+                <div class="selectors-row">
+                    <label>السيرفر:
+                        <select id="serverSelect" onchange="updateDirectLink()">
+                            <option value="vidlink">سيرفر 1 (VidLink)</option>
+                            <option value="vidsrc_icu">سيرفر 2 (VidSrc)</option>
+                            <option value="autoembed">سيرفر 3 (AutoEmbed)</option>
+                        </select>
                     </label>
-                    <label>الحلقة: 
-                        <select id="episodeSelect" onchange="updateStream()"></select>
-                    </label>
+
+                    <div id="tvSelectors" style="display:none; gap:10px;">
+                        <label>الموسم: 
+                            <select id="seasonSelect" onchange="updateDirectLink()"></select>
+                        </label>
+                        <label>الحلقة: 
+                            <select id="episodeSelect" onchange="updateDirectLink()"></select>
+                        </label>
+                    </div>
                 </div>
 
-                <a id="externalWatchBtn" href="#" target="_blank" class="action-btn">مشاهدة بملء الشاشة ↗</a>
-                <button class="close-btn" onclick="closePlayer()">إغلاق المشغل ✕</button>
+                <a id="streamLaunchBtn" href="#" target="_blank" class="play-btn">
+                    ▶ تشغيل الآن بدقة عالية
+                </a>
             </div>
         </div>
-
-        <iframe 
-            id="videoFrame" 
-            src="" 
-            allowfullscreen 
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture">
-        </iframe>
     </div>
 
     <main class="content-area">
@@ -298,7 +319,7 @@
     </main>
 
     <script>
-        let currentMedia = { id: null, isTv: false };
+        let currentMedia = { id: null, isTv: false, title: '', poster: '' };
 
         function renderCards(items) {
             const grid = document.getElementById('moviesGrid');
@@ -314,11 +335,12 @@
                 const title = item.title || item.name;
                 const year = (item.release_date || item.first_air_date || '').split('-')[0] || '----';
                 const rating = item.vote_average ? item.vote_average.toFixed(1) : '0';
+                const posterUrl = `/api/image?path=${encodeURIComponent(item.poster_path)}`;
 
                 const card = document.createElement('div');
                 card.className = 'movie-card';
                 card.innerHTML = `
-                    <img src="/api/image?path=${encodeURIComponent(item.poster_path)}" alt="${title}" loading="lazy">
+                    <img src="${posterUrl}" alt="${title}" loading="lazy">
                     <div class="movie-info">
                         <div class="movie-title">${title}</div>
                         <div class="movie-meta">
@@ -328,7 +350,7 @@
                     </div>
                 `;
 
-                card.onclick = () => playMedia(item.id, isTv, title);
+                card.onclick = () => selectMedia(item.id, isTv, title, posterUrl);
                 grid.appendChild(card);
             });
         }
@@ -341,7 +363,7 @@
                     renderCards(data.results);
                 }
             } catch (err) {
-                console.error(err);
+                console.error("خطأ جلب البيانات:", err);
             }
         }
 
@@ -359,23 +381,22 @@
             }
         }
 
-        function playMedia(id, isTv, title) {
-            currentMedia = { id, isTv };
-            const playerContainer = document.getElementById('player-container');
-            const titleElem = document.getElementById('currentPlayingTitle');
-            const tvControls = document.getElementById('tvControls');
+        function selectMedia(id, isTv, title, poster) {
+            currentMedia = { id, isTv, title, poster };
+            
+            document.getElementById('bannerTitle').innerText = title;
+            document.getElementById('bannerPoster').src = poster;
 
-            titleElem.innerText = `🎬 تشغيل: ${title}`;
-
+            const tvSelectors = document.getElementById('tvSelectors');
             if (isTv) {
-                tvControls.style.display = 'inline-flex';
+                tvSelectors.style.display = 'inline-flex';
                 setupTvSelectors();
             } else {
-                tvControls.style.display = 'none';
+                tvSelectors.style.display = 'none';
             }
 
-            updateStream();
-            playerContainer.style.display = 'block';
+            updateDirectLink();
+            document.getElementById('playback-banner').style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -394,31 +415,37 @@
             }
         }
 
-        function updateStream() {
+        function updateDirectLink() {
+            const server = document.getElementById('serverSelect').value;
             const season = document.getElementById('seasonSelect').value || 1;
             const episode = document.getElementById('episodeSelect').value || 1;
-            const frame = document.getElementById('videoFrame');
-            const extBtn = document.getElementById('externalWatchBtn');
+            const launchBtn = document.getElementById('streamLaunchBtn');
 
-            // رابط المشغل عبر وسيط ديسكورد الداخلي
-            const internalPath = currentMedia.isTv 
-                ? `/vidlink/tv/${currentMedia.id}/${season}/${episode}`
-                : `/vidlink/movie/${currentMedia.id}`;
+            let url = '';
 
-            // رابط البث المباشر المخصص للفتح الخارجي
-            const directUrl = currentMedia.isTv 
-                ? `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}`
-                : `https://vidlink.pro/movie/${currentMedia.id}`;
+            if (currentMedia.isTv) {
+                if (server === 'vidlink') {
+                    url = `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}`;
+                } else if (server === 'vidsrc_icu') {
+                    url = `https://vidsrc.icu/embed/tv/${currentMedia.id}/${season}/${episode}`;
+                } else {
+                    url = `https://player.autoembed.cc/embed/tv/${currentMedia.id}/${season}/${episode}`;
+                }
+            } else {
+                if (server === 'vidlink') {
+                    url = `https://vidlink.pro/movie/${currentMedia.id}`;
+                } else if (server === 'vidsrc_icu') {
+                    url = `https://vidsrc.icu/embed/movie/${currentMedia.id}`;
+                } else {
+                    url = `https://player.autoembed.cc/embed/movie/${currentMedia.id}`;
+                }
+            }
 
-            frame.src = internalPath;
-            extBtn.href = directUrl;
+            launchBtn.href = url;
         }
 
-        function closePlayer() {
-            const playerContainer = document.getElementById('player-container');
-            const frame = document.getElementById('videoFrame');
-            frame.src = '';
-            playerContainer.style.display = 'none';
+        function closeBanner() {
+            document.getElementById('playback-banner').style.display = 'none';
         }
 
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
