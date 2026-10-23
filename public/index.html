@@ -34,7 +34,6 @@
             min-height: 100vh;
         }
 
-        /* شريط التنقل العلوي */
         header {
             display: flex;
             align-items: center;
@@ -54,7 +53,6 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            letter-spacing: 0.5px;
             text-shadow: 0 0 12px rgba(255, 34, 40, 0.4);
         }
 
@@ -74,17 +72,10 @@
             color: var(--text-main);
             outline: none;
             font-size: 0.95rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .search-box input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 8px rgba(255, 34, 40, 0.3);
-        }
-
-        .search-box input::placeholder {
-            color: var(--text-muted);
-            opacity: 0.7;
         }
 
         .search-box button {
@@ -95,18 +86,13 @@
             color: var(--text-main);
             font-weight: 700;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
+            transition: background 0.2s;
         }
 
         .search-box button:hover {
             background: var(--primary-hover);
         }
 
-        .search-box button:active {
-            transform: scale(0.97);
-        }
-
-        /* نافذة مشغل الفيديو */
         #player-container {
             display: none;
             width: 100%;
@@ -120,11 +106,29 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .player-header h3 {
             color: var(--text-main);
             font-size: 1.1rem;
+        }
+
+        .tv-controls {
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tv-controls select {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            outline: none;
+            font-weight: bold;
         }
 
         .close-btn {
@@ -135,7 +139,6 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            transition: background 0.2s;
         }
 
         .close-btn:hover {
@@ -147,10 +150,8 @@
             height: 65vh;
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
 
-        /* شبكة عرض المحتوى */
         .content-area {
             padding: 24px 28px;
             flex-grow: 1;
@@ -187,14 +188,13 @@
             border-radius: 12px;
             overflow: hidden;
             cursor: pointer;
-            transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
+            transition: transform 0.25s, background 0.25s;
         }
 
         .movie-card:hover {
             transform: translateY(-6px);
             background: var(--card-hover);
             border-color: var(--primary);
-            box-shadow: 0 10px 22px rgba(255, 34, 40, 0.18);
         }
 
         .movie-card img {
@@ -202,6 +202,7 @@
             height: 240px;
             object-fit: cover;
             display: block;
+            background: #1a1a1a;
         }
 
         .movie-info {
@@ -244,10 +245,179 @@
     <div id="player-container">
         <div class="player-header">
             <h3 id="currentPlayingTitle">جاري المشاهدة...</h3>
+            
+            <div id="tvControls" class="tv-controls">
+                <label>الموسم: 
+                    <select id="seasonSelect" onchange="changeEpisode()"></select>
+                </label>
+                <label>الحلقة: 
+                    <select id="episodeSelect" onchange="changeEpisode()"></select>
+                </label>
+            </div>
+
             <button class="close-btn" onclick="closePlayer()">إغلاق المشغل ✕</button>
         </div>
-        <iframe id="videoFrame" src="" allowfullscreen></iframe>
+        <iframe id="videoFrame" src="" allowfullscreen allow="autoplay; encrypted-media; fullscreen"></iframe>
     </div>
 
     <main class="content-area">
-        <h2 class="section-title" id="gridTitle">الأفلام والمسلس
+        <h2 class="section-title" id="gridTitle">الأفلام والمسلسلات الرائجة الآن</h2>
+        <div class="movies-grid" id="moviesGrid">
+            <p style="color:var(--text-muted); padding:20px;">جاري تحميل العروض...</p>
+        </div>
+    </main>
+
+    <script>
+        const TMDB_KEY = '2da39b910e34eeb919f6f92b25637d43';
+        let currentMedia = { id: null, isTv: false };
+
+        function renderCards(items) {
+            const grid = document.getElementById('moviesGrid');
+            grid.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                grid.innerHTML = '<p style="color:var(--text-muted)">لا توجد نتائج متاحة.</p>';
+                return;
+            }
+
+            items.filter(i => i.media_type !== 'person' && i.poster_path).forEach(item => {
+                const isTv = item.media_type === 'tv' || (!item.title && item.name);
+                const title = item.title || item.name;
+                const year = (item.release_date || item.first_air_date || '').split('-')[0] || '----';
+                const rating = item.vote_average ? item.vote_average.toFixed(1) : '0';
+
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+                card.innerHTML = `
+                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${title}">
+                    <div class="movie-info">
+                        <div class="movie-title">${title}</div>
+                        <div class="movie-meta">
+                            <span>${isTv ? 'مسلسل' : 'فيلم'} • ${year}</span>
+                            <span class="rating-badge">⭐ ${rating}</span>
+                        </div>
+                    </div>
+                `;
+
+                card.onclick = () => playMedia(item.id, isTv, title);
+                grid.appendChild(card);
+            });
+        }
+
+        async function loadMovies() {
+            // 1. فحص إذا كانت البيانات محقونة مسبقاً من السيرفر
+            if (window.INITIAL_MOVIES && Array.isArray(window.INITIAL_MOVIES) && window.INITIAL_MOVIES.length > 0) {
+                renderCards(window.INITIAL_MOVIES);
+                return;
+            }
+
+            // 2. المحاولة من مسار السيرفر الداخلي
+            try {
+                const res = await fetch('/api/trending');
+                const data = await res.json();
+                if (data.results && data.results.length > 0) {
+                    renderCards(data.results);
+                    return;
+                }
+            } catch (e) {
+                console.log("Internal fetch failed, fallback to direct TMDB API");
+            }
+
+            // 3. المحاولة الاحتياطية المباشرة من TMDB
+            try {
+                const res = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_KEY}&language=ar-SA`);
+                const data = await res.json();
+                if (data.results) {
+                    renderCards(data.results);
+                }
+            } catch (err) {
+                document.getElementById('moviesGrid').innerHTML = '<p style="color:var(--text-muted)">تعذر جلب البيانات، يرجى المحاولة لاحقاً.</p>';
+            }
+        }
+
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            document.getElementById('gridTitle').innerText = `نتائج البحث عن: ${query}`;
+            
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                if (data.results && data.results.length > 0) {
+                    renderCards(data.results);
+                    return;
+                }
+            } catch (err) {}
+
+            try {
+                const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=ar-SA`);
+                const data = await res.json();
+                if (data.results) renderCards(data.results);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function playMedia(id, isTv, title) {
+            currentMedia = { id, isTv };
+            const playerContainer = document.getElementById('player-container');
+            const frame = document.getElementById('videoFrame');
+            const titleElem = document.getElementById('currentPlayingTitle');
+            const tvControls = document.getElementById('tvControls');
+
+            titleElem.innerText = `🎬 تشغيل: ${title}`;
+
+            if (isTv) {
+                tvControls.style.display = 'flex';
+                setupTvSelectors();
+                frame.src = `https://vidlink.pro/tv/${id}/1/1`;
+            } else {
+                tvControls.style.display = 'none';
+                frame.src = `https://vidlink.pro/movie/${id}`;
+            }
+
+            playerContainer.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setupTvSelectors() {
+            const seasonSelect = document.getElementById('seasonSelect');
+            seasonSelect.innerHTML = '';
+            for (let s = 1; s <= 10; s++) {
+                seasonSelect.innerHTML += `<option value="${s}">الموسم ${s}</option>`;
+            }
+            populateEpisodes(25);
+        }
+
+        function populateEpisodes(count) {
+            const episodeSelect = document.getElementById('episodeSelect');
+            episodeSelect.innerHTML = '';
+            for (let e = 1; e <= count; e++) {
+                episodeSelect.innerHTML += `<option value="${e}">الحلقة ${e}</option>`;
+            }
+        }
+
+        function changeEpisode() {
+            const season = document.getElementById('seasonSelect').value;
+            const episode = document.getElementById('episodeSelect').value;
+            const frame = document.getElementById('videoFrame');
+            frame.src = `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}`;
+        }
+
+        function closePlayer() {
+            const playerContainer = document.getElementById('player-container');
+            const frame = document.getElementById('videoFrame');
+            frame.src = '';
+            playerContainer.style.display = 'none';
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+
+        // تشغيل التحميل التلقائي فور فتح الصفحة
+        loadMovies();
+    </script>
+</body>
+</html>
