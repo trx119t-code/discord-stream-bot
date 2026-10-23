@@ -8,7 +8,9 @@ const {
     EmbedBuilder, 
     ActionRowBuilder, 
     ButtonBuilder, 
-    ButtonStyle 
+    ButtonStyle,
+    REST,
+    Routes
 } = require('discord.js');
 
 const client = new Client({
@@ -22,7 +24,7 @@ const client = new Client({
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 
-// إعداد خادم ويب Express لتقديم صفحة الـ Activity
+// إعداد خادم الويب
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -35,11 +37,43 @@ app.listen(PORT, () => {
     console.log(`🌐 خادم الويب للنشاط يعمل على المنفذ: ${PORT}`);
 });
 
-client.on('ready', () => {
+// تسجيل أمر تشغيل النشاط (Entry Point Command) لدى ديسكورد
+async function registerActivityCommand() {
+    const rest = new REST({ version: '10' }).setToken(BOT_TOKEN);
+    try {
+        console.log('⏳ جاري تسجيل أمر تشغيل النشاط لدى ديسكورد...');
+        await rest.put(
+            Routes.applicationCommands(client.user.id),
+            {
+                body: [
+                    {
+                        name: 'cinema',
+                        description: 'تشغيل سينما ديسكورد التفاعلية',
+                        type: 4 // نوع Entry Point لتشغيل الـ Activity
+                    }
+                ]
+            }
+        );
+        console.log('✅ تم تسجيل Entry Point Command بنجاح!');
+    } catch (error) {
+        console.error('خطأ أثناء تسجيل الأمر:', error);
+    }
+}
+
+client.on('ready', async () => {
     console.log(`✅ البوت متصل وجاهز: ${client.user.tag}`);
+    await registerActivityCommand();
 });
 
-// استقبال أمر التشغيل dplay
+// التفاعل عند الضغط على أيقونة النشاط أو أمره
+client.on('interactionCreate', async (interaction) => {
+    // تشغيل النشاط عند الضغط عليه
+    if (interaction.isCommand() && interaction.commandName === 'cinema') {
+        // ديسكورد سيتولى فتح الـ Activity تلقائياً
+    }
+});
+
+// استقبال أمر التشغيل dplay بالشات
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
@@ -52,11 +86,10 @@ client.on('messageCreate', async (message) => {
 
         const embed = new EmbedBuilder()
             .setColor('#5865f2')
-            .setTitle('🍿 سينما ديسكورد التفاعلية (Discord Activity)')
-            .setDescription(`جاهز للعرض داخل: <#${voiceChannel.id}>\n\nاضغط على الزر بالأسفل لتشغيل السينما مباشرة في الروم الصوتي مع أصدقائك بدون فتح متصفح خارجي أو مشاركة شاشة!`)
+            .setTitle('🍿 سينما ديسكورد التفاعلية (Orbit Cinema)')
+            .setDescription(`جاهز للعرض داخل: <#${voiceChannel.id}>\n\nاضغط على الزر بالأسفل لتشغيل النشاط مباشرة داخل الروم الصوتي!`)
             .setImage('https://image.tmdb.org/t/p/w1280/8Z8W5pE2u4bX9QG5N0oP7jH8XvW.jpg');
 
-        // رابط تشغيل النشاط داخل الروم الصوتي
         const activityUrl = `https://discord.com/activities/${client.user.id}/${voiceChannel.id}`;
 
         const row = new ActionRowBuilder().addComponents(
