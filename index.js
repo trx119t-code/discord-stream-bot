@@ -14,6 +14,7 @@ const {
     StringSelectMenuOptionBuilder
 } = require('discord.js');
 const axios = require('axios');
+const http = require('http');
 const { 
     joinVoiceChannel, 
     createAudioPlayer, 
@@ -29,7 +30,7 @@ const client = new Client({
     ]
 });
 
-// قراءة المفاتيح بأمان من ملف .env
+// قراءة المفاتيح بأمان
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
@@ -48,7 +49,7 @@ client.on('messageCreate', async (message) => {
         const embed = new EmbedBuilder()
             .setColor('#2b2d31')
             .setTitle('🏠 اختر نوع المحتوى')
-            .setDescription('**ماذا تريد أن تشاهد اليوم؟**\n\nCinema Bot • TV');
+            .setDescription('**ماذا تريد أن تشاهد اليوم؟**\n\nCinema Bot • Multi-Servers');
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -70,7 +71,7 @@ client.on('messageCreate', async (message) => {
 
 // معالجة التفاعلات
 client.on('interactionCreate', async (interaction) => {
-    // 1. زر فتح نافذة البحث
+    // 1. فتح نافذة البحث
     if (interaction.isButton()) {
         if (interaction.customId === 'btn_series') {
             const modal = new ModalBuilder()
@@ -104,7 +105,7 @@ client.on('interactionCreate', async (interaction) => {
             await interaction.showModal(modal);
         }
 
-        // أزرار التحكم
+        // أزرار التحكم الصوتي
         if (interaction.customId === 'btn_play_pause') {
             if (player.state.status === AudioPlayerStatus.Playing) {
                 player.pause();
@@ -122,14 +123,14 @@ client.on('interactionCreate', async (interaction) => {
                 player.stop();
                 connection.destroy();
                 connection = null;
-                await interaction.reply({ content: '🛑 تم إغلاق جلسة السينما ومغادرة الروم الصوتي.', ephemeral: true });
+                await interaction.reply({ content: '🛑 تم إغلاق جلسة السينما ومغادرة الروم.', ephemeral: true });
             } else {
                 await interaction.reply({ content: '🛑 البوت ليس متصلاً بروم صوتي.', ephemeral: true });
             }
         }
     }
 
-    // 2. إرسال الاسم والبحث في TMDB (عرض قائمة النتائج المطابقة)
+    // 2. البحث وعرض النتائج
     if (interaction.isModalSubmit()) {
         const isSeries = interaction.customId === 'modal_series_search';
         const type = isSeries ? 'tv' : 'movie';
@@ -185,9 +186,9 @@ client.on('interactionCreate', async (interaction) => {
         }
     }
 
-    // 3. التفاعل مع القوائم المنسدلة
+    // 3. التفاعل مع القوائم
     if (interaction.isStringSelectMenu()) {
-        // (أ) اختيار مسلسل -> جلب وعرض قائمة المواسم
+        // (أ) اختيار مسلسل -> قائمة المواسم
         if (interaction.customId === 'menu_select_series') {
             await interaction.deferUpdate();
             const seriesId = interaction.values[0];
@@ -227,7 +228,7 @@ client.on('interactionCreate', async (interaction) => {
             }
         }
 
-        // (ب) اختيار موسم -> جلب وعرض قائمة الحلقات
+        // (ب) اختيار موسم -> قائمة الحلقات
         if (interaction.customId.startsWith('menu_season_')) {
             await interaction.deferUpdate();
             const seriesId = interaction.customId.replace('menu_season_', '');
@@ -268,7 +269,7 @@ client.on('interactionCreate', async (interaction) => {
             }
         }
 
-        // (ج) اختيار حلقة أو فيلم -> تشغيل لوحة التحكم وعرض المشاهدة
+        // (ج) اختيار حلقة أو فيلم -> تجهيز روابط السيرفرات المتعددة
         if (interaction.customId.startsWith('menu_episode_') || interaction.customId === 'menu_select_movie') {
             const memberVoice = interaction.member.voice.channel;
 
@@ -281,7 +282,8 @@ client.on('interactionCreate', async (interaction) => {
 
             await interaction.deferUpdate();
 
-            let title, posterUrl, year, rating, overview, streamUrl, details;
+            let title, posterUrl, year, rating, overview, details;
+            let server1Url, server2Url, server3Url;
 
             if (interaction.customId.startsWith('menu_episode_')) {
                 // مسلسل
@@ -299,7 +301,11 @@ client.on('interactionCreate', async (interaction) => {
                 rating = series.vote_average ? series.vote_average.toFixed(1) : '8.0';
                 overview = series.overview ? `\n\n> *${series.overview.slice(0, 160)}...*` : '';
                 details = `🎞️ **الحلقة:** ${episodeNumber}  •  📼 **الموسم:** ${seasonNumber}`;
-                streamUrl = `https://vidsrc.to/embed/tv/${seriesId}/${seasonNumber}/${episodeNumber}`;
+
+                // روابط السيرفرات المختلفة للمسلسل
+                server1Url = `https://vidsrc.to/embed/tv/${seriesId}/${seasonNumber}/${episodeNumber}`;
+                server2Url = `https://embed.su/embed/tv/${seriesId}/${seasonNumber}/${episodeNumber}`;
+                server3Url = `https://player.autoembed.cc/embed/tv/${seriesId}/${seasonNumber}/${episodeNumber}`;
 
             } else {
                 // فيلم
@@ -315,7 +321,11 @@ client.on('interactionCreate', async (interaction) => {
                 rating = movie.vote_average ? movie.vote_average.toFixed(1) : '8.0';
                 overview = movie.overview ? `\n\n> *${movie.overview.slice(0, 160)}...*` : '';
                 details = `🎞️ **فيلم كامل**`;
-                streamUrl = `https://vidsrc.to/embed/movie/${movieId}`;
+
+                // روابط السيرفرات المختلفة للفيلم
+                server1Url = `https://vidsrc.to/embed/movie/${movieId}`;
+                server2Url = `https://embed.su/embed/movie/${movieId}`;
+                server3Url = `https://player.autoembed.cc/embed/movie/${movieId}`;
             }
 
             // انضمام للروم الصوتي
@@ -329,14 +339,23 @@ client.on('interactionCreate', async (interaction) => {
             const playerEmbed = new EmbedBuilder()
                 .setColor('#2b2d31')
                 .setTitle(`🎬 ${title}`)
-                .setDescription(`🟢 **جاهز للمشاهدة في:** <#${memberVoice.id}>\n\n${details}\n📅 **${year}** • ⭐ **${rating}**${overview}\n\n🍿 *اضغط على الزر بالأسفل لفتح شاشة العرض المباشرة.*`)
+                .setDescription(`🟢 **جاهز للمشاهدة في:** <#${memberVoice.id}>\n\n${details}\n📅 **${year}** • ⭐ **${rating}**${overview}\n\n🍿 **اختر السيرفر المناسب للمشاهدة:**\n*(سيرفر 2 ممتاز للترجمة العربية وجودة 1080p)*`)
                 .setThumbnail(posterUrl);
 
-            const watchRow = new ActionRowBuilder().addComponents(
+            // أزرار السيرفرات الثلاثة
+            const serversRow = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
-                    .setLabel('🍿 فتح شاشة العرض (Watch Now)')
+                    .setLabel('⚡ سيرفر 1 (VidSrc)')
                     .setStyle(ButtonStyle.Link)
-                    .setURL(streamUrl)
+                    .setURL(server1Url),
+                new ButtonBuilder()
+                    .setLabel('🌟 سيرفر 2 (1080p + ترجمة)')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(server2Url),
+                new ButtonBuilder()
+                    .setLabel('🛡️ سيرفر 3 (AutoEmbed)')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(server3Url)
             );
 
             const controlRow1 = new ActionRowBuilder().addComponents(
@@ -355,12 +374,17 @@ client.on('interactionCreate', async (interaction) => {
 
             await interaction.editReply({
                 embeds: [playerEmbed],
-                components: [watchRow, controlRow1, controlRow2]
+                components: [serversRow, controlRow1, controlRow2]
             });
         }
     }
 });
 
+// منفذ الاستماع لـ Render
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Cinema Bot is Running 24/7!');
+});
+server.listen(process.env.PORT || 3000);
+
 client.login(BOT_TOKEN);
-const http = require('http');
-http.createServer((req, res) => res.end('Bot is running!')).listen(process.env.PORT || 3000);
