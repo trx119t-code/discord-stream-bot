@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orbit Cinema</title>
+    <!-- تضمين مكتبة Discord SDK المعتمدة لفتح الروابط الخارجية -->
+    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1.1.0/output/index.js"></script>
     <style>
         :root {
             --primary: #FF2228;
@@ -93,7 +95,6 @@
             background: var(--primary-hover);
         }
 
-        /* نافذة العرض السينمائي والتحكم */
         #playback-banner {
             display: none;
             width: 100%;
@@ -158,7 +159,6 @@
             cursor: pointer;
             font-size: 1.05rem;
             font-weight: 800;
-            text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -170,6 +170,10 @@
         .play-btn:hover {
             background: var(--primary-hover);
             transform: scale(1.03);
+        }
+
+        .play-btn:active {
+            transform: scale(0.98);
         }
 
         .close-banner-btn {
@@ -187,7 +191,6 @@
             color: var(--primary);
         }
 
-        /* شبكة المحتوى */
         .content-area {
             padding: 24px 28px;
             flex-grow: 1;
@@ -278,7 +281,6 @@
         </div>
     </header>
 
-    <!-- واجهة اختيار وتشغيل العمل المختارة -->
     <div id="playback-banner">
         <button class="close-banner-btn" onclick="closeBanner()">✕ إغلاق</button>
         <div class="banner-content">
@@ -287,7 +289,7 @@
                 <h2 id="bannerTitle">عنوان العمل</h2>
                 <div class="selectors-row">
                     <label>السيرفر:
-                        <select id="serverSelect" onchange="updateDirectLink()">
+                        <select id="serverSelect">
                             <option value="vidlink">سيرفر 1 (VidLink)</option>
                             <option value="vidsrc_icu">سيرفر 2 (VidSrc)</option>
                             <option value="autoembed">سيرفر 3 (AutoEmbed)</option>
@@ -296,17 +298,17 @@
 
                     <div id="tvSelectors" style="display:none; gap:10px;">
                         <label>الموسم: 
-                            <select id="seasonSelect" onchange="updateDirectLink()"></select>
+                            <select id="seasonSelect"></select>
                         </label>
                         <label>الحلقة: 
-                            <select id="episodeSelect" onchange="updateDirectLink()"></select>
+                            <select id="episodeSelect"></select>
                         </label>
                     </div>
                 </div>
 
-                <a id="streamLaunchBtn" href="#" target="_blank" class="play-btn">
+                <button id="streamLaunchBtn" onclick="launchStream()" class="play-btn">
                     ▶ تشغيل الآن بدقة عالية
-                </a>
+                </button>
             </div>
         </div>
     </div>
@@ -319,7 +321,21 @@
     </main>
 
     <script>
+        let discordSdk = null;
         let currentMedia = { id: null, isTv: false, title: '', poster: '' };
+
+        // تهيئة اتصال ديسكورد لتمكين فتح النوافذ الخارجية
+        async function setupDiscord() {
+            try {
+                if (window.DiscordSDK) {
+                    discordSdk = new window.DiscordSDK.DiscordSDK();
+                    await discordSdk.ready();
+                }
+            } catch (err) {
+                console.log("Discord SDK mode:", err);
+            }
+        }
+        setupDiscord();
 
         function renderCards(items) {
             const grid = document.getElementById('moviesGrid');
@@ -363,7 +379,7 @@
                     renderCards(data.results);
                 }
             } catch (err) {
-                console.error("خطأ جلب البيانات:", err);
+                console.error("خطأ:", err);
             }
         }
 
@@ -395,7 +411,6 @@
                 tvSelectors.style.display = 'none';
             }
 
-            updateDirectLink();
             document.getElementById('playback-banner').style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -415,14 +430,13 @@
             }
         }
 
-        function updateDirectLink() {
+        // تشغيل الرابط عبر بروتوكول ديسكورد الرسمي
+        async function launchStream() {
             const server = document.getElementById('serverSelect').value;
             const season = document.getElementById('seasonSelect').value || 1;
             const episode = document.getElementById('episodeSelect').value || 1;
-            const launchBtn = document.getElementById('streamLaunchBtn');
 
             let url = '';
-
             if (currentMedia.isTv) {
                 if (server === 'vidlink') {
                     url = `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}`;
@@ -441,7 +455,18 @@
                 }
             }
 
-            launchBtn.href = url;
+            // محاولة الفتح عبر ديسكورد SDK الرسمي
+            try {
+                if (discordSdk && discordSdk.commands && discordSdk.commands.openExternalLink) {
+                    await discordSdk.commands.openExternalLink({ url: url });
+                    return;
+                }
+            } catch (e) {
+                console.log("Discord open link fallback:", e);
+            }
+
+            // بديل للمتصفحات العادية
+            window.open(url, '_blank');
         }
 
         function closeBanner() {
