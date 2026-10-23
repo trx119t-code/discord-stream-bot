@@ -4,15 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orbit TV</title>
-    <!-- تضمين خط Tajawal -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- مكتبة Hls.js و Artplayer -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
-
     <style>
         :root {
             --primary: #FF2228;
@@ -30,7 +21,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             user-select: none;
         }
 
@@ -456,6 +447,7 @@
             text-overflow: ellipsis;
         }
 
+        /* نافذة المشغل المدمج الصافي داخل ديسكورد */
         #player-modal {
             display: none;
             position: fixed;
@@ -493,7 +485,7 @@
             cursor: pointer;
         }
 
-        .artplayer-container {
+        .native-video-box {
             width: 90%;
             max-width: 1100px;
             height: 75vh;
@@ -501,6 +493,13 @@
             overflow: hidden;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
             border: 1px solid var(--border);
+            background: #000;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            outline: none;
         }
     </style>
 </head>
@@ -569,18 +568,20 @@
         <div class="episodes-grid" id="episodesGrid"></div>
     </div>
 
+    <!-- نافذة المشغل المدمج -->
     <div id="player-modal">
         <div class="player-top-bar">
             <div class="player-media-title" id="playerTitle">تشغيل...</div>
             <button class="btn-close-player" onclick="destroyPlayer()">إغلاق ✕</button>
         </div>
-        <div class="artplayer-container" id="artplayer"></div>
+        <div class="native-video-box">
+            <video id="nativeVideo" controls autoplay playsinline></video>
+        </div>
     </div>
 
     <script>
         let allItems = [];
         let currentDetailSeries = null;
-        let art = null;
 
         async function loadTrending() {
             try {
@@ -732,70 +733,25 @@
             }
         }
 
-        // تشغيل الفيديو عبر Artplayer الأصلي مع دعم الترجمة العربية المدمجة
         async function launchNativePlayer(id, isTv, season, episode, title) {
             document.getElementById('playerTitle').innerText = title;
             document.getElementById('player-modal').style.display = 'flex';
 
+            const video = document.getElementById('nativeVideo');
             try {
                 const res = await fetch(`/api/stream/source?id=${id}&isTv=${isTv}&season=${season}&episode=${episode}`);
                 const data = await res.json();
-                const sourceUrl = data.sources && data.sources.length > 0 ? data.sources[0].url : '';
-                const subtitleTrack = (data.subtitles && data.subtitles.length > 0) ? data.subtitles[0] : null;
-
-                if (art) {
-                    art.destroy();
-                }
-
-                art = new Artplayer({
-                    container: '#artplayer',
-                    url: sourceUrl,
-                    type: 'm3u8',
-                    customType: {
-                        m3u8: function (video, url) {
-                            if (Hls.isSupported()) {
-                                const hls = new Hls({
-                                    enableWorker: true,
-                                    lowLatencyMode: true
-                                });
-                                hls.loadSource(url);
-                                hls.attachMedia(video);
-                            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                                video.src = url;
-                            }
-                        },
-                    },
-                    autoplay: true,
-                    playbackRate: true,
-                    aspectRatio: true,
-                    setting: true,
-                    fullscreen: true,
-                    fullscreenWeb: true,
-                    theme: '#FF2228',
-                    subtitle: subtitleTrack ? {
-                        url: subtitleTrack.url,
-                        type: 'vtt',
-                        style: {
-                            color: '#FFF',
-                            fontSize: '24px',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.9)'
-                        },
-                        encoding: 'utf-8'
-                    } : {},
-                    icons: {
-                        state: '<div class="play-circle" style="width:60px;height:60px;font-size:1.6rem;">▶</div>'
-                    }
-                });
+                video.src = data.videoSource;
+                video.play();
             } catch (err) {
-                console.error("خطأ تشغيل المشغل:", err);
+                console.error("فشل التشغيل:", err);
             }
         }
 
         function destroyPlayer() {
-            if (art) {
-                art.destroy();
-                art = null;
-            }
+            const video = document.getElementById('nativeVideo');
+            video.pause();
+            video.src = '';
             document.getElementById('player-modal').style.display = 'none';
         }
 
