@@ -24,6 +24,7 @@ const client = new Client({
 });
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
+const TMDB_API_KEY = '2da39b910e34eeb919f6f92b25637d43';
 
 function getHtmlFile() {
     const paths = [
@@ -36,13 +37,42 @@ function getHtmlFile() {
     return null;
 }
 
-// إعداد خادم الويب مع ترويسات الأمان الخاصة بأنشطة ديسكورد
-const server = http.createServer((req, res) => {
-    // إعطاء الإذن الكامل لديسكورد بعرض الصفحة داخل الـ iframe
+// خادم الويب المدمج لخدمة الواجهة وبيانات الأفلام
+const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Content-Security-Policy', "frame-ancestors 'self' https://discord.com https://*.discord.com;");
-    res.removeHeader('X-Frame-Options');
 
+    // نقطة جلب الأفلام الرائجة
+    if (req.url.startsWith('/api/trending')) {
+        try {
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
+            const data = await tmdbRes.text();
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(data);
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ results: [] }));
+        }
+        return;
+    }
+
+    // نقطة البحث عن فيلم أو مسلسل
+    if (req.url.startsWith('/api/search')) {
+        const urlParams = new URL(req.url, `http://${req.headers.host}`);
+        const q = urlParams.searchParams.get('q') || '';
+        try {
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=ar-SA`);
+            const data = await tmdbRes.text();
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(data);
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ results: [] }));
+        }
+        return;
+    }
+
+    // تقديم صفحة HTML
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
