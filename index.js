@@ -26,6 +26,7 @@ const client = new Client({
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const TMDB_API_KEY = '2da39b910e34eeb919f6f92b25637d43';
 
+// دالة العثور على ملف HTML
 function getHtmlFile() {
     const paths = [
         path.join(__dirname, 'public', 'index.html'),
@@ -37,8 +38,9 @@ function getHtmlFile() {
     return null;
 }
 
+// خادم الويب الشامل
 const server = http.createServer(async (req, res) => {
-    // إعطاء أذونات كاملة لديسكورد ومشغلات الفيديو للعمل بدون شاشة سوداء
+    // ترويسات الصلاحيات الكاملة لمشغلات الفيديو وديسكورد
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader(
         'Content-Security-Policy', 
@@ -48,7 +50,7 @@ const server = http.createServer(async (req, res) => {
     );
     res.removeHeader('X-Frame-Options');
 
-    // بروكسي الصور
+    // 1. وسيط الصور (بروكسي لحل حجب ديسكورد للبوسترات)
     if (req.url.startsWith('/api/image')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const imgPath = urlParams.searchParams.get('path');
@@ -71,7 +73,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // البحث
+    // 2. وسيط البحث عن الأفلام والمسلسلات
     if (req.url.startsWith('/api/search')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const q = urlParams.searchParams.get('q') || '';
@@ -87,7 +89,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // الرائج
+    // 3. وسيط جلب الأعمال الرائجة
     if (req.url.startsWith('/api/trending')) {
         try {
             const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
@@ -101,7 +103,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // تقديم الواجهة
+    // 4. تقديم صفحة الواجهة index.html
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -117,6 +119,7 @@ server.listen(PORT, () => {
     console.log(`🌐 خادم الويب يعمل على المنفذ: ${PORT}`);
 });
 
+// تسجيل أمر Activity لدى ديسكورد
 async function registerActivityCommand() {
     if (!client.user) return;
     const rest = new REST({ version: '10' }).setToken(BOT_TOKEN);
@@ -147,6 +150,7 @@ client.on('ready', async () => {
     await registerActivityCommand();
 });
 
+// أمر التشغيل داخل الشات
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
@@ -158,7 +162,7 @@ client.on('messageCreate', async (message) => {
         }
 
         const embed = new EmbedBuilder()
-            .setColor('#5865f2')
+            .setColor('#FF2228')
             .setTitle('🍿 سينما ديسكورد التفاعلية (Orbit Cinema)')
             .setDescription(`جاهز للعرض داخل: <#${voiceChannel.id}>\n\nاضغط على الزر بالأسفل لبدء المشاهدة مباشرة داخل الديسكورد!`)
             .setImage('https://image.tmdb.org/t/p/w1280/8Z8W5pE2u4bX9QG5N0oP7jH8XvW.jpg');
