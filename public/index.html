@@ -132,6 +132,25 @@
             font-weight: bold;
         }
 
+        .action-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--card-hover);
+            border-color: var(--primary);
+        }
+
         .close-btn {
             background: var(--primary);
             border: none;
@@ -249,14 +268,6 @@
             <h3 id="currentPlayingTitle">جاري المشاهدة...</h3>
             
             <div class="player-controls">
-                <label>السيرفر:
-                    <select id="serverSelect" onchange="updateStream()">
-                        <option value="vidlink">سيرفر 1 (VidLink)</option>
-                        <option value="vidsrc_icu">سيرفر 2 (VidSrc)</option>
-                        <option value="autoembed">سيرفر 3 (AutoEmbed)</option>
-                    </select>
-                </label>
-
                 <div id="tvControls" style="display:none; gap:10px;">
                     <label>الموسم: 
                         <select id="seasonSelect" onchange="updateStream()"></select>
@@ -266,15 +277,15 @@
                     </label>
                 </div>
 
+                <a id="externalWatchBtn" href="#" target="_blank" class="action-btn">مشاهدة بملء الشاشة ↗</a>
                 <button class="close-btn" onclick="closePlayer()">إغلاق المشغل ✕</button>
             </div>
         </div>
-        <!-- تم فك الحظر وإلغاء التتبع ليعمل البث مباشرة -->
+
         <iframe 
             id="videoFrame" 
             src="" 
             allowfullscreen 
-            referrerpolicy="no-referrer"
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture">
         </iframe>
     </div>
@@ -306,7 +317,6 @@
 
                 const card = document.createElement('div');
                 card.className = 'movie-card';
-                // تحميل الصورة عبر البروكسي الداخلي لحل مشكلة الحجب في ديسكورد
                 card.innerHTML = `
                     <img src="/api/image?path=${encodeURIComponent(item.poster_path)}" alt="${title}" loading="lazy">
                     <div class="movie-info">
@@ -331,7 +341,7 @@
                     renderCards(data.results);
                 }
             } catch (err) {
-                console.error("فشل جلب الأفلام:", err);
+                console.error(err);
             }
         }
 
@@ -385,32 +395,23 @@
         }
 
         function updateStream() {
-            const server = document.getElementById('serverSelect').value;
             const season = document.getElementById('seasonSelect').value || 1;
             const episode = document.getElementById('episodeSelect').value || 1;
             const frame = document.getElementById('videoFrame');
+            const extBtn = document.getElementById('externalWatchBtn');
 
-            let url = '';
+            // رابط المشغل عبر وسيط ديسكورد الداخلي
+            const internalPath = currentMedia.isTv 
+                ? `/vidlink/tv/${currentMedia.id}/${season}/${episode}`
+                : `/vidlink/movie/${currentMedia.id}`;
 
-            if (currentMedia.isTv) {
-                if (server === 'vidlink') {
-                    url = `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}`;
-                } else if (server === 'vidsrc_icu') {
-                    url = `https://vidsrc.icu/embed/tv/${currentMedia.id}/${season}/${episode}`;
-                } else {
-                    url = `https://player.autoembed.cc/embed/tv/${currentMedia.id}/${season}/${episode}`;
-                }
-            } else {
-                if (server === 'vidlink') {
-                    url = `https://vidlink.pro/movie/${currentMedia.id}`;
-                } else if (server === 'vidsrc_icu') {
-                    url = `https://vidsrc.icu/embed/movie/${currentMedia.id}`;
-                } else {
-                    url = `https://player.autoembed.cc/embed/movie/${currentMedia.id}`;
-                }
-            }
+            // رابط البث المباشر المخصص للفتح الخارجي
+            const directUrl = currentMedia.isTv 
+                ? `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}`
+                : `https://vidlink.pro/movie/${currentMedia.id}`;
 
-            frame.src = url;
+            frame.src = internalPath;
+            extBtn.href = directUrl;
         }
 
         function closePlayer() {
