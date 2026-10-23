@@ -25,27 +25,31 @@ const client = new Client({
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 
-// دالة العثور على ملف index.html سواء كان داخل public أو في المجلد الرئيسي
 function getHtmlFile() {
-    const p1 = path.join(__dirname, 'public', 'index.html');
-    const p2 = path.join(__dirname, 'index.html');
-    if (fs.existsSync(p1)) return fs.readFileSync(p1);
-    if (fs.existsSync(p2)) return fs.readFileSync(p2);
+    const paths = [
+        path.join(__dirname, 'public', 'index.html'),
+        path.join(__dirname, 'index.html')
+    ];
+    for (const p of paths) {
+        if (fs.existsSync(p)) return fs.readFileSync(p);
+    }
     return null;
 }
 
-// خادم الويب
+// إعداد خادم الويب مع ترويسات الأمان الخاصة بأنشطة ديسكورد
 const server = http.createServer((req, res) => {
-    // إعطاء الإذن لديسكورد بعرض الصفحة بدون قيود
+    // إعطاء الإذن الكامل لديسكورد بعرض الصفحة داخل الـ iframe
     res.setHeader('Access-Control-Allow-Origin', '*');
-    
+    res.setHeader('Content-Security-Policy', "frame-ancestors 'self' https://discord.com https://*.discord.com;");
+    res.removeHeader('X-Frame-Options');
+
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(htmlData);
     } else {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end('<body style="background:#0f1015;color:#fff;text-align:center;padding-top:50px;"><h1>⚠️ ملف index.html غير موجود في المشروع</h1></body>');
+        res.end('<body style="background:#0f1015;color:#fff;text-align:center;padding-top:50px;"><h1>⚠️ ملف index.html غير موجود</h1></body>');
     }
 });
 
@@ -54,7 +58,6 @@ server.listen(PORT, () => {
     console.log(`🌐 خادم الويب يعمل على المنفذ: ${PORT}`);
 });
 
-// تسجيل أمر تشغيل النشاط لدى ديسكورد
 async function registerActivityCommand() {
     if (!client.user) return;
     const rest = new REST({ version: '10' }).setToken(BOT_TOKEN);
@@ -98,7 +101,7 @@ client.on('messageCreate', async (message) => {
         const embed = new EmbedBuilder()
             .setColor('#5865f2')
             .setTitle('🍿 سينما ديسكورد التفاعلية (Orbit Cinema)')
-            .setDescription(`جاهز للعرض داخل: <#${voiceChannel.id}>\n\nاضغط على الزر بالأسفل لتشغيل السينما!`)
+            .setDescription(`جاهز للعرض داخل: <#${voiceChannel.id}>\n\nاضغط على الزر بالأسفل لبدء المشاهدة مباشرة داخل الديسكورد!`)
             .setImage('https://image.tmdb.org/t/p/w1280/8Z8W5pE2u4bX9QG5N0oP7jH8XvW.jpg');
 
         const activityUrl = `https://discord.com/activities/${client.user.id}/${voiceChannel.id}`;
