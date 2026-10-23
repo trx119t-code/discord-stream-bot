@@ -3,7 +3,6 @@ require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
-const https = require('https');
 const { 
     Client, 
     GatewayIntentBits, 
@@ -39,22 +38,22 @@ function getHtmlFile() {
 }
 
 const server = http.createServer(async (req, res) => {
-    // إزالة قيود الأمان ليعمل المحتوى داخل ديسكورد
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.removeHeader('X-Frame-Options');
 
-    // بروكسي الصور
+    // 1. بروكسي الصور عالية الدقة والبوسترات
     if (req.url.startsWith('/api/image')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const imgPath = urlParams.searchParams.get('path');
+        const size = urlParams.searchParams.get('size') || 'w500';
         if (!imgPath) {
             res.writeHead(400);
             return res.end();
         }
         try {
-            const imgRes = await fetch(`https://image.tmdb.org/t/p/w500${imgPath}`);
+            const imgRes = await fetch(`https://image.tmdb.org/t/p/${size}${imgPath}`);
             const buffer = await imgRes.arrayBuffer();
             res.writeHead(200, {
                 'Content-Type': imgRes.headers.get('content-type') || 'image/jpeg',
@@ -68,7 +67,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // البحث
+    // 2. البحث
     if (req.url.startsWith('/api/search')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const q = urlParams.searchParams.get('q') || '';
@@ -84,7 +83,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // الأفلام الرائجة
+    // 3. الرائج
     if (req.url.startsWith('/api/trending')) {
         try {
             const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
@@ -98,7 +97,40 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // عرض الواجهة الرئيسية
+    // 4. جلب تفاصيل المسلسل ومواسمه
+    if (req.url.startsWith('/api/tv/details')) {
+        const urlParams = new URL(req.url, `http://${req.headers.host}`);
+        const id = urlParams.searchParams.get('id');
+        try {
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=ar-SA`);
+            const data = await tmdbRes.text();
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(data);
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({}));
+        }
+        return;
+    }
+
+    // 5. جلب حلقات موسم محدد بالصور والتفاصيل
+    if (req.url.startsWith('/api/tv/season')) {
+        const urlParams = new URL(req.url, `http://${req.headers.host}`);
+        const id = urlParams.searchParams.get('id');
+        const seasonNum = urlParams.searchParams.get('season') || '1';
+        try {
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/${seasonNum}?api_key=${TMDB_API_KEY}&language=ar-SA`);
+            const data = await tmdbRes.text();
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(data);
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ episodes: [] }));
+        }
+        return;
+    }
+
+    // تقديم صفحة HTML
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
