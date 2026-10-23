@@ -107,7 +107,7 @@
             align-items: center;
             margin-bottom: 12px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
         }
 
         .player-header h3 {
@@ -115,13 +115,14 @@
             font-size: 1.1rem;
         }
 
-        .tv-controls {
-            display: none;
+        .player-controls {
+            display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .tv-controls select {
+        .player-controls select {
             background: var(--card-bg);
             color: var(--text-main);
             border: 1px solid var(--border-color);
@@ -150,6 +151,7 @@
             height: 65vh;
             border: 1px solid var(--border-color);
             border-radius: 12px;
+            background: #000;
         }
 
         .content-area {
@@ -246,18 +248,35 @@
         <div class="player-header">
             <h3 id="currentPlayingTitle">جاري المشاهدة...</h3>
             
-            <div id="tvControls" class="tv-controls">
-                <label>الموسم: 
-                    <select id="seasonSelect" onchange="changeEpisode()"></select>
+            <div class="player-controls">
+                <label>السيرفر:
+                    <select id="serverSelect" onchange="updateStream()">
+                        <option value="vidlink">سيرفر 1 (VidLink)</option>
+                        <option value="vidsrc_icu">سيرفر 2 (VidSrc)</option>
+                        <option value="autoembed">سيرفر 3 (AutoEmbed)</option>
+                    </select>
                 </label>
-                <label>الحلقة: 
-                    <select id="episodeSelect" onchange="changeEpisode()"></select>
-                </label>
-            </div>
 
-            <button class="close-btn" onclick="closePlayer()">إغلاق المشغل ✕</button>
+                <div id="tvControls" style="display:none; gap:10px;">
+                    <label>الموسم: 
+                        <select id="seasonSelect" onchange="updateStream()"></select>
+                    </label>
+                    <label>الحلقة: 
+                        <select id="episodeSelect" onchange="updateStream()"></select>
+                    </label>
+                </div>
+
+                <button class="close-btn" onclick="closePlayer()">إغلاق المشغل ✕</button>
+            </div>
         </div>
-        <iframe id="videoFrame" src="" allowfullscreen allow="autoplay; encrypted-media; fullscreen"></iframe>
+        <!-- تم فك الحظر وإلغاء التتبع ليعمل البث مباشرة -->
+        <iframe 
+            id="videoFrame" 
+            src="" 
+            allowfullscreen 
+            referrerpolicy="no-referrer"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture">
+        </iframe>
     </div>
 
     <main class="content-area">
@@ -268,7 +287,6 @@
     </main>
 
     <script>
-        const TMDB_KEY = '2da39b910e34eeb919f6f92b25637d43';
         let currentMedia = { id: null, isTv: false };
 
         function renderCards(items) {
@@ -288,8 +306,9 @@
 
                 const card = document.createElement('div');
                 card.className = 'movie-card';
+                // تحميل الصورة عبر البروكسي الداخلي لحل مشكلة الحجب في ديسكورد
                 card.innerHTML = `
-                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${title}">
+                    <img src="/api/image?path=${encodeURIComponent(item.poster_path)}" alt="${title}" loading="lazy">
                     <div class="movie-info">
                         <div class="movie-title">${title}</div>
                         <div class="movie-meta">
@@ -305,33 +324,14 @@
         }
 
         async function loadMovies() {
-            // 1. فحص إذا كانت البيانات محقونة مسبقاً من السيرفر
-            if (window.INITIAL_MOVIES && Array.isArray(window.INITIAL_MOVIES) && window.INITIAL_MOVIES.length > 0) {
-                renderCards(window.INITIAL_MOVIES);
-                return;
-            }
-
-            // 2. المحاولة من مسار السيرفر الداخلي
             try {
                 const res = await fetch('/api/trending');
                 const data = await res.json();
                 if (data.results && data.results.length > 0) {
                     renderCards(data.results);
-                    return;
-                }
-            } catch (e) {
-                console.log("Internal fetch failed, fallback to direct TMDB API");
-            }
-
-            // 3. المحاولة الاحتياطية المباشرة من TMDB
-            try {
-                const res = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_KEY}&language=ar-SA`);
-                const data = await res.json();
-                if (data.results) {
-                    renderCards(data.results);
                 }
             } catch (err) {
-                document.getElementById('moviesGrid').innerHTML = '<p style="color:var(--text-muted)">تعذر جلب البيانات، يرجى المحاولة لاحقاً.</p>';
+                console.error("فشل جلب الأفلام:", err);
             }
         }
 
@@ -340,69 +340,77 @@
             if (!query) return;
 
             document.getElementById('gridTitle').innerText = `نتائج البحث عن: ${query}`;
-            
             try {
                 const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
                 const data = await res.json();
-                if (data.results && data.results.length > 0) {
-                    renderCards(data.results);
-                    return;
-                }
-            } catch (err) {}
-
-            try {
-                const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=ar-SA`);
-                const data = await res.json();
                 if (data.results) renderCards(data.results);
-            } catch (e) {
-                console.error(e);
+            } catch (err) {
+                console.error(err);
             }
         }
 
         function playMedia(id, isTv, title) {
             currentMedia = { id, isTv };
             const playerContainer = document.getElementById('player-container');
-            const frame = document.getElementById('videoFrame');
             const titleElem = document.getElementById('currentPlayingTitle');
             const tvControls = document.getElementById('tvControls');
 
             titleElem.innerText = `🎬 تشغيل: ${title}`;
 
             if (isTv) {
-                tvControls.style.display = 'flex';
+                tvControls.style.display = 'inline-flex';
                 setupTvSelectors();
-                frame.src = `https://vidlink.pro/tv/${id}/1/1`;
             } else {
                 tvControls.style.display = 'none';
-                frame.src = `https://vidlink.pro/movie/${id}`;
             }
 
+            updateStream();
             playerContainer.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function setupTvSelectors() {
             const seasonSelect = document.getElementById('seasonSelect');
+            const episodeSelect = document.getElementById('episodeSelect');
+            
             seasonSelect.innerHTML = '';
-            for (let s = 1; s <= 10; s++) {
+            for (let s = 1; s <= 15; s++) {
                 seasonSelect.innerHTML += `<option value="${s}">الموسم ${s}</option>`;
             }
-            populateEpisodes(25);
-        }
 
-        function populateEpisodes(count) {
-            const episodeSelect = document.getElementById('episodeSelect');
             episodeSelect.innerHTML = '';
-            for (let e = 1; e <= count; e++) {
+            for (let e = 1; e <= 30; e++) {
                 episodeSelect.innerHTML += `<option value="${e}">الحلقة ${e}</option>`;
             }
         }
 
-        function changeEpisode() {
-            const season = document.getElementById('seasonSelect').value;
-            const episode = document.getElementById('episodeSelect').value;
+        function updateStream() {
+            const server = document.getElementById('serverSelect').value;
+            const season = document.getElementById('seasonSelect').value || 1;
+            const episode = document.getElementById('episodeSelect').value || 1;
             const frame = document.getElementById('videoFrame');
-            frame.src = `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}`;
+
+            let url = '';
+
+            if (currentMedia.isTv) {
+                if (server === 'vidlink') {
+                    url = `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}`;
+                } else if (server === 'vidsrc_icu') {
+                    url = `https://vidsrc.icu/embed/tv/${currentMedia.id}/${season}/${episode}`;
+                } else {
+                    url = `https://player.autoembed.cc/embed/tv/${currentMedia.id}/${season}/${episode}`;
+                }
+            } else {
+                if (server === 'vidlink') {
+                    url = `https://vidlink.pro/movie/${currentMedia.id}`;
+                } else if (server === 'vidsrc_icu') {
+                    url = `https://vidsrc.icu/embed/movie/${currentMedia.id}`;
+                } else {
+                    url = `https://player.autoembed.cc/embed/movie/${currentMedia.id}`;
+                }
+            }
+
+            frame.src = url;
         }
 
         function closePlayer() {
@@ -416,7 +424,6 @@
             if (e.key === 'Enter') performSearch();
         });
 
-        // تشغيل التحميل التلقائي فور فتح الصفحة
         loadMovies();
     </script>
 </body>
