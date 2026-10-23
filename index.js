@@ -3,6 +3,7 @@ require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
+const https = require('https');
 const { 
     Client, 
     GatewayIntentBits, 
@@ -38,10 +39,13 @@ function getHtmlFile() {
 }
 
 const server = http.createServer(async (req, res) => {
+    // إزالة قيود الأمان ليعمل المحتوى داخل ديسكورد
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', '*');
     res.removeHeader('X-Frame-Options');
 
-    // 1. بروكسي الصور لتخطي حجب ديسكورد للبوسترات
+    // بروكسي الصور
     if (req.url.startsWith('/api/image')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const imgPath = urlParams.searchParams.get('path');
@@ -64,7 +68,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 2. البحث في TMDB
+    // البحث
     if (req.url.startsWith('/api/search')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const q = urlParams.searchParams.get('q') || '';
@@ -80,7 +84,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 3. جلب الأفلام والمسلسلات الرائجة
+    // الأفلام الرائجة
     if (req.url.startsWith('/api/trending')) {
         try {
             const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
@@ -94,13 +98,9 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 4. تقديم الواجهة مع حقن معرّف البوت لتشغيل أوامر ديسكورد
-    let htmlData = getHtmlFile();
+    // عرض الواجهة الرئيسية
+    const htmlData = getHtmlFile();
     if (htmlData) {
-        const appId = client.user ? client.user.id : '';
-        const injectScript = `<script>window.DISCORD_APP_ID = "${appId}";</script>`;
-        htmlData = htmlData.replace('</head>', `${injectScript}</head>`);
-
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(htmlData);
     } else {
@@ -157,14 +157,14 @@ client.on('messageCreate', async (message) => {
         const embed = new EmbedBuilder()
             .setColor('#FF2228')
             .setTitle('🍿 سينما ديسكورد التفاعلية (Orbit Cinema)')
-            .setDescription(`جاهز للعرض داخل: <#${voiceChannel.id}>\n\nاضغط على الزر بالأسفل لبدء المشاهدة مباشرة داخل الديسكورد!`)
+            .setDescription(`جاهز للعرض داخل: <#${voiceChannel.id}>\n\nاضغط على الزر بالأسفل لبدء المشاهدة مباشرة!`)
             .setImage('https://image.tmdb.org/t/p/w1280/8Z8W5pE2u4bX9QG5N0oP7jH8XvW.jpg');
 
         const activityUrl = `https://discord.com/activities/${client.user.id}/${voiceChannel.id}`;
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
-                .setLabel('🚀 بدء المشاهدة في الديسكورد')
+                .setLabel('🚀 فتح السينما')
                 .setStyle(ButtonStyle.Link)
                 .setURL(activityUrl)
         );
