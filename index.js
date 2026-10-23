@@ -32,31 +32,17 @@ function getHtmlFile() {
         path.join(__dirname, 'index.html')
     ];
     for (const p of paths) {
-        if (fs.existsSync(p)) return fs.readFileSync(p);
+        if (fs.existsSync(p)) return fs.readFileSync(p, 'utf-8');
     }
     return null;
 }
 
-// خادم الويب المدمج لخدمة الواجهة وبيانات الأفلام
+// خادم الويب المدمج
 const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Content-Security-Policy', "frame-ancestors 'self' https://discord.com https://*.discord.com;");
 
-    // نقطة جلب الأفلام الرائجة
-    if (req.url.startsWith('/api/trending')) {
-        try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
-            const data = await tmdbRes.text();
-            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
-        } catch (err) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ results: [] }));
-        }
-        return;
-    }
-
-    // نقطة البحث عن فيلم أو مسلسل
+    // نقطة البحث المباشر
     if (req.url.startsWith('/api/search')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const q = urlParams.searchParams.get('q') || '';
@@ -72,9 +58,24 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // تقديم صفحة HTML
-    const htmlData = getHtmlFile();
+    // تقديم صفحة HTML بعد حقن بيانات الأفلام الشائعة مباشرة فيها
+    let htmlData = getHtmlFile();
     if (htmlData) {
+        let initialMovies = [];
+        try {
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
+            const data = await tmdbRes.json();
+            if (data && data.results) {
+                initialMovies = data.results;
+            }
+        } catch (e) {
+            console.error('فشل جلب الأفلام المسبقة:', e.message);
+        }
+
+        // حقن البيانات في سكريبت الصفحة حتى تعرض فوراً داخل ديسكورد
+        const injectedScript = `<script>window.INITIAL_MOVIES = ${JSON.stringify(initialMovies)};</script>`;
+        htmlData = htmlData.replace('</head>', `${injectedScript}</head>`);
+
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(htmlData);
     } else {
