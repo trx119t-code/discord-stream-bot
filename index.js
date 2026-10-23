@@ -38,10 +38,17 @@ function getHtmlFile() {
 }
 
 const server = http.createServer(async (req, res) => {
+    // إعطاء أذونات كاملة لديسكورد ومشغلات الفيديو للعمل بدون شاشة سوداء
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Content-Security-Policy', "frame-ancestors 'self' https://discord.com https://*.discord.com;");
+    res.setHeader(
+        'Content-Security-Policy', 
+        "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+        "frame-src * blob: data:; " +
+        "frame-ancestors 'self' https://discord.com https://*.discord.com https://*.discordsays.com;"
+    );
+    res.removeHeader('X-Frame-Options');
 
-    // بروكسي للصور لتجاوز حجب ديسكورد للبوسترات
+    // بروكسي الصور
     if (req.url.startsWith('/api/image')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const imgPath = urlParams.searchParams.get('path');
@@ -64,7 +71,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // البحث المباشر
+    // البحث
     if (req.url.startsWith('/api/search')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const q = urlParams.searchParams.get('q') || '';
@@ -80,7 +87,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // جلب الرائج
+    // الرائج
     if (req.url.startsWith('/api/trending')) {
         try {
             const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
@@ -94,7 +101,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // تقديم صفحة HTML
+    // تقديم الواجهة
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
