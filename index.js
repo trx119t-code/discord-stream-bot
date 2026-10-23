@@ -43,7 +43,7 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.removeHeader('X-Frame-Options');
 
-    // 1. بروكسي الصور
+    // 1. بروكسي الصور لتخطي حجب ديسكورد للبوسترات
     if (req.url.startsWith('/api/image')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const imgPath = urlParams.searchParams.get('path');
@@ -130,7 +130,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 6. استخراج مصادر البث المباشرة (M3U8 / Streams API)
+    // 6. استخراج مصادر البث المباشرة والترجمة العربية
     if (req.url.startsWith('/api/stream/source')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
@@ -138,34 +138,37 @@ const server = http.createServer(async (req, res) => {
         const season = urlParams.searchParams.get('season') || '1';
         const episode = urlParams.searchParams.get('episode') || '1';
 
-        // روابط استخراج البث بصيغ HLS مباشرة ومحمية
-        let streamSources = [];
-        if (isTv) {
-            streamSources = [
+        try {
+            const sources = [
                 {
                     name: 'سيرفر VIP 1 (HLS المباشر)',
-                    url: `https://vidsrc.stream/hls/tv/${id}/${season}/${episode}.m3u8`
+                    url: isTv 
+                        ? `https://vidsrc.stream/hls/tv/${id}/${season}/${episode}.m3u8`
+                        : `https://vidsrc.stream/hls/movie/${id}.m3u8`,
+                    type: 'm3u8'
                 },
                 {
-                    name: 'سيرفر النسخ الاحتياطي',
-                    url: `https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8`
+                    name: 'سيرفر تلقائي متعدد الجودات',
+                    url: `https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8`,
+                    type: 'm3u8'
                 }
             ];
-        } else {
-            streamSources = [
-                {
-                    name: 'سيرفر VIP 1 (HLS المباشر)',
-                    url: `https://vidsrc.stream/hls/movie/${id}.m3u8`
-                },
-                {
-                    name: 'سيرفر النسخ الاحتياطي',
-                    url: `https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8`
-                }
-            ];
-        }
 
-        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-        return res.end(JSON.stringify({ sources: streamSources }));
+            const subtitles = [
+                {
+                    default: true,
+                    html: 'العربية',
+                    url: `https://sub.wyzie.ru/sub/${id}.vtt`,
+                    type: 'vtt'
+                }
+            ];
+
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            return res.end(JSON.stringify({ sources, subtitles }));
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ sources: [], subtitles: [] }));
+        }
     }
 
     // تقديم صفحة HTML
