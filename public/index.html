@@ -119,18 +119,30 @@
         .player-actions {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .control-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
         }
 
         .player-actions select {
             background: var(--card-bg);
             color: var(--text-main);
             border: 1px solid var(--border-color);
-            padding: 6px 12px;
+            padding: 7px 12px;
             border-radius: 6px;
             outline: none;
             font-weight: bold;
+            font-size: 0.9rem;
         }
 
         .close-player-btn {
@@ -257,22 +269,25 @@
             <div id="playerTitle" class="player-title">جاري التشغيل...</div>
             
             <div class="player-actions">
-                <label>السيرفر:
-                    <select id="serverSelect" onchange="refreshStream()">
-                        <option value="multiembed">سيرفر 1 (SuperEmbed - الأكثر استقراراً)</option>
-                        <option value="vidsrc_icu">سيرفر 2 (VidSrc Pro)</option>
-                        <option value="twoembed">سيرفر 3 (2Embed)</option>
-                        <option value="autoembed">سيرفر 4 (AutoEmbed)</option>
-                    </select>
-                </label>
-
-                <div id="tvOptions" style="display:none; gap:8px;">
-                    <label>الموسم: 
+                <div id="tvOptions" style="display:none; gap:10px;">
+                    <div class="control-group">
+                        <label>الموسم:</label>
                         <select id="seasonSelect" onchange="refreshStream()"></select>
-                    </label>
-                    <label>الحلقة: 
+                    </div>
+                    <div class="control-group">
+                        <label>الحلقة:</label>
                         <select id="episodeSelect" onchange="refreshStream()"></select>
-                    </label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>السيرفر:</label>
+                    <select id="serverSelect" onchange="refreshStream()">
+                        <option value="vidlink">سيرفر 1 (VidLink - مترجم عربي ومستقر)</option>
+                        <option value="autoembed">سيرفر 2 (AutoEmbed - لغة أصلية + ترجمة)</option>
+                        <option value="vidsrc_pm">سيرفر 3 (VidSrc Pro - جودة عالية)</option>
+                        <option value="multiembed">سيرفر 4 (SuperEmbed - بديل سريع)</option>
+                    </select>
                 </div>
 
                 <button class="close-player-btn" onclick="closePlayer()">إغلاق ✕</button>
@@ -280,12 +295,15 @@
         </div>
 
         <div class="video-container">
+            <!-- أذونات فك الحظر لتشغيل الفيديو داخل الديسكورد وتخطي قيود الساندبوكس -->
             <iframe 
                 id="mainIframe" 
                 src="" 
                 allowfullscreen="true" 
                 webkitallowfullscreen="true" 
                 mozallowfullscreen="true"
+                referrerpolicy="origin"
+                sandbox="allow-forms allow-scripts allow-same-origin allow-presentation allow-pointer-lock"
                 allow="autoplay *; fullscreen *; encrypted-media *; picture-in-picture *">
             </iframe>
         </div>
@@ -384,12 +402,12 @@
             
             seasonSelect.innerHTML = '';
             for (let s = 1; s <= 15; s++) {
-                seasonSelect.innerHTML += `<option value="${s}">الموسم ${s}</option>`;
+                seasonSelect.innerHTML += `<option value="${s}">موسم ${s}</option>`;
             }
 
             episodeSelect.innerHTML = '';
             for (let e = 1; e <= 30; e++) {
-                episodeSelect.innerHTML += `<option value="${e}">الحلقة ${e}</option>`;
+                episodeSelect.innerHTML += `<option value="${e}">حلقة ${e}</option>`;
             }
         }
 
@@ -401,25 +419,26 @@
 
             let src = '';
 
+            // تم إرفاق خيارات الترجمة العربية الإجبارية واللغة الأصلية لتفادي الصوت الهندي
             if (currentMedia.isTv) {
-                if (server === 'multiembed') {
-                    src = `https://multiembed.mov/?video_id=${currentMedia.id}&tmdb=1&s=${season}&e=${episode}`;
-                } else if (server === 'vidsrc_icu') {
-                    src = `https://vidsrc.icu/embed/tv/${currentMedia.id}/${season}/${episode}`;
-                } else if (server === 'twoembed') {
-                    src = `https://www.2embed.cc/embedtv/${currentMedia.id}&s=${season}&e=${episode}`;
-                } else {
+                if (server === 'vidlink') {
+                    src = `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}?sub=ar`;
+                } else if (server === 'autoembed') {
                     src = `https://player.autoembed.cc/embed/tv/${currentMedia.id}/${season}/${episode}`;
+                } else if (server === 'vidsrc_pm') {
+                    src = `https://vidsrc.pm/embed/tv/${currentMedia.id}/${season}/${episode}`;
+                } else {
+                    src = `https://multiembed.mov/?video_id=${currentMedia.id}&tmdb=1&s=${season}&e=${episode}`;
                 }
             } else {
-                if (server === 'multiembed') {
-                    src = `https://multiembed.mov/?video_id=${currentMedia.id}&tmdb=1`;
-                } else if (server === 'vidsrc_icu') {
-                    src = `https://vidsrc.icu/embed/movie/${currentMedia.id}`;
-                } else if (server === 'twoembed') {
-                    src = `https://www.2embed.cc/embed/${currentMedia.id}`;
-                } else {
+                if (server === 'vidlink') {
+                    src = `https://vidlink.pro/movie/${currentMedia.id}?sub=ar`;
+                } else if (server === 'autoembed') {
                     src = `https://player.autoembed.cc/embed/movie/${currentMedia.id}`;
+                } else if (server === 'vidsrc_pm') {
+                    src = `https://vidsrc.pm/embed/movie/${currentMedia.id}`;
+                } else {
+                    src = `https://multiembed.mov/?video_id=${currentMedia.id}&tmdb=1`;
                 }
             }
 
