@@ -37,12 +37,34 @@ function getHtmlFile() {
     return null;
 }
 
-// خادم الويب المدمج
 const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Content-Security-Policy', "frame-ancestors 'self' https://discord.com https://*.discord.com;");
 
-    // نقطة البحث المباشر
+    // بروكسي للصور لتجاوز حجب ديسكورد للبوسترات
+    if (req.url.startsWith('/api/image')) {
+        const urlParams = new URL(req.url, `http://${req.headers.host}`);
+        const imgPath = urlParams.searchParams.get('path');
+        if (!imgPath) {
+            res.writeHead(400);
+            return res.end();
+        }
+        try {
+            const imgRes = await fetch(`https://image.tmdb.org/t/p/w500${imgPath}`);
+            const buffer = await imgRes.arrayBuffer();
+            res.writeHead(200, {
+                'Content-Type': imgRes.headers.get('content-type') || 'image/jpeg',
+                'Cache-Control': 'public, max-age=86400'
+            });
+            res.end(Buffer.from(buffer));
+        } catch (err) {
+            res.writeHead(404);
+            res.end();
+        }
+        return;
+    }
+
+    // البحث المباشر
     if (req.url.startsWith('/api/search')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const q = urlParams.searchParams.get('q') || '';
@@ -58,24 +80,23 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // تقديم صفحة HTML بعد حقن بيانات الأفلام الشائعة مباشرة فيها
-    let htmlData = getHtmlFile();
-    if (htmlData) {
-        let initialMovies = [];
+    // جلب الرائج
+    if (req.url.startsWith('/api/trending')) {
         try {
             const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
-            const data = await tmdbRes.json();
-            if (data && data.results) {
-                initialMovies = data.results;
-            }
-        } catch (e) {
-            console.error('فشل جلب الأفلام المسبقة:', e.message);
+            const data = await tmdbRes.text();
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(data);
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ results: [] }));
         }
+        return;
+    }
 
-        // حقن البيانات في سكريبت الصفحة حتى تعرض فوراً داخل ديسكورد
-        const injectedScript = `<script>window.INITIAL_MOVIES = ${JSON.stringify(initialMovies)};</script>`;
-        htmlData = htmlData.replace('</head>', `${injectedScript}</head>`);
-
+    // تقديم صفحة HTML
+    const htmlData = getHtmlFile();
+    if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(htmlData);
     } else {
