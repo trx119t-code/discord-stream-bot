@@ -119,7 +119,7 @@
         .player-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
@@ -143,6 +143,22 @@
             outline: none;
             font-weight: bold;
             font-size: 0.9rem;
+        }
+
+        .external-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--primary);
+            color: var(--text-main);
+            padding: 7px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.88rem;
+            transition: background 0.2s;
+        }
+
+        .external-btn:hover {
+            background: var(--primary);
         }
 
         .close-player-btn {
@@ -172,6 +188,13 @@
             width: 100%;
             height: 100%;
             border: none;
+        }
+
+        .discord-hint {
+            margin-top: 8px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            text-align: center;
         }
 
         .content-area {
@@ -283,29 +306,34 @@
                 <div class="control-group">
                     <label>السيرفر:</label>
                     <select id="serverSelect" onchange="refreshStream()">
-                        <option value="vidlink">سيرفر 1 (VidLink - مترجم عربي ومستقر)</option>
-                        <option value="autoembed">سيرفر 2 (AutoEmbed - لغة أصلية + ترجمة)</option>
-                        <option value="vidsrc_pm">سيرفر 3 (VidSrc Pro - جودة عالية)</option>
-                        <option value="multiembed">سيرفر 4 (SuperEmbed - بديل سريع)</option>
+                        <option value="vidlink">سيرفر 1 (VidLink - ترجمة عربية CC)</option>
+                        <option value="vidsrc_xyz">سيرفر 2 (VidSrc XYZ - متعدد الجودات)</option>
+                        <option value="vidsrc_icu">سيرفر 3 (VidSrc ICU - سريع)</option>
+                        <option value="multiembed">سيرفر 4 (SuperEmbed)</option>
                     </select>
                 </div>
+
+                <button class="external-btn" onclick="openInBrowser()">
+                    ↗ فتح المشغل مباشرة (لتخطي حظر ديسكورد)
+                </button>
 
                 <button class="close-player-btn" onclick="closePlayer()">إغلاق ✕</button>
             </div>
         </div>
 
         <div class="video-container">
-            <!-- أذونات فك الحظر لتشغيل الفيديو داخل الديسكورد وتخطي قيود الساندبوكس -->
+            <!-- تمت إزالة خاصية sandbox نهائياً لمنع ظهور رسالة Please Disable Sandbox -->
             <iframe 
                 id="mainIframe" 
                 src="" 
                 allowfullscreen="true" 
                 webkitallowfullscreen="true" 
                 mozallowfullscreen="true"
-                referrerpolicy="origin"
-                sandbox="allow-forms allow-scripts allow-same-origin allow-presentation allow-pointer-lock"
-                allow="autoplay *; fullscreen *; encrypted-media *; picture-in-picture *">
+                allow="autoplay; fullscreen; encrypted-media; picture-in-picture">
             </iframe>
+        </div>
+        <div class="discord-hint">
+            💡 ملاحظة: إذا ظهر تنبيه "Sandbox" داخل ديسكورد بسبب حماية ديسكورد الإجبارية، اضغط على زر <b>"↗ فتح المشغل مباشرة"</b> بالأعلى ليعمل معك بكامل الجودات والترجمة.
         </div>
     </div>
 
@@ -318,6 +346,41 @@
 
     <script>
         let currentMedia = { id: null, isTv: false, title: '' };
+        let currentStreamUrl = '';
+
+        // تهيئة اتصال مباشر مع تطبيق ديسكورد بدون مكتبات خارجية
+        const urlParams = new URLSearchParams(window.location.search);
+        const frameId = urlParams.get('frame_id');
+
+        function initDiscordHandshake() {
+            if (frameId && window.DISCORD_APP_ID) {
+                try {
+                    window.parent.postMessage([1, {
+                        v: 1,
+                        encoding: 'json',
+                        client_id: window.DISCORD_APP_ID,
+                        frame_id: frameId
+                    }], '*');
+                } catch (e) {}
+            }
+        }
+        initDiscordHandshake();
+
+        // فتح الرابط عبر أمر ديسكورد الداخلي أو المتصفح
+        function openInBrowser() {
+            if (!currentStreamUrl) return;
+
+            if (frameId) {
+                try {
+                    window.parent.postMessage([0, {
+                        cmd: 'OPEN_EXTERNAL_LINK',
+                        args: { url: currentStreamUrl },
+                        nonce: String(Date.now())
+                    }], '*');
+                } catch (e) {}
+            }
+            window.open(currentStreamUrl, '_blank');
+        }
 
         function renderCards(items) {
             const grid = document.getElementById('moviesGrid');
@@ -419,29 +482,29 @@
 
             let src = '';
 
-            // تم إرفاق خيارات الترجمة العربية الإجبارية واللغة الأصلية لتفادي الصوت الهندي
             if (currentMedia.isTv) {
                 if (server === 'vidlink') {
-                    src = `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}?sub=ar`;
-                } else if (server === 'autoembed') {
-                    src = `https://player.autoembed.cc/embed/tv/${currentMedia.id}/${season}/${episode}`;
-                } else if (server === 'vidsrc_pm') {
-                    src = `https://vidsrc.pm/embed/tv/${currentMedia.id}/${season}/${episode}`;
+                    src = `https://vidlink.pro/tv/${currentMedia.id}/${season}/${episode}?primaryColor=FF2228&autoplay=true`;
+                } else if (server === 'vidsrc_xyz') {
+                    src = `https://vidsrc.xyz/embed/tv?tmdb=${currentMedia.id}&season=${season}&episode=${episode}&ds_lang=ar`;
+                } else if (server === 'vidsrc_icu') {
+                    src = `https://vidsrc.icu/embed/tv/${currentMedia.id}/${season}/${episode}`;
                 } else {
                     src = `https://multiembed.mov/?video_id=${currentMedia.id}&tmdb=1&s=${season}&e=${episode}`;
                 }
             } else {
                 if (server === 'vidlink') {
-                    src = `https://vidlink.pro/movie/${currentMedia.id}?sub=ar`;
-                } else if (server === 'autoembed') {
-                    src = `https://player.autoembed.cc/embed/movie/${currentMedia.id}`;
-                } else if (server === 'vidsrc_pm') {
-                    src = `https://vidsrc.pm/embed/movie/${currentMedia.id}`;
+                    src = `https://vidlink.pro/movie/${currentMedia.id}?primaryColor=FF2228&autoplay=true`;
+                } else if (server === 'vidsrc_xyz') {
+                    src = `https://vidsrc.xyz/embed/movie?tmdb=${currentMedia.id}&ds_lang=ar`;
+                } else if (server === 'vidsrc_icu') {
+                    src = `https://vidsrc.icu/embed/movie/${currentMedia.id}`;
                 } else {
                     src = `https://multiembed.mov/?video_id=${currentMedia.id}&tmdb=1`;
                 }
             }
 
+            currentStreamUrl = src;
             iframe.src = src;
         }
 
