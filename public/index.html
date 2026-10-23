@@ -447,7 +447,7 @@
             text-overflow: ellipsis;
         }
 
-        /* نافذة المشغل المدمج الصافي داخل ديسكورد */
+        /* نافذة المشغل المدمج */
         #player-modal {
             display: none;
             position: fixed;
@@ -568,14 +568,15 @@
         <div class="episodes-grid" id="episodesGrid"></div>
     </div>
 
-    <!-- نافذة المشغل المدمج -->
+    <!-- نافذة المشغل الأصلي -->
     <div id="player-modal">
         <div class="player-top-bar">
             <div class="player-media-title" id="playerTitle">تشغيل...</div>
             <button class="btn-close-player" onclick="destroyPlayer()">إغلاق ✕</button>
         </div>
         <div class="native-video-box">
-            <video id="nativeVideo" controls autoplay playsinline></video>
+            <!-- خاصية muted مبدئياً تسمح للمتصفح بالبدء فوراً دون تعليق أو منع -->
+            <video id="nativeVideo" controls autoplay playsinline muted></video>
         </div>
     </div>
 
@@ -742,7 +743,13 @@
                 const res = await fetch(`/api/stream/source?id=${id}&isTv=${isTv}&season=${season}&episode=${episode}`);
                 const data = await res.json();
                 video.src = data.videoSource;
-                video.play();
+                video.load();
+                video.play().then(() => {
+                    // إلغاء كتم الصوت بعد بدء التشغيل بنجاح
+                    setTimeout(() => { video.muted = false; }, 200);
+                }).catch(() => {
+                    video.controls = true;
+                });
             } catch (err) {
                 console.error("فشل التشغيل:", err);
             }
