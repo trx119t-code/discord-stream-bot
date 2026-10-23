@@ -1,7 +1,8 @@
 require('dotenv').config();
 
 const path = require('path');
-const express = require('express');
+const fs = require('fs');
+const http = require('http');
 const { 
     Client, 
     GatewayIntentBits, 
@@ -24,21 +25,28 @@ const client = new Client({
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 
-// إعداد خادم الويب
-const app = express();
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// خادم ويب مدمج لعرض صفحة السينما لـ Render وديسكورد بدون مكتبات خارجية
+const server = http.createServer((req, res) => {
+    const filePath = path.join(__dirname, 'public', 'index.html');
+    fs.readFile(filePath, (err, data) => {
+        if (err) {
+            res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+            res.end('Orbit Cinema is Running 24/7!');
+            return;
+        }
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(data);
+    });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`🌐 خادم الويب للنشاط يعمل على المنفذ: ${PORT}`);
 });
 
-// تسجيل أمر تشغيل النشاط (Entry Point Command) لدى ديسكورد
+// تسجيل أمر تشغيل النشاط (Entry Point Command)
 async function registerActivityCommand() {
+    if (!client.user) return;
     const rest = new REST({ version: '10' }).setToken(BOT_TOKEN);
     try {
         console.log('⏳ جاري تسجيل أمر تشغيل النشاط لدى ديسكورد...');
@@ -49,14 +57,14 @@ async function registerActivityCommand() {
                     {
                         name: 'cinema',
                         description: 'تشغيل سينما ديسكورد التفاعلية',
-                        type: 4 // نوع Entry Point لتشغيل الـ Activity
+                        type: 4 // Entry Point
                     }
                 ]
             }
         );
         console.log('✅ تم تسجيل Entry Point Command بنجاح!');
     } catch (error) {
-        console.error('خطأ أثناء تسجيل الأمر:', error);
+        console.error('ملاحظة حول تسجيل الأمر:', error.message);
     }
 }
 
@@ -65,15 +73,7 @@ client.on('ready', async () => {
     await registerActivityCommand();
 });
 
-// التفاعل عند الضغط على أيقونة النشاط أو أمره
-client.on('interactionCreate', async (interaction) => {
-    // تشغيل النشاط عند الضغط عليه
-    if (interaction.isCommand() && interaction.commandName === 'cinema') {
-        // ديسكورد سيتولى فتح الـ Activity تلقائياً
-    }
-});
-
-// استقبال أمر التشغيل dplay بالشات
+// استقبال أمر التشغيل dplay
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
