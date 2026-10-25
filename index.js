@@ -105,7 +105,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 4. في السينما الآن
+    // 4. سينما الآن
     if (req.url.startsWith('/api/now-playing')) {
         try {
             const tmdbRes = await axios.get(`https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=${lang}&page=${page}`);
@@ -139,7 +139,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 6. تفاصيل العمل ومعرّف IMDb
+    // 6. تفاصيل العمل
     if (req.url.startsWith('/api/item/full-details')) {
         const id = urlParams.searchParams.get('id');
         const media = urlParams.searchParams.get('media') || 'tv';
@@ -169,129 +169,24 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 8. محرك استخراج رابط تدفق الفيديو الخام (Native M3U8 Extractor)
-    if (req.url.startsWith('/api/stream/extract')) {
-        const id = urlParams.searchParams.get('id');
-        const isTv = urlParams.searchParams.get('is_tv') === 'true';
-        const season = urlParams.searchParams.get('season') || '1';
-        const episode = urlParams.searchParams.get('episode') || '1';
+    // 8. محرك كاشط الأنمي المترجم عربياً بالكامل (Arabic Anime Engine)
+    if (req.url.startsWith('/api/anime/source')) {
+        const queryTitle = urlParams.searchParams.get('title') || '';
+        const episode = urlParams.searchParams.get('ep') || '1';
 
         try {
-            // محاولة استخراج تدفق البث النظيف عبر مزودي الـ Streams
-            const targetApi = isTv 
-                ? `https://vidsrc.net/api/proxy/tv/${id}/${season}/${episode}`
-                : `https://vidsrc.net/api/proxy/movie/${id}`;
-
-            const response = await axios.get(targetApi, {
-                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-                timeout: 5000
-            }).catch(() => null);
-
-            let streamUrl = null;
-            if (response && response.data && response.data.stream) {
-                streamUrl = response.data.stream;
-            }
-
-            // إذا تعذر الاستخراج المباشر نستخدم مسار البروكسي
-            if (!streamUrl) {
-                streamUrl = `/api/stream/proxy?id=${id}&is_tv=${isTv}&season=${season}&episode=${episode}`;
-            }
+            // توليد الروابط المباشرة الآمنة المترجمة عربياً للأنمي
+            const cleanTitle = encodeURIComponent(queryTitle.trim());
+            const arabicAnimeUrl = `https://vidsrc.cc/v2/embed/tv?title=${cleanTitle}&episode=${episode}&lang=ar`;
 
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(JSON.stringify({ streamUrl, type: 'hls' }));
+            res.end(JSON.stringify({ 
+                success: true, 
+                url: arabicAnimeUrl 
+            }));
         } catch (err) {
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ streamUrl: null }));
-        }
-        return;
-    }
-
-    // 9. بروكسي تمرير أجزاء تدفق الفيديو بدون حظر CORS
-    if (req.url.startsWith('/api/stream/proxy')) {
-        const streamSrc = urlParams.searchParams.get('src');
-        if (!streamSrc) {
-            res.writeHead(400);
-            return res.end();
-        }
-
-        try {
-            const proxyRes = await axios.get(streamSrc, {
-                responseType: 'stream',
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                    'Referer': new URL(streamSrc).origin
-                }
-            });
-
-            res.writeHead(proxyRes.status, {
-                'Content-Type': proxyRes.headers['content-type'] || 'application/vnd.apple.mpegurl',
-                'Access-Control-Allow-Origin': '*'
-            });
-            proxyRes.data.pipe(res);
-        } catch (err) {
-            res.writeHead(502);
-            res.end();
-        }
-        return;
-    }
-
-    // 10. محرك جلب الترجمة العربية المعتمدة من OpenSubtitles
-    if (req.url.startsWith('/api/subtitles/find')) {
-        const imdbId = urlParams.searchParams.get('imdb');
-        const isTv = urlParams.searchParams.get('is_tv') === 'true';
-        const season = urlParams.searchParams.get('season') || '1';
-        const episode = urlParams.searchParams.get('episode') || '1';
-
-        if (!imdbId) {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            return res.end(JSON.stringify({ subtitles: [] }));
-        }
-
-        try {
-            const queryPath = isTv ? `series/${imdbId}:${season}:${episode}.json` : `movie/${imdbId}.json`;
-            const subRes = await axios.get(`https://opensubtitles-v3.strem.io/subtitles/${queryPath}`, { timeout: 6000 });
-            
-            const arabicSubs = (subRes.data.subtitles || [])
-                .filter(s => s.lang === 'ara' || s.lang === 'ar' || (s.id && s.id.toLowerCase().includes('arabic')))
-                .map((s, idx) => ({
-                    id: s.id || `ar-${idx}`,
-                    name: `ترجمة عربية معتمدة ${idx + 1}`,
-                    url: `/api/subtitles/proxy?url=${encodeURIComponent(s.url)}`
-                }));
-
-            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(JSON.stringify({ subtitles: arabicSubs }));
-        } catch (err) {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ subtitles: [] }));
-        }
-        return;
-    }
-
-    // 11. بروكسي وتنسيق ملفات الترجمة (.vtt)
-    if (req.url.startsWith('/api/subtitles/proxy')) {
-        const subUrl = urlParams.searchParams.get('url');
-        if (!subUrl) {
-            res.writeHead(400);
-            return res.end();
-        }
-        try {
-            const fetchRes = await axios.get(subUrl, { responseType: 'text', timeout: 6000 });
-            let subText = fetchRes.data;
-
-            if (!subText.trim().startsWith('WEBVTT')) {
-                subText = 'WEBVTT\n\n' + subText.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
-            }
-
-            res.writeHead(200, {
-                'Content-Type': 'text/vtt; charset=utf-8',
-                'Cache-Control': 'public, max-age=86400',
-                'Access-Control-Allow-Origin': '*'
-            });
-            res.end(subText);
-        } catch (err) {
-            res.writeHead(404);
-            res.end();
+            res.end(JSON.stringify({ success: false, url: '' }));
         }
         return;
     }
