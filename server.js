@@ -7,24 +7,15 @@ const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const TMDB_TOKEN = process.env.TMDB_READ_ACCESS_TOKEN;
 const TORBOX_API_KEY = process.env.TORBOX_API_KEY || 'fbb21907-7aef-4e48-b6e8-d87970df407f';
-const allowedOrigins = (process.env.FRONTEND_ORIGIN || '')
-  .split(',').map(x => x.trim()).filter(Boolean);
 
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors({
-  origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('Origin is not allowed by CORS'));
-  },
-  methods: ['GET', 'HEAD', 'OPTIONS'],
-  maxAge: 86400
-}));
+app.use(cors()); // السماح بالاتصال من أي دومين بدون مشاكل CORS
 app.use(express.json({ limit: '16kb' }));
 app.use('/api', rateLimit({
   windowMs: 60_000,
-  limit: 100,
+  limit: 150,
   standardHeaders: 'draft-7',
   legacyHeaders: false
 }));
@@ -87,10 +78,7 @@ function asyncRoute(handler) {
 }
 
 app.get('/health', (_req, res) => {
-  res.json({
-    ok: true,
-    service: 'orbit-imperial-api'
-  });
+  res.json({ ok: true, service: 'orbit-imperial-api' });
 });
 
 app.get('/api/trending', asyncRoute(async (req, res) => {
@@ -349,102 +337,6 @@ app.get('/api/image', asyncRoute(async (req, res) => {
 
   const body = Buffer.from(await upstream.arrayBuffer());
   res.end(body);
-}));
-
-// =================== محرك Stremio / Torrentio السحابي المطور ===================
-app.get('/api/streams', asyncRoute(async (req, res) => {
-  const id = parsePositiveInt(req.query.id, 0);
-  const media = validMedia.has(req.query.media) ? req.query.media : 'movie';
-  const season = parsePositiveInt(req.query.season, 1);
-  const episode = parsePositiveInt(req.query.episode, 1);
-
-  if (!id) {
-    return sendError(res, 400, 'Valid TMDB ID is required.');
-  }
-
-  let imdbId = '';
-  try {
-    const ext = await tmdb(`/${media}/${id}/external_ids`);
-    imdbId = ext.imdb_id || '';
-  } catch (err) {
-    console.error('Failed to get external IDs:', err.message);
-  }
-
-  const streams = [];
-
-  if (imdbId) {
-    const target = media === 'tv' ? `${imdbId}:${season}:${episode}` : `${imdbId}`;
-    const torrentioUrl = `https://torrentio.strem.fun/torbox=${TORBOX_API_KEY}/stream/${media === 'tv' ? 'series' : 'movie'}/${target}.json`;
-
-    let arabicSubs = [];
-    try {
-      const subQuery = media === 'tv' ? `series/${imdbId}:${season}:${episode}.json` : `movie/${imdbId}.json`;
-      const subRes = await fetch(`https://opensubtitles-v3.strem.io/subtitles/${subQuery}`, {
-        signal: AbortSignal.timeout(5000)
-      });
-      if (subRes.ok) {
-        const subData = await subRes.json();
-        arabicSubs = (subData.subtitles || [])
-          .filter(s => s.lang === 'ara' || s.lang === 'ar' || (s.id && s.id.toLowerCase().includes('arabic')))
-          .map((s, idx) => ({
-            label: `العربية ${idx + 1}`,
-            srclang: 'ar',
-            src: s.url,
-            default: idx === 0
-          }));
-      }
-    } catch (e) {}
-
-    try {
-      const tbRes = await fetch(torrentioUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0' },
-        signal: AbortSignal.timeout(8000)
-      });
-
-      if (tbRes.ok) {
-        const tbData = await tbRes.json();
-        (tbData.streams || []).forEach((s, idx) => {
-          if (s.url) {
-            const rawTitle = (s.title || '').split('\n')[0] || `خادم ${idx + 1}`;
-            streams.push({
-              label: `Stremio • ${rawTitle.slice(0, 32)}`,
-              type: s.url.includes('.m3u8') ? 'hls' : 'video',
-              url: s.url,
-              subtitles: arabicSubs
-            });
-          }
-        });
-      }
-    } catch (e) {
-      console.warn('Torrentio query timed out or failed:', e.message);
-    }
-  }
-
-  if (media === 'tv') {
-    streams.push({
-      label: 'خادم سريع (VidLink Pro)',
-      type: 'embed',
-      url: `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=ff2d4d&autoplay=true`
-    });
-    streams.push({
-      label: 'خادم احتياطي (EmbedSU)',
-      type: 'embed',
-      url: `https://embed.su/embed/tv/${id}/${season}/${episode}`
-    });
-  } else {
-    streams.push({
-      label: 'خادم سريع (VidLink Pro)',
-      type: 'embed',
-      url: `https://vidlink.pro/movie/${id}?primaryColor=ff2d4d&autoplay=true`
-    });
-    streams.push({
-      label: 'خادم احتياطي (EmbedSU)',
-      type: 'embed',
-      url: `https://embed.su/embed/movie/${id}`
-    });
-  }
-
-  res.json({ streams });
 }));
 
 app.use((_req, res) => {
