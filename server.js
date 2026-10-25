@@ -100,8 +100,13 @@ app.get('/api/item/full-details', asyncRoute(async (req, res) => {
   const id = parsePositiveInt(req.query.id, 0);
   const media = validMedia.has(req.query.media) ? req.query.media : '';
   if (!id || !media) return sendError(res, 400, 'A valid id and media=movie|tv are required.');
-  const append = media === 'movie' ? 'external_ids,similar,credits' : 'external_ids,similar,credits';
-  res.json(await tmdb(`/${media}/${id}`, { language: language(req.query.lang), append_to_response: append }));
+  const lang = language(req.query.lang);
+  const [details, providers] = await Promise.all([
+    tmdb(`/${media}/${id}`, { language: lang, append_to_response: 'external_ids,similar,credits,videos' }),
+    tmdb(`/${media}/${id}/watch/providers`)
+  ]);
+  res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=1800');
+  res.json({ ...details, watch_providers: providers?.results || {} });
 }));
 
 app.get('/api/tv/season', asyncRoute(async (req, res) => {
