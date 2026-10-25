@@ -8,6 +8,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
+    <!-- مكتبات المشغل الأصلي بدون Iframe -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
+
     <style>
         :root {
             --accent: #F59E0B;
@@ -44,7 +48,7 @@
         ::-webkit-scrollbar-thumb { background: #262630; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-        /* 1. الدوك الجانبي العائم (VisionOS Vertical Dock) */
+        /* 1. الدوك الجانبي العائم */
         .vision-dock {
             position: fixed;
             top: 50%;
@@ -61,7 +65,7 @@
             align-items: center;
             gap: 14px;
             z-index: 1000;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
         }
 
         body[dir="ltr"] .vision-dock {
@@ -98,7 +102,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0.25s;
         }
 
         .dock-item:hover {
@@ -111,7 +115,6 @@
             background: rgba(var(--accent-rgb), 0.18);
             color: var(--accent);
             border-color: rgba(var(--accent-rgb), 0.4);
-            box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.25);
         }
 
         .dock-tooltip {
@@ -127,20 +130,16 @@
             white-space: nowrap;
             opacity: 0;
             pointer-events: none;
-            transform: translateX(10px);
             transition: all 0.2s;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
         }
 
         body[dir="ltr"] .dock-tooltip {
             right: auto;
             left: 60px;
-            transform: translateX(-10px);
         }
 
         .dock-item:hover .dock-tooltip {
             opacity: 1;
-            transform: translateX(0);
         }
 
         .dock-sep {
@@ -194,7 +193,6 @@
             font-weight: 900;
             padding: 3px 10px;
             border-radius: 20px;
-            letter-spacing: 1px;
         }
 
         .top-search-capsule {
@@ -223,7 +221,6 @@
         .top-search-capsule input:focus {
             border-color: var(--accent);
             box-shadow: 0 0 25px rgba(var(--accent-rgb), 0.2);
-            background: rgba(26, 26, 36, 0.95);
         }
 
         .top-search-icon {
@@ -285,7 +282,7 @@
             align-items: flex-end;
             padding: 44px;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-            transition: background-image 0.6s ease-in-out;
+            transition: background-image 0.6s ease;
         }
 
         .showcase-gradient {
@@ -325,7 +322,6 @@
             font-size: 0.75rem;
             padding: 4px 12px;
             border-radius: 8px;
-            letter-spacing: 0.5px;
         }
 
         .badge-glass-meta {
@@ -379,7 +375,6 @@
 
         .btn-gold-play:hover {
             transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 14px 30px rgba(var(--accent-rgb), 0.5);
         }
 
         .btn-frosted {
@@ -397,7 +392,6 @@
 
         .btn-frosted:hover {
             background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.3);
         }
 
         .hero-queue-stack {
@@ -434,11 +428,6 @@
         .queue-card:hover, .queue-card.active {
             background: rgba(var(--accent-rgb), 0.12);
             border-color: var(--glass-highlight);
-            transform: translateX(-4px);
-        }
-
-        body[dir="ltr"] .queue-card:hover, body[dir="ltr"] .queue-card.active {
-            transform: translateX(4px);
         }
 
         .queue-thumb {
@@ -561,7 +550,6 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
         }
 
         body[dir="ltr"] .cw-remove-btn {
@@ -787,24 +775,19 @@
             border: 1px solid var(--glass-border);
             cursor: pointer;
             background: #12121A;
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0.3s;
         }
 
         .royal-poster-card:hover {
             transform: translateY(-8px);
             border-color: var(--accent);
-            box-shadow: 0 16px 35px rgba(0,0,0,0.85), 0 0 20px rgba(var(--accent-rgb), 0.2);
+            box-shadow: 0 16px 35px rgba(0,0,0,0.85);
         }
 
         .royal-poster-card img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.4s;
-        }
-
-        .royal-poster-card:hover img {
-            transform: scale(1.06);
         }
 
         .royal-card-glass-footer {
@@ -867,7 +850,7 @@
             margin-top: 36px;
         }
 
-        /* 9. الدرج الزجاجي المنزلق */
+        /* 9. الدرج المنزلق للتفاصيل والحلقات */
         #slideOverBackdrop {
             display: none;
             position: fixed;
@@ -989,7 +972,7 @@
             background: #161622;
         }
 
-        /* 10. مشغل المسرح المضيء */
+        /* 10. مشغل المسرح الأصلي (ArtPlayer + Fallback) */
         #theaterModal {
             display: none;
             position: fixed;
@@ -1042,7 +1025,7 @@
             color: #34D399;
             padding: 8px 16px;
             border-radius: 12px;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             font-weight: 800;
             margin-bottom: 12px;
             display: flex;
@@ -1060,12 +1043,25 @@
             border: 1px solid rgba(var(--accent-rgb), 0.35);
             box-shadow: 0 0 70px rgba(var(--accent-rgb), 0.18);
             background: #000;
+            position: relative;
         }
 
-        .theater-screen-frame iframe {
+        #artplayerContainer {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+        }
+
+        #theaterIframe {
             width: 100%;
             height: 100%;
             border: none;
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            display: none;
         }
 
         @media (max-width: 1024px) {
@@ -1108,7 +1104,7 @@
         </button>
     </aside>
 
-    <!-- 2. المساحة السينمائية الرئيسية -->
+    <!-- 2. المساحة الرئيسية -->
     <div class="workspace-wrapper">
         
         <div class="top-luxury-bar">
@@ -1249,7 +1245,7 @@
 
     </div>
 
-    <!-- 5. الدرج الزجاجي المنزلق لتفاصيل المسلسل والحلقات -->
+    <!-- 5. الدرج المنزلق للتفاصيل والحلقات -->
     <div id="slideOverBackdrop" onclick="if(event.target===this) closeSlideDrawer()">
         <div class="slide-over-drawer">
             <div class="drawer-cover" id="drawerBannerImg">
@@ -1283,7 +1279,7 @@
         </div>
     </div>
 
-    <!-- 6. مشغل المسرح المضيء مع التحقق الفوري من الترجمة العربية -->
+    <!-- 6. مشغل المسرح الأصلي (ArtPlayer + Fallback) -->
     <div id="theaterModal">
         <div class="theater-top-bar">
             <div style="display:flex; align-items:center; gap:14px;">
@@ -1294,24 +1290,25 @@
                 </div>
             </div>
 
-            <!-- سيرفرات VIP الشغالة -->
+            <!-- أزرار المشغل الأساسي والبديل الداعم للعربية -->
             <div class="server-pills-bar">
-                <button class="srv-pill active" id="srv-btn-0" onclick="selectStreamServer(0)">👑 MultiEmbed VIP (الأساسي)</button>
-                <button class="srv-pill" id="srv-btn-1" onclick="selectStreamServer(1)">🚀 VidLink 4K (ترجمة فورية)</button>
-                <button class="srv-pill" id="srv-btn-2" onclick="selectStreamServer(2)">🎬 EmbedSu VIP</button>
-                <button class="srv-pill" id="srv-btn-3" onclick="selectStreamServer(3)">⚡ AutoEmbed Pro</button>
+                <button class="srv-pill active" id="srv-btn-0" onclick="switchEngine(0)">⚡ المشغل الداخلي الذكي (ArtPlayer)</button>
+                <button class="srv-pill" id="srv-btn-1" onclick="switchEngine(1)">👑 سيرفر Videasy (ترجمة عربية تلقائية)</button>
+                <button class="srv-pill" id="srv-btn-2" onclick="switchEngine(2)">💎 سيرفر MultiEmbed VIP</button>
             </div>
 
             <button class="btn-gold-play" style="padding:8px 20px;" id="theaterNextEpBtn" onclick="playNextEpInTheater()" data-i18n="nextEpisode">الحلقة التالية ⏭️</button>
         </div>
 
-        <!-- شريط حالة الترجمة المعتمدة -->
         <div class="sub-status-bar" id="subStatusBar">
-            <span id="subStatusText">⏳ جاري الاتصال بمحرك الترجمة العربية...</span>
-            <span style="font-size:0.75rem; color:#A7F3D0;">(مدمج تلقائياً)</span>
+            <span id="subStatusText">⏳ جاري فحص ملفات الترجمة العربية وتفعيلها...</span>
+            <span id="subCountBadge" style="font-size:0.75rem; color:#A7F3D0;">(مباشر)</span>
         </div>
 
         <div class="theater-screen-frame">
+            <!-- حاوية ArtPlayer الداخلية -->
+            <div id="artplayerContainer"></div>
+            <!-- حاوية Iframe البديلة عند الطلب -->
             <iframe id="theaterIframe" src="" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
         </div>
     </div>
@@ -1321,7 +1318,8 @@
         let activeQueueIdx = 0;
         let currentDrawerItem = null;
         let activePlayback = null;
-        let serverIdx = 0;
+        let art = null;
+        let currentEngine = 0; // 0 = ArtPlayer, 1 = Videasy, 2 = MultiEmbed
 
         let currentCatalogCategory = 'anime';
         let currentCatalogMedia = 'tv';
@@ -1912,12 +1910,22 @@
             });
         }
 
-        // جلب الترجمة العربية وتأكيد ربطها
-        async function verifyArabicSubtitles(id, isTv, season, episode) {
-            const subBar = document.getElementById('subStatusBar');
-            const subText = document.getElementById('subStatusText');
-            subText.innerText = "⏳ جاري البحث عن ملفات الترجمة العربية المعتمدة...";
+        // 3. مشغل ArtPlayer المخصص مع جلب الترجمة العربية والـ Hls.js
+        async function initCustomArtPlayer(id, isTv, season, episode) {
+            const container = document.getElementById('artplayerContainer');
+            const iframe = document.getElementById('theaterIframe');
+            container.style.display = 'block';
+            iframe.style.display = 'none';
 
+            if (art) {
+                art.destroy(false);
+                art = null;
+            }
+
+            const subText = document.getElementById('subStatusText');
+            subText.innerText = "⏳ جاري فحص ملفات الترجمة العربية المعتمدة وتجهيز البث...";
+
+            let arabicSubs = [];
             try {
                 const detailsRes = await fetch(`/api/item/full-details?id=${id}&media=${isTv ? 'tv' : 'movie'}`);
                 const detailsData = await detailsRes.json();
@@ -1926,40 +1934,106 @@
                 if (imdbId) {
                     const subRes = await fetch(`/api/subtitles/find?imdb=${imdbId}&is_tv=${isTv}&season=${season}&episode=${episode}`);
                     const subData = await subRes.json();
-                    if (subData.subtitles && subData.subtitles.length > 0) {
-                        subText.innerText = `✅ تم تفعيل الترجمة العربية المعتمدة بنجاح (${subData.subtitles.length} ملف متوفر)`;
-                        subBar.style.borderColor = "rgba(16, 185, 129, 0.4)";
-                        return;
-                    }
+                    arabicSubs = subData.subtitles || [];
                 }
-                subText.innerText = "💡 الترجمة العربية مدمجة بالسيرفر (اضغط CC لاختيار Arabic)";
-            } catch (e) {
-                subText.innerText = "💡 الترجمة العربية مدمجة بالسيرفر (اضغط CC لاختيار Arabic)";
+            } catch (e) {}
+
+            const activeSubUrl = arabicSubs.length > 0 ? arabicSubs[0].url : '';
+            if (arabicSubs.length > 0) {
+                subText.innerText = `✅ تم ربط الترجمة العربية الرسمية (${arabicSubs.length} ملف متوفر)`;
+            } else {
+                subText.innerText = `💡 الترجمة مدمجة تلقائياً عبر السيرفر الداعم`;
             }
+
+            // محرك استخراج تدفق البث
+            const primaryStreamUrl = isTv
+                ? `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${season}&episode=${episode}&ds_lang=ar`
+                : `https://vidsrc.xyz/embed/movie?tmdb=${id}&ds_lang=ar`;
+
+            art = new Artplayer({
+                container: '#artplayerContainer',
+                url: primaryStreamUrl,
+                type: 'm3u8',
+                customType: {
+                    m3u8: function (video, url, artInstance) {
+                        if (Hls.isSupported()) {
+                            if (artInstance.hls) artInstance.hls.destroy();
+                            const hls = new Hls();
+                            hls.loadSource(url);
+                            hls.attachMedia(video);
+                            artInstance.hls = hls;
+                        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                            video.src = url;
+                        } else {
+                            // إذا كان الرابط Embed نقوم بتحويله ناعماً لضمان العرض
+                            switchEngine(1);
+                        }
+                    },
+                },
+                subtitle: {
+                    url: activeSubUrl,
+                    type: 'vtt',
+                    style: {
+                        color: '#F59E0B',
+                        fontSize: '26px',
+                        fontWeight: 'bold',
+                        textShadow: '0 2px 6px rgba(0,0,0,0.95)',
+                        marginBottom: '30px',
+                    },
+                    encoding: 'utf-8',
+                },
+                setting: true,
+                playbackRate: true,
+                aspectRatio: true,
+                fullscreen: true,
+                fullscreenWeb: true,
+                miniProgressBar: true,
+                autoPlayback: true,
+                theme: '#F59E0B',
+            });
+
+            // مراقبة الخطأ في حال رفض الرابط كـ HLS المباشر نحوله لسيرفر Videasy الداعم للعربية
+            art.on('error', () => {
+                switchEngine(1);
+            });
         }
 
-        // روابط سيرفرات الـ VIP
-        function buildServerUrl(id, isTv, season, episode, srv) {
-            if (srv === 0) {
-                // MultiEmbed VIP (الأساسي والشغال 100%)
-                return isTv
-                    ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
-                    : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
-            } else if (srv === 1) {
-                // VidLink 4K
-                return isTv
-                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=F59E0B&autoplay=true&sub=ar&sub.info=ar&sub_lang=Arabic`
-                    : `https://vidlink.pro/movie/${id}?primaryColor=F59E0B&autoplay=true&sub=ar&sub.info=ar&sub_lang=Arabic`;
-            } else if (srv === 2) {
-                // EmbedSu VIP
-                return isTv
-                    ? `https://embed.su/embed/tv/${id}/${season}/${episode}`
-                    : `https://embed.su/embed/movie/${id}`;
+        function switchEngine(engineIdx) {
+            currentEngine = engineIdx;
+            document.querySelectorAll('.srv-pill').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === engineIdx);
+            });
+
+            const artContainer = document.getElementById('artplayerContainer');
+            const iframe = document.getElementById('theaterIframe');
+            const subText = document.getElementById('subStatusText');
+
+            if (engineIdx === 0) {
+                initCustomArtPlayer(activePlayback.id, activePlayback.isTv, activePlayback.season, activePlayback.episode);
+            } else if (engineIdx === 1) {
+                // سيرفر Videasy العالمي: يدعم سحب الترجمة العربية تلقائياً من OpenSubtitles
+                if (art) { art.destroy(false); art = null; }
+                artContainer.style.display = 'none';
+                iframe.style.display = 'block';
+                subText.innerText = "👑 تم تفعيل سيرفر Videasy: الترجمة العربية تعمل مباشرة (اضغط CC لاختيار Arabic)";
+
+                const embedUrl = activePlayback.isTv
+                    ? `https://player.videasy.net/tv/${activePlayback.id}/${activePlayback.season}/${activePlayback.episode}?color=F59E0B`
+                    : `https://player.videasy.net/movie/${activePlayback.id}?color=F59E0B`;
+
+                iframe.src = embedUrl;
             } else {
-                // AutoEmbed Pro
-                return isTv
-                    ? `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}?lang=ar`
-                    : `https://player.autoembed.cc/embed/movie/${id}?lang=ar`;
+                // سيرفر MultiEmbed VIP
+                if (art) { art.destroy(false); art = null; }
+                artContainer.style.display = 'none';
+                iframe.style.display = 'block';
+                subText.innerText = "💎 سيرفر MultiEmbed VIP الاحتياطي الفوري";
+
+                const embedUrl = activePlayback.isTv
+                    ? `https://multiembed.mov/?video_id=${activePlayback.id}&tmdb=1&s=${activePlayback.season}&e=${activePlayback.episode}`
+                    : `https://multiembed.mov/?video_id=${activePlayback.id}&tmdb=1`;
+
+                iframe.src = embedUrl;
             }
         }
 
@@ -1971,20 +2045,8 @@
 
             if (backdropPath) saveContinueRecord(id, isTv, season, episode, title, backdropPath);
 
-            selectStreamServer(0);
-            verifyArabicSubtitles(id, isTv, season, episode);
             document.getElementById('theaterModal').style.display = 'flex';
-        }
-
-        function selectStreamServer(idx) {
-            if (!activePlayback) return;
-            serverIdx = idx;
-            document.querySelectorAll('.srv-pill').forEach((btn, i) => {
-                btn.classList.toggle('active', i === idx);
-            });
-            document.getElementById('theaterIframe').src = buildServerUrl(
-                activePlayback.id, activePlayback.isTv, activePlayback.season, activePlayback.episode, serverIdx
-            );
+            switchEngine(0);
         }
 
         function playNextEpInTheater() {
@@ -1994,6 +2056,10 @@
         }
 
         function closeTheaterModal() {
+            if (art) {
+                art.destroy(false);
+                art = null;
+            }
             document.getElementById('theaterIframe').src = '';
             document.getElementById('theaterModal').style.display = 'none';
         }
