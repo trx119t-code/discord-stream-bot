@@ -38,10 +38,16 @@ function getHtmlFile() {
 }
 
 const server = http.createServer(async (req, res) => {
+    // ترويسات الأمان وفك الحظر
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.removeHeader('X-Frame-Options');
+
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        return res.end();
+    }
 
     const urlParams = new URL(req.url, `http://${req.headers.host}`);
     const lang = urlParams.searchParams.get('lang') || 'ar-SA';
@@ -70,7 +76,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 2. البحث الشامل مع دعم اللغة
+    // 2. البحث الشامل
     if (req.url.startsWith('/api/search')) {
         const q = urlParams.searchParams.get('q') || '';
         try {
@@ -85,7 +91,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 3. المحتوى الرائج مع دعم اللغة والصفحات
+    // 3. المحتوى الرائج
     if (req.url.startsWith('/api/trending')) {
         const type = urlParams.searchParams.get('type') || 'all';
         const time = urlParams.searchParams.get('time') || 'week';
@@ -115,7 +121,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 5. استكشاف المكتبات الكاملة (أفلام، مسلسلات، أنمي مع تعدد الصفحات)
+    // 5. استكشاف التصنيفات والأنمي
     if (req.url.startsWith('/api/discover')) {
         const media = urlParams.searchParams.get('media') || 'tv';
         const genres = urlParams.searchParams.get('genres') || '';
@@ -137,12 +143,12 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 6. تفاصيل العمل الكاملة مع اللغة
+    // 6. تفاصيل العمل الكاملة (مع معرّفات IMDb الخارجية)
     if (req.url.startsWith('/api/item/full-details')) {
         const id = urlParams.searchParams.get('id');
         const media = urlParams.searchParams.get('media') || 'tv';
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/${media}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits,similar&language=${lang}`);
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/${media}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits,external_ids,similar&language=${lang}`);
             const data = await tmdbRes.text();
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(data);
@@ -153,7 +159,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 7. حلقات الموسم مع اللغة
+    // 7. حلقات الموسم
     if (req.url.startsWith('/api/tv/season')) {
         const id = urlParams.searchParams.get('id');
         const seasonNum = urlParams.searchParams.get('season') || '1';
@@ -169,7 +175,71 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // تقديم واجهة الموقع
+    // 8. محرك البحث عن الترجمة العربية التلقائي المباشر
+    if (req.url.startsWith('/api/subtitles/find')) {
+        const imdbId = urlParams.searchParams.get('imdb');
+        const isTv = urlParams.searchParams.get('is_tv') === 'true';
+        const season = urlParams.searchParams.get('season') || '1';
+        const episode = urlParams.searchParams.get('episode') || '1';
+
+        if (!imdbId) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ subtitles: [] }));
+        }
+
+        try {
+            const queryPath = isTv ? `series/${imdbId}:${season}:${episode}.json` : `movie/${imdbId}.json`;
+            const subRes = await fetch(`https://opensubtitles-v3.strem.io/subtitles/${queryPath}`);
+            const subData = await subRes.json();
+            
+            // تصفية الترجمات العربية فقط
+            const arabicSubs = (subData.subtitles || [])
+                .filter(s => s.lang === 'ara' || s.lang === 'ar' || (s.id && s.id.toLowerCase().includes('arabic')))
+                .map(s => ({
+                    id: s.id,
+                    lang: 'ar',
+                    label: 'العربية',
+                    url: `/api/subtitles/proxy?url=${encodeURIComponent(s.url)}`
+                }));
+
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ subtitles: arabicSubs }));
+        } catch (err) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ subtitles: [] }));
+        }
+        return;
+    }
+
+    // 9. بروكسي فك حظر ملفات الترجمة (.vtt / .srt)
+    if (req.url.startsWith('/api/subtitles/proxy')) {
+        const subUrl = urlParams.searchParams.get('url');
+        if (!subUrl) {
+            res.writeHead(400);
+            return res.end();
+        }
+        try {
+            const fetchRes = await fetch(subUrl);
+            let subText = await fetchRes.text();
+
+            // تحويل SRT إلى WebVTT إذا تطلب الأمر ليتعرف عليها المشغل فوراً
+            if (!subText.trim().startsWith('WEBVTT')) {
+                subText = 'WEBVTT\n\n' + subText.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
+            }
+
+            res.writeHead(200, {
+                'Content-Type': 'text/vtt; charset=utf-8',
+                'Cache-Control': 'public, max-age=86400'
+            });
+            res.end(subText);
+        } catch (err) {
+            res.writeHead(404);
+            res.end();
+        }
+        return;
+    }
+
+    // تقديم الواجهة
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
