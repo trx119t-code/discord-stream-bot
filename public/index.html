@@ -38,7 +38,6 @@
             min-height: 100vh;
         }
 
-        /* 1. الشريط العلوي في المنتصف */
         header {
             position: fixed;
             top: 20px;
@@ -138,7 +137,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* 2. واجهة البحث الاحترافية الكاملة (مطابقة لـ CineLite) */
+        /* واجهة البحث */
         #search-view {
             display: none;
             padding: 95px 48px 60px 48px;
@@ -211,7 +210,6 @@
             right: 20px;
         }
 
-        /* كبسولات الفلاتر مع العداد */
         .filter-pills-row {
             display: flex;
             align-items: center;
@@ -254,7 +252,6 @@
             background: rgba(0, 0, 0, 0.15);
         }
 
-        /* شبكة نتائج البحث */
         .search-section {
             margin-top: 36px;
         }
@@ -284,10 +281,6 @@
             display: flex;
             align-items: center;
             gap: 4px;
-        }
-
-        .view-all-link:hover {
-            text-decoration: underline;
         }
 
         .search-cards-grid {
@@ -346,7 +339,7 @@
             font-weight: 800;
         }
 
-        /* 3. البنر الرئيسي */
+        /* البنر الرئيسي */
         .hero-banner {
             position: relative;
             width: 100%;
@@ -484,7 +477,7 @@
             background: #FFFFFF;
         }
 
-        /* 4. التقسيم العام للسينما والصفوف الأفقية */
+        /* السلاسل والصفوف */
         .collections-wrap {
             padding: 24px 48px 10px 48px;
         }
@@ -687,7 +680,6 @@
             margin-top: 2px;
         }
 
-        /* 5. القائمة الجانبية (Right Sidebar) */
         .sidebar-column {
             display: flex;
             flex-direction: column;
@@ -767,7 +759,7 @@
             gap: 6px;
         }
 
-        /* 6. صفحة الإعدادات */
+        /* صفحة الإعدادات */
         #settings-view {
             display: none;
             padding: 100px 48px 60px 48px;
@@ -828,7 +820,7 @@
             cursor: pointer;
         }
 
-        /* 7. صفحة تفاصيل العمل */
+        /* صفحة تفاصيل العمل */
         #details-view {
             display: none;
             position: fixed;
@@ -957,7 +949,7 @@
             object-fit: cover;
         }
 
-        /* 8. مشغل السينما الفخم مع محول السيرفر السريع لمنع تعليق التقديم */
+        /* مشغل السينما الفخم */
         #cinema-player-modal {
             display: none;
             position: fixed;
@@ -1038,7 +1030,7 @@
 </head>
 <body>
 
-    <!-- 1. شريط التنقل في المنتصف تماماً -->
+    <!-- الشريط العلوي -->
     <header>
         <nav class="center-nav-pill">
             <button class="pill-btn active" id="tab-home" onclick="switchTab('home')">
@@ -1066,7 +1058,7 @@
         </nav>
     </header>
 
-    <!-- 2. واجهة البحث الاحترافية (CineLite Search View) -->
+    <!-- واجهة البحث الاحترافية -->
     <div id="search-view">
         <div class="search-hero-box">
             <div class="search-input-wrap">
@@ -1075,7 +1067,6 @@
                 <button id="searchClearBtn" class="search-clear-btn" onclick="clearSearch()">✕</button>
             </div>
 
-            <!-- كبسولات الفلاتر مع العداد -->
             <div class="filter-pills-row" id="filterPillsRow" style="display:none;">
                 <button class="filter-pill active" onclick="setSearchFilter('all', this)">
                     <span data-i18n="allResults">كل النتائج</span>
@@ -1096,9 +1087,7 @@
             </div>
         </div>
 
-        <!-- نتائج البحث المصنفة -->
         <div id="searchResultsWrap">
-            <!-- قسم الأفلام -->
             <div class="search-section" id="searchMoviesSec" style="display:none;">
                 <div class="search-sec-header">
                     <h2 class="search-sec-title">🎞️ <span data-i18n="movies">الأفلام</span> (<span id="titleCountMovies">0</span>)</h2>
@@ -1107,7 +1096,6 @@
                 <div class="search-cards-grid" id="searchMoviesGrid"></div>
             </div>
 
-            <!-- قسم المسلسلات -->
             <div class="search-section" id="searchTvSec" style="display:none;">
                 <div class="search-sec-header">
                     <h2 class="search-sec-title">📺 <span data-i18n="series">المسلسلات</span> (<span id="titleCountTv">0</span>)</h2>
@@ -1116,7 +1104,6 @@
                 <div class="search-cards-grid" id="searchTvGrid"></div>
             </div>
 
-            <!-- قسم الممثلين -->
             <div class="search-section" id="searchActorsSec" style="display:none;">
                 <div class="search-sec-header">
                     <h2 class="search-sec-title">🎭 <span data-i18n="actors">طاقم التمثيل والممثلين</span> (<span id="titleCountActors">0</span>)</h2>
@@ -1128,7 +1115,6 @@
 
     <!-- الصفحة الرئيسية -->
     <div id="home-view">
-        <!-- البنر الرئيسي -->
         <div class="hero-banner" id="heroBanner">
             <div class="hero-overlay"></div>
             <div class="hero-content">
@@ -1147,7 +1133,6 @@
             <div class="slider-dots" id="sliderDots"></div>
         </div>
 
-        <!-- السلاسل السينمائية (Collections) -->
         <div class="collections-wrap">
             <h2 class="sec-title" data-i18n="collections">السلاسل السينمائية (Collections)</h2>
             <div class="collections-grid">
@@ -1178,7 +1163,6 @@
             </div>
         </div>
 
-        <!-- تقسيم الموقع: السلايدرات يسار + القائمة الجانبية يمين -->
         <div class="cinema-layout-grid">
             <div class="sliders-main-column">
                 <section>
@@ -1215,7 +1199,6 @@
                 </section>
             </div>
 
-            <!-- القائمة الجانبية (Right Sidebar) -->
             <div class="sidebar-column">
                 <div>
                     <h3 class="sidebar-section-title">| NOW IN THEATERS</h3>
@@ -1297,7 +1280,7 @@
         </div>
     </div>
 
-    <!-- مشغل السينما الفخم مع منع تعليق التقديم 10 ثوانٍ -->
+    <!-- مشغل السينما الفخم -->
     <div id="cinema-player-modal">
         <div class="player-top-header">
             <div style="display:flex; align-items:center; gap:14px;">
@@ -1308,9 +1291,8 @@
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap:12px;">
-                <!-- محول السيرفر السريع في حال تعليق أي سيرفر -->
                 <button class="player-server-pill" onclick="cyclePlayerServer()" title="تبديل السيرفر لمنع التعليق">
-                    ⚡ <span id="currentServerLabel">سيرفر البرق (Fast Seek)</span>
+                    ⚡ <span id="currentServerLabel">سيرفر البرق (VidLink VIP + ترجمة)</span>
                 </button>
                 <button class="btn-next-ep" id="btnNextEpisode" onclick="playNextEpisode()" data-i18n="nextEp">الحلقة التالية ⏭️</button>
             </div>
@@ -1326,7 +1308,7 @@
         let heroInterval = null;
         let currentDetailItem = null;
         let currentPlayingInfo = null;
-        let activeServerIdx = 0; // 0 = VidLink Fast Seek, 1 = Auto VIP CDN, 2 = EmbedSu
+        let activeServerIdx = 0; // 0 = VidLink VIP (مع ترجمة تلقائية), 1 = MultiEmbed Pro, 2 = EmbedSu VIP
         let myList = JSON.parse(localStorage.getItem('orbit_mylist') || '[]');
         let searchDebounce = null;
         let currentSearchResults = { movies: [], tv: [], actors: [] };
@@ -1469,7 +1451,6 @@
             }
         }
 
-        /* 3. منطق واجهة البحث الكاملة المصنفة (نفس لقطة الشاشة) */
         function onSearchInput(query) {
             const clearBtn = document.getElementById('searchClearBtn');
             clearBtn.style.display = query.trim() ? 'flex' : 'none';
@@ -1512,7 +1493,6 @@
 
                 const total = currentSearchResults.movies.length + currentSearchResults.tv.length + currentSearchResults.actors.length;
 
-                // تحديث العدادات
                 document.getElementById('countAll').innerText = total;
                 document.getElementById('countMovies').innerText = currentSearchResults.movies.length;
                 document.getElementById('countTv').innerText = currentSearchResults.tv.length;
@@ -1603,7 +1583,6 @@
             });
         }
 
-        /* 4. تحميل المحتوى العام */
         async function loadAllContent() {
             try {
                 const [trendRes, nowPlayRes, upRes, animeRes] = await Promise.all([
@@ -1839,20 +1818,22 @@
             }
         }
 
-        /* 5. مشغل السينما الفخم مع تحسين سرعة التقديم والتأخير (Instant Seek) */
+        /* 5. مشغل السينما مع إصلاح الترجمة العربية بالكامل وترقية السيرفرات السريعة */
         function getOptimalStreamUrl(id, isTv, season, episode, serverType = 0) {
             const primaryHex = encodeURIComponent(savedTheme.replace('#',''));
+            
             if (serverType === 0) {
-                // سيرفر البرق الفوري مع تفعيل التخزين المسبق السريع
+                // سيرفر 1: VidLink VIP مع تفعيل بارامترات الترجمة العربية الإجبارية (sub=ar&sub_lang=Arabic)
                 return isTv 
-                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=${primaryHex}&autoplay=true`
-                    : `https://vidlink.pro/movie/${id}?primaryColor=${primaryHex}&autoplay=true`;
+                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=${primaryHex}&autoplay=true&sub=ar&sub.info=ar&sub_lang=Arabic`
+                    : `https://vidlink.pro/movie/${id}?primaryColor=${primaryHex}&autoplay=true&sub=ar&sub.info=ar&sub_lang=Arabic`;
             } else if (serverType === 1) {
-                // سيرفر CDN بديل فائق السرعة
+                // سيرفر 2 (الجديل المحسن): MultiEmbed Pro - سريع جداً ويدعم التقديم والتأخير بثبات مع الترجمة
                 return isTv
-                    ? `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}`
-                    : `https://vidsrc.cc/v2/embed/movie/${id}`;
+                    ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
+                    : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
             } else {
+                // سيرفر 3: EmbedSu VIP السريع
                 return isTv
                     ? `https://embed.su/embed/tv/${id}/${season}/${episode}`
                     : `https://embed.su/embed/movie/${id}`;
@@ -1865,7 +1846,7 @@
             document.getElementById('playerWorkTitle').innerText = workTitle;
             document.getElementById('playerEpTitle').innerText = epTitle;
             document.getElementById('btnNextEpisode').style.display = isTv ? 'block' : 'none';
-            document.getElementById('currentServerLabel').innerText = "سيرفر البرق (Fast Seek)";
+            document.getElementById('currentServerLabel').innerText = "سيرفر البرق (VidLink VIP + ترجمة)";
 
             document.getElementById('cinemaIframe').src = getOptimalStreamUrl(id, isTv, season, episode, 0);
             document.getElementById('cinema-player-modal').style.display = 'flex';
@@ -1874,7 +1855,11 @@
         function cyclePlayerServer() {
             if (!currentPlayingInfo) return;
             activeServerIdx = (activeServerIdx + 1) % 3;
-            const labels = ["سيرفر البرق (Fast Seek)", "سيرفر CDN مباشر", "سيرفر البديل السريع"];
+            const labels = [
+                "سيرفر البرق (VidLink VIP + ترجمة)",
+                "سيرفر MultiEmbed (سريع وبدون تعليق)",
+                "سيرفر EmbedSu (VIP الاحتياطي)"
+            ];
             document.getElementById('currentServerLabel').innerText = labels[activeServerIdx];
             document.getElementById('cinemaIframe').src = getOptimalStreamUrl(
                 currentPlayingInfo.id,
