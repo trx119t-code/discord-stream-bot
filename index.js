@@ -100,18 +100,16 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 4. جلب الأنمي والتصنيفات الدقيقة (قتال، فضاء، غموض)
+    // 4. استكشاف التصنيفات (أنمي، فضاء، إلخ)
     if (req.url.startsWith('/api/discover')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const media = urlParams.searchParams.get('media') || 'tv';
         const genres = urlParams.searchParams.get('genres') || '';
-        const keyword = urlParams.searchParams.get('keyword') || '';
         const origin = urlParams.searchParams.get('origin') || '';
 
         let apiUrl = `https://api.themoviedb.org/3/discover/${media}?api_key=${TMDB_API_KEY}&language=ar-SA&sort_by=popularity.desc&page=1`;
         if (genres) apiUrl += `&with_genres=${genres}`;
         if (origin) apiUrl += `&with_origin_country=${origin}`;
-        if (keyword) apiUrl += `&with_keywords=${keyword}`;
 
         try {
             const tmdbRes = await fetch(apiUrl);
@@ -125,28 +123,13 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 5. منصات البث (Netflix وغيرها)
-    if (req.url.startsWith('/api/provider')) {
-        const urlParams = new URL(req.url, `http://${req.headers.host}`);
-        const providerId = urlParams.searchParams.get('id') || '8';
-        try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_watch_providers=${providerId}&watch_region=SA&language=ar-SA&sort_by=popularity.desc`);
-            const data = await tmdbRes.text();
-            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
-        } catch (err) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ results: [] }));
-        }
-        return;
-    }
-
-    // 6. تفاصيل المسلسل
-    if (req.url.startsWith('/api/tv/details')) {
+    // 5. تفاصيل العمل الكاملة (مع طاقم التمثيل Cast + الأعمال المشابهة Similar)
+    if (req.url.startsWith('/api/item/full-details')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
+        const media = urlParams.searchParams.get('media') || 'tv';
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=ar-SA`);
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/${media}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits,similar&language=ar-SA`);
             const data = await tmdbRes.text();
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(data);
@@ -157,7 +140,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 7. حلقات الموسم
+    // 6. جلب حلقات الموسم
     if (req.url.startsWith('/api/tv/season')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
@@ -174,7 +157,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // تقديم صفحة الواجهة
+    // تقديم واجهة الويب
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -231,7 +214,7 @@ client.on('messageCreate', async (message) => {
         }
 
         const embed = new EmbedBuilder()
-            .setColor('#FF2228')
+            .setColor('#6366F1')
             .setTitle('🍿 سينما ديسكورد التفاعلية (Orbit Cinema)')
             .setDescription(`جاهز للعرض داخل: <#${voiceChannel.id}>\n\nاضغط على الزر بالأسفل لبدء المشاهدة مباشرة!`)
             .setImage('https://image.tmdb.org/t/p/w1280/8Z8W5pE2u4bX9QG5N0oP7jH8XvW.jpg');
