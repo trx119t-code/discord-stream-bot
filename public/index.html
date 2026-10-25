@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamFlow | ستريم فلو</title>
+    <title>Orbit Stream</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-body: #0d0e12;
-            --bg-surface: #14161d;
-            --bg-card: #191c24;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
+            --bg-base: #0b0c10;
+            --bg-surface: #121319;
+            --bg-elevated: #181a22;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.22);
+            --text-primary: #f8fafc;
+            --text-muted: #94a3b8;
             --accent-blue: #3b82f6;
-            --accent-hover: #2563eb;
-            --border-light: rgba(255, 255, 255, 0.07);
-            --pill-bg: rgba(255, 255, 255, 0.06);
-            --radius-card: 12px;
+            --radius-pill: 50px;
+            --radius-card: 10px;
         }
 
         * {
@@ -31,144 +31,149 @@
         }
 
         body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
             overflow-x: hidden;
             min-height: 100vh;
         }
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-body); }
-        ::-webkit-scrollbar-thumb { background: #262933; border-radius: 6px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: #20232c; border-radius: 6px; }
         ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
 
-        /* الهيدر العلوي الهادئ الصغير المستوحى من الصور */
+        /* الهيدر العلوي بكبسولة التنقل (الصورة 5) */
         .site-header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            background: rgba(13, 14, 18, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            padding: 16px 4%;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 14px 4%;
-            border-bottom: 1px solid var(--border-light);
+            background: linear-gradient(180deg, rgba(11, 12, 16, 0.9) 0%, transparent 100%);
         }
 
         .header-logo {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: #fff;
-            letter-spacing: -0.5px;
+            gap: 8px;
         }
 
-        .header-logo span {
-            color: var(--accent-blue);
-        }
+        .header-logo span { color: var(--accent-blue); }
 
-        .nav-capsule {
-            background: var(--pill-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 50px;
-            padding: 4px;
+        .header-nav-capsule {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-pill);
+            padding: 4px 6px;
             display: flex;
             align-items: center;
             gap: 4px;
         }
 
-        .nav-capsule button {
+        .nav-link-btn {
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 6px 18px;
-            border-radius: 50px;
+            padding: 7px 18px;
+            border-radius: var(--radius-pill);
             font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .nav-capsule button:hover {
-            color: #fff;
-        }
+        .nav-link-btn:hover { color: #fff; }
 
-        .nav-capsule button.active {
-            background: #fff;
-            color: #0d0e12;
+        .nav-link-btn.active {
+            background: #ffffff;
+            color: #0b0c10;
             font-weight: 700;
         }
 
-        .header-right {
+        .header-tools {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
-        .search-pill-box {
+        .btn-circle-tool {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-subtle);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-circle-tool:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: var(--border-hover);
+        }
+
+        /* نافذة البحث المدمجة */
+        .search-expand-bar {
             position: relative;
-            width: 220px;
+            display: none;
         }
 
-        .search-pill-box input {
-            width: 100%;
-            background: var(--pill-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 50px;
-            padding: 7px 36px 7px 14px;
+        .search-expand-bar input {
+            background: rgba(18, 19, 25, 0.9);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-pill);
+            padding: 7px 34px 7px 14px;
             color: #fff;
             font-size: 0.82rem;
             outline: none;
-            transition: 0.2s;
+            width: 220px;
         }
 
-        .search-pill-box input:focus {
-            border-color: rgba(255, 255, 255, 0.25);
-            background: #191c24;
-            width: 280px;
-        }
-
-        .search-pill-icon {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            pointer-events: none;
-        }
+        .search-expand-bar input:focus { border-color: rgba(255, 255, 255, 0.3); }
 
         /* البانر السينمائي الهادئ */
-        .hero-banner {
+        .hero-viewport {
             position: relative;
             width: 100%;
-            height: 72vh;
-            min-height: 520px;
+            height: 74vh;
+            min-height: 540px;
             background-size: cover;
             background-position: center 20%;
             display: flex;
             align-items: flex-end;
-            padding: 0 4% 60px 4%;
-            margin-bottom: 25px;
+            padding: 0 4% 65px 4%;
+            margin-bottom: 12px;
+            transition: background-image 0.6s ease;
         }
 
-        .hero-banner::after {
+        .hero-viewport::after {
             content: '';
             position: absolute;
             inset: 0;
             background: 
-                linear-gradient(180deg, rgba(13, 14, 18, 0.4) 0%, transparent 40%, rgba(13, 14, 18, 0.85) 75%, var(--bg-body) 100%),
-                linear-gradient(270deg, rgba(13, 14, 18, 0.9) 0%, rgba(13, 14, 18, 0.4) 50%, transparent 100%);
+                linear-gradient(180deg, rgba(11, 12, 16, 0.4) 0%, transparent 35%, rgba(11, 12, 16, 0.8) 75%, var(--bg-base) 100%),
+                linear-gradient(270deg, rgba(11, 12, 16, 0.88) 0%, rgba(11, 12, 16, 0.35) 55%, transparent 100%);
         }
 
-        .hero-content {
+        .hero-info-box {
             position: relative;
             z-index: 2;
             max-width: 620px;
@@ -177,40 +182,40 @@
             gap: 14px;
         }
 
-        .hero-meta {
+        .hero-meta-row {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
             font-weight: 600;
         }
 
-        .hero-meta .rating-tag {
-            background: rgba(245, 158, 11, 0.15);
+        .hero-rate-chip {
             color: #fbbf24;
-            padding: 2px 7px;
-            border-radius: 6px;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        .hero-meta .badge {
-            background: var(--pill-bg);
-            border: 1px solid var(--border-light);
-            padding: 2px 8px;
-            border-radius: 6px;
-            color: #e5e7eb;
+        .hero-meta-chip {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-subtle);
+            padding: 2px 7px;
+            border-radius: 5px;
+            color: #e2e8f0;
         }
 
-        .hero-title {
-            font-size: 2.8rem;
+        .hero-main-title {
+            font-size: 3rem;
             font-weight: 800;
-            line-height: 1.15;
+            line-height: 1.12;
             letter-spacing: -0.5px;
         }
 
-        .hero-desc {
-            color: #9ca3af;
+        .hero-summary {
+            color: #94a3b8;
             font-size: 0.95rem;
             line-height: 1.6;
             display: -webkit-box;
@@ -219,20 +224,21 @@
             overflow: hidden;
         }
 
-        .hero-btns {
+        /* أزرار المشاهدة الكبسولية (الصورة 5) */
+        .hero-action-buttons {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-top: 6px;
         }
 
-        .btn-play-white {
-            background: #fff;
-            color: #0d0e12;
+        .btn-capsule-play {
+            background: #ffffff;
+            color: #0b0c10;
             border: none;
-            padding: 11px 26px;
-            border-radius: 50px;
-            font-size: 0.9rem;
+            padding: 11px 32px;
+            border-radius: var(--radius-pill);
+            font-size: 0.92rem;
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -241,90 +247,185 @@
             transition: 0.2s;
         }
 
-        .btn-play-white:hover {
-            background: #e5e7eb;
+        .btn-capsule-play:hover {
+            background: #e2e8f0;
             transform: scale(1.02);
         }
 
-        .btn-info-dark {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 1px solid var(--border-light);
-            padding: 11px 22px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
+        .btn-circle-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.09);
             backdrop-filter: blur(10px);
-            transition: 0.2s;
-        }
-
-        .btn-info-dark:hover {
-            background: rgba(255, 255, 255, 0.18);
-        }
-
-        /* شبكات البث مثل Netflix و Disney وغيرها */
-        .providers-bar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            overflow-x: auto;
-            padding: 10px 4% 30px 4%;
-        }
-
-        .provider-item {
-            flex: 0 0 auto;
-            background: var(--bg-surface);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 12px 24px;
+            border: 1px solid var(--border-subtle);
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 700;
-            font-size: 0.85rem;
-            color: #9ca3af;
+            transition: 0.2s;
+            font-size: 1.1rem;
         }
 
-        .provider-item:hover, .provider-item.active {
+        .btn-circle-icon:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: var(--border-hover);
+        }
+
+        /* مؤشرات البانر المتقطعة (الصورة 3) */
+        .hero-dash-stepper {
+            position: absolute;
+            bottom: 30px;
+            left: 4%;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        body[dir="ltr"] .hero-dash-stepper { left: auto; right: 4%; }
+
+        .dash-step {
+            width: 24px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dash-step.active {
+            width: 42px;
+            background: #ffffff;
+        }
+
+        /* فلتر التصنيفات الكبسولي المتصل (الصورة 1) */
+        .genres-capsule-scroll {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 10px 4% 20px 4%;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 24px;
+        }
+
+        .genre-capsule-pill {
+            flex: 0 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            padding: 6px 18px;
+            border-radius: var(--radius-pill);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .genre-capsule-pill:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.09);
+        }
+
+        .genre-capsule-pill.active {
+            background: #ffffff;
+            color: #0b0c10;
+            border-color: #ffffff;
+            font-weight: 700;
+        }
+
+        /* فلاتر المسلسلات المنسدلة الأنيقة (الصورة 4) */
+        .catalog-filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+            padding: 0 4%;
+        }
+
+        .filter-dropdown-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            padding: 7px 16px;
+            border-radius: var(--radius-pill);
+            font-size: 0.82rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .filter-dropdown-select:hover {
+            border-color: var(--border-hover);
+            color: #fff;
+        }
+
+        .filter-dropdown-select option {
+            background: #14161d;
+            color: #fff;
+        }
+
+        /* شريط منصات البث (الصورة 2) */
+        .providers-capsule-strip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 0 4% 24px 4%;
+        }
+
+        .provider-logo-card {
+            flex: 0 0 auto;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #94a3b8;
+            transition: all 0.2s;
+        }
+
+        .provider-logo-card:hover, .provider-logo-card.active {
+            background: var(--bg-elevated);
             border-color: rgba(255, 255, 255, 0.3);
             color: #fff;
-            background: var(--bg-card);
             transform: translateY(-2px);
         }
 
-        /* حاوية الصفوف */
-        .main-wrapper {
+        /* الصفوف وتنسيق البوسترات */
+        .content-container {
             padding: 0 4% 80px 4%;
             display: flex;
             flex-direction: column;
-            gap: 40px;
+            gap: 36px;
         }
 
-        .row-header {
+        .row-heading-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
-        .row-title {
+        .row-clean-title {
             font-size: 1.25rem;
             font-weight: 700;
-            color: #f3f4f6;
+            color: #f8fafc;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .row-title span {
-            color: var(--accent-blue);
-        }
-
-        /* شريط البوسترات الهادئ المريح للعين */
-        .posters-row {
+        .posters-horizontal-row {
             display: flex;
             gap: 16px;
             overflow-x: auto;
@@ -332,87 +433,84 @@
             padding-bottom: 10px;
         }
 
-        .clean-poster-card {
-            flex: 0 0 170px;
-            position: relative;
-            cursor: pointer;
+        .clean-media-unit {
+            flex: 0 0 165px;
             display: flex;
             flex-direction: column;
             gap: 8px;
+            cursor: pointer;
             transition: transform 0.2s;
         }
 
-        .clean-poster-card:hover {
-            transform: translateY(-4px);
-        }
+        .clean-media-unit:hover { transform: translateY(-4px); }
 
-        .poster-img-box {
+        .unit-poster-box {
             position: relative;
             width: 100%;
-            height: 250px;
+            height: 245px;
             border-radius: var(--radius-card);
             overflow: hidden;
             background: var(--bg-surface);
-            border: 1px solid var(--border-light);
+            border: 1px solid var(--border-subtle);
         }
 
-        .poster-img-box img {
+        .unit-poster-box img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .poster-rate {
+        .unit-rate-badge {
             position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(13, 14, 18, 0.8);
+            top: 7px;
+            right: 7px;
+            background: rgba(11, 12, 16, 0.85);
             backdrop-filter: blur(8px);
             color: #fbbf24;
-            padding: 2px 7px;
-            border-radius: 6px;
+            padding: 2px 6px;
+            border-radius: 5px;
             font-size: 0.72rem;
             font-weight: 700;
         }
 
-        .poster-info-title {
+        .unit-title-text {
             font-size: 0.88rem;
             font-weight: 600;
-            color: #f3f4f6;
+            color: #f8fafc;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .poster-info-meta {
+        .unit-meta-sub {
             font-size: 0.75rem;
             color: var(--text-muted);
         }
 
-        /* أفضل 10 أعمال بنفس أسلوب الصور (Top 10) */
-        .top10-poster-row {
+        /* Top 10 */
+        .top10-items-strip {
             display: flex;
-            gap: 22px;
+            gap: 20px;
             overflow-x: auto;
             padding: 10px 0;
         }
 
-        .top10-item {
-            flex: 0 0 195px;
-            height: 255px;
+        .top10-card-unit {
+            flex: 0 0 190px;
+            height: 250px;
             position: relative;
             display: flex;
             align-items: flex-end;
             cursor: pointer;
         }
 
-        .top10-big-num {
+        .top10-outline-number {
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 8.5rem;
             font-weight: 900;
             line-height: 0.75;
             color: transparent;
-            -webkit-text-stroke: 2px rgba(255, 255, 255, 0.25);
+            -webkit-text-stroke: 2px rgba(255, 255, 255, 0.2);
             position: absolute;
             right: -10px;
             bottom: 0;
@@ -420,31 +518,27 @@
             transition: all 0.2s;
         }
 
-        .top10-item:hover .top10-big-num {
-            -webkit-text-stroke: 2px #fff;
+        .top10-card-unit:hover .top10-outline-number {
+            -webkit-text-stroke: 2px #ffffff;
             transform: scale(1.05);
         }
 
-        .top10-img-container {
-            width: 140px;
-            height: 220px;
+        .top10-thumb-container {
+            width: 138px;
+            height: 218px;
             border-radius: var(--radius-card);
             overflow: hidden;
             position: relative;
             z-index: 2;
             margin-right: auto;
-            border: 1px solid var(--border-light);
+            border: 1px solid var(--border-subtle);
             background: var(--bg-surface);
         }
 
-        .top10-img-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .top10-thumb-container img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* نافذة الحلقات والتفاصيل الهادئة */
-        #detailsOverlay {
+        /* نافذة الحلقات الهادئة */
+        #detailsModal {
             display: none;
             position: fixed;
             inset: 0;
@@ -456,21 +550,21 @@
             padding: 24px;
         }
 
-        .details-window {
+        .details-inner-card {
             width: 100%;
-            max-width: 900px;
+            max-width: 880px;
             max-height: 85vh;
-            background: #14161d;
-            border: 1px solid var(--border-light);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
             border-radius: 16px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
         }
 
-        .details-header-img {
+        .details-hero-cover {
             position: relative;
-            height: 300px;
+            height: 290px;
             background-size: cover;
             background-position: center 20%;
             padding: 24px;
@@ -478,34 +572,34 @@
             align-items: flex-end;
         }
 
-        .details-header-img::after {
+        .details-hero-cover::after {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, transparent 40%, #14161d 100%);
+            background: linear-gradient(180deg, transparent 40%, var(--bg-surface) 100%);
         }
 
-        .details-content {
+        .details-card-body {
             position: relative;
-            z-index: 2;
-            padding: 0 24px 30px 24px;
+            z-index: 3;
+            padding: 0 24px 28px 24px;
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
 
-        .episodes-grid {
+        .episodes-clean-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 12px;
             margin-top: 10px;
         }
 
-        .episode-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-light);
-            border-radius: 10px;
-            padding: 10px;
+        .ep-row-item {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 8px 10px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -513,31 +607,31 @@
             transition: 0.2s;
         }
 
-        .episode-card:hover {
-            border-color: rgba(255, 255, 255, 0.25);
-            background: #20242f;
+        .ep-row-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
-        .episode-card img {
-            width: 90px;
-            height: 55px;
-            border-radius: 6px;
+        .ep-row-thumb {
+            width: 85px;
+            height: 52px;
+            border-radius: 5px;
             object-fit: cover;
-            background: #0d0e12;
+            background: #0b0c10;
         }
 
-        /* مشغل الفيديو الهادئ مع أفضل السيرفرات السريعة */
-        #playerModal {
+        /* مشغل الفيديو الهادئ مع السيرفرات السريعة */
+        #watchModal {
             display: none;
             position: fixed;
             inset: 0;
             background: #000;
             z-index: 2000;
             flex-direction: column;
-            padding: 16px 20px;
+            padding: 14px 20px;
         }
 
-        .player-top {
+        .watch-top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -546,42 +640,43 @@
             gap: 10px;
         }
 
-        .server-switcher {
+        .watch-servers-capsule {
             display: flex;
             gap: 6px;
-            background: #14161d;
+            background: var(--bg-surface);
             padding: 4px;
-            border-radius: 50px;
-            border: 1px solid var(--border-light);
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--border-subtle);
         }
 
-        .server-switcher button {
+        .watch-servers-capsule button {
             background: transparent;
             border: none;
             color: var(--text-muted);
             padding: 6px 14px;
-            border-radius: 50px;
+            border-radius: var(--radius-pill);
             font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
         }
 
-        .server-switcher button.active {
-            background: var(--accent-blue);
-            color: #fff;
+        .watch-servers-capsule button.active {
+            background: #ffffff;
+            color: #0b0c10;
+            font-weight: 700;
         }
 
-        .player-screen {
+        .watch-video-container {
             flex: 1;
             width: 100%;
             border-radius: 12px;
             overflow: hidden;
-            background: #0d0e12;
-            border: 1px solid var(--border-light);
+            background: #0b0c10;
+            border: 1px solid var(--border-subtle);
         }
 
-        #videoIframe {
+        #watchIframe {
             width: 100%;
             height: 100%;
             border: none;
@@ -590,156 +685,214 @@
 </head>
 <body>
 
-    <!-- الهيدر العلوي النظيف -->
+    <!-- الهيدر بكبسولة التنقل (الصورة 5) -->
     <header class="site-header">
-        <div class="header-logo" onclick="showSection('home')">
-            Stream<span>Flow</span>
+        <div class="header-logo" onclick="switchMainTab('home')">
+            Orbit<span>Stream</span>
         </div>
 
-        <nav class="nav-capsule">
-            <button class="active" id="btn-home" onclick="showSection('home')">الرئيسية</button>
-            <button id="btn-movies" onclick="filterCatalog('movie')">الأفلام</button>
-            <button id="btn-series" onclick="filterCatalog('tv')">المسلسلات</button>
-            <button id="btn-anime" onclick="filterAnime()">الأنمي</button>
+        <nav class="header-nav-capsule">
+            <button class="nav-link-btn active" id="tab-home" onclick="switchMainTab('home')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                الرئيسية
+            </button>
+            <button class="nav-link-btn" id="tab-movies" onclick="switchMainTab('movies')">الأفلام</button>
+            <button class="nav-link-btn" id="tab-series" onclick="switchMainTab('series')">المسلسلات</button>
+            <button class="nav-link-btn" id="tab-anime" onclick="switchMainTab('anime')">الأنمي</button>
         </nav>
 
-        <div class="header-right">
-            <div class="search-pill-box">
-                <span class="search-pill-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="بحث عن فيلم، مسلسل، أنمي..." oninput="handleSearch(this.value)">
+        <div class="header-tools">
+            <div class="search-expand-bar" id="searchExpandBar">
+                <input type="text" id="searchInput" placeholder="بحث..." oninput="executeSearch(this.value)">
             </div>
+            <button class="btn-circle-tool" onclick="toggleSearchInput()">🔍</button>
         </div>
     </header>
 
-    <!-- البانر السينمائي العريض -->
-    <div id="homePage">
-        <section class="hero-banner" id="heroBanner">
-            <div class="hero-content">
-                <div class="hero-meta">
-                    <span class="rating-tag" id="heroRate">★ 8.8</span>
-                    <span class="badge" id="heroYear">2026</span>
-                    <span class="badge" id="heroType">مسلسل</span>
-                    <span class="badge">4K HDR</span>
+    <!-- البانر السينمائي العريض مع الأزرار الكبسولية والمؤشرات (الصور 3 و 5) -->
+    <div id="homeView">
+        <section class="hero-viewport" id="heroViewport">
+            <div class="hero-info-box">
+                <div class="hero-meta-row">
+                    <span class="hero-rate-chip" id="heroRate">★ 8.8</span>
+                    <span class="hero-meta-chip" id="heroYear">2026</span>
+                    <span class="hero-meta-chip" id="heroType">مسلسل</span>
+                    <span class="hero-meta-chip">4K HDR</span>
                 </div>
-                <h1 class="hero-title" id="heroTitle">جاري تحميل العرض...</h1>
-                <p class="hero-desc" id="heroDesc">استمتع بتجربة مشاهدة مريحة وهادئة بدون إعلانات مع أفضل السيرفرات السريعة والترجمة التلقائية.</p>
-                <div class="hero-btns">
-                    <button class="btn-play-white" id="heroPlayBtn">▶ تشغيل الآن</button>
-                    <button class="btn-info-dark" id="heroInfoBtn">تفاصيل العمل</button>
+                <h1 class="hero-main-title" id="heroTitle">جاري التحميل...</h1>
+                <p class="hero-summary" id="heroSummary"></p>
+                <div class="hero-action-buttons">
+                    <button class="btn-capsule-play" id="heroPlayBtn">▶ Play</button>
+                    <button class="btn-circle-icon" id="heroSaveBtn" title="حفظ">+</button>
+                    <button class="btn-circle-icon" id="heroDetailsBtn" title="معلومات">ℹ</button>
                 </div>
             </div>
+
+            <!-- مؤشرات البانر المتقطعة (الصورة 3) -->
+            <div class="hero-dash-stepper" id="heroDashStepper"></div>
         </section>
 
-        <!-- شبكات البث العالمية المريحة للعين -->
-        <div class="providers-bar">
-            <div class="provider-item active" onclick="loadTrending()">🔥 الرائج اليوم</div>
-            <div class="provider-item" onclick="filterByProvider('netflix')">Netflix</div>
-            <div class="provider-item" onclick="filterByProvider('appletv')">Apple TV+</div>
-            <div class="provider-item" onclick="filterByProvider('disney')">Disney+</div>
-            <div class="provider-item" onclick="filterByProvider('hbo')">HBO Max</div>
-            <div class="provider-item" onclick="filterByProvider('prime')">Prime Video</div>
-            <div class="provider-item" onclick="filterAnime()">Crunchyroll</div>
+        <!-- فلتر التصنيفات الكبسولي المتصل (الصورة 1) -->
+        <div class="genres-capsule-scroll" id="genresCapsuleScroll">
+            <button class="genre-capsule-pill active" onclick="filterByGenre('')">Trending</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('28,10759')">Action</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('12')">Adventure</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('16')">Animation</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('35')">Comedy</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('80')">Crime</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('99')">Documentary</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('18')">Drama</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('10751')">Family</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('14,10765')">Fantasy</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('36')">History</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('27')">Horror</button>
+            <button class="genre-capsule-pill" onclick="filterByGenre('9648')">Mystery</button>
         </div>
 
-        <!-- نتائج البحث المباشرة -->
-        <div class="main-wrapper" id="searchContainer" style="display:none;">
-            <div class="row-header">
-                <h2 class="row-title">نتائج <span>البحث</span></h2>
-                <button class="btn-info-dark" style="padding:6px 14px;" onclick="closeSearch()">✕ إغلاق</button>
+        <!-- شريط منصات البث (الصورة 2) -->
+        <div class="providers-capsule-strip">
+            <div class="provider-logo-card active" onclick="loadTrendingDefault()">Only on Netflix</div>
+            <div class="provider-logo-card" onclick="loadTrendingDefault()">Prime Video</div>
+            <div class="provider-logo-card" onclick="loadTrendingDefault()">HBO Max</div>
+            <div class="provider-logo-card" onclick="loadTrendingDefault()">Disney+</div>
+            <div class="provider-logo-card" onclick="loadTrendingDefault()">Apple TV+</div>
+            <div class="provider-logo-card" onclick="loadTrendingDefault()">Crunchyroll</div>
+        </div>
+
+        <!-- فلاتر المسلسلات المنسدلة (الصورة 4) -->
+        <div class="catalog-filter-bar" id="showsFilterBar" style="display:none;">
+            <select class="filter-dropdown-select" id="filterGenre" onchange="applyAdvancedFilters()">
+                <option value="">Genre (التصنيف)</option>
+                <option value="10759">Action & Adventure</option>
+                <option value="16">Animation</option>
+                <option value="35">Comedy</option>
+                <option value="80">Crime</option>
+                <option value="18">Drama</option>
+                <option value="10765">Sci-Fi & Fantasy</option>
+            </select>
+            <select class="filter-dropdown-select" id="filterYear" onchange="applyAdvancedFilters()">
+                <option value="">Year (السنة)</option>
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+            </select>
+            <select class="filter-dropdown-select" id="filterSort" onchange="applyAdvancedFilters()">
+                <option value="popularity.desc">• Popular (الأكثر شعبية)</option>
+                <option value="vote_average.desc">Top Rated (الأعلى تقييماً)</option>
+                <option value="first_air_date.desc">Latest (الأحدث)</option>
+            </select>
+            <select class="filter-dropdown-select" id="filterCountry" onchange="applyAdvancedFilters()">
+                <option value="">Country (الدولة)</option>
+                <option value="US">United States</option>
+                <option value="JP">Japan</option>
+                <option value="KR">Korea</option>
+                <option value="GB">United Kingdom</option>
+            </select>
+        </div>
+
+        <!-- نتائج البحث الفوري -->
+        <div class="content-container" id="searchResultArea" style="display:none;">
+            <div class="row-heading-bar">
+                <h2 class="row-clean-title">نتائج البحث</h2>
+                <button class="genre-capsule-pill" onclick="closeSearchArea()">✕ إغلاق</button>
             </div>
-            <div class="posters-row" id="searchResultsRow" style="flex-wrap:wrap;"></div>
+            <div class="posters-horizontal-row" id="searchOutputRow" style="flex-wrap:wrap;"></div>
         </div>
 
         <!-- الصفوف الرئيسية -->
-        <main class="main-wrapper">
-            <!-- أفضل 10 أعمال اليوم -->
-            <section>
-                <div class="row-header">
-                    <h2 class="row-title">أفضل 10 أعمال <span>متصدرة اليوم</span></h2>
+        <main class="content-container" id="mainListsContainer">
+            <!-- Top 10 -->
+            <section id="top10Section">
+                <div class="row-heading-bar">
+                    <h2 class="row-clean-title">Top 10 Today (المتصدرة اليوم)</h2>
                 </div>
-                <div class="top10-poster-row" id="top10Row"></div>
+                <div class="top10-items-strip" id="top10ItemsRow"></div>
             </section>
 
-            <!-- روائع الأنمي -->
-            <section>
-                <div class="row-header">
-                    <h2 class="row-title">أحدث <span>الأنميات اليابانية</span></h2>
+            <!-- الأنمي -->
+            <section id="animeSection">
+                <div class="row-heading-bar">
+                    <h2 class="row-clean-title">Trending Anime (روائع الأنمي)</h2>
                 </div>
-                <div class="posters-row" id="animeRow"></div>
+                <div class="posters-horizontal-row" id="animeItemsRow"></div>
             </section>
 
-            <!-- أحدث الأفلام -->
-            <section>
-                <div class="row-header">
-                    <h2 class="row-title">أحدث <span>الأفلام السينمائية</span></h2>
+            <!-- الأفلام -->
+            <section id="moviesSection">
+                <div class="row-heading-bar">
+                    <h2 class="row-clean-title">Trending Movies (أفلام متصدرة)</h2>
                 </div>
-                <div class="posters-row" id="moviesRow"></div>
+                <div class="posters-horizontal-row" id="moviesItemsRow"></div>
             </section>
 
-            <!-- المسلسلات المتصدرة -->
-            <section>
-                <div class="row-header">
-                    <h2 class="row-title">أقوى <span>المسلسلات العالمية</span></h2>
+            <!-- المسلسلات -->
+            <section id="seriesSection">
+                <div class="row-heading-bar">
+                    <h2 class="row-clean-title">Trending Series (مسلسلات عالمية)</h2>
                 </div>
-                <div class="posters-row" id="seriesRow"></div>
+                <div class="posters-horizontal-row" id="seriesItemsRow"></div>
             </section>
         </main>
     </div>
 
-    <!-- نافذة تفاصيل العمل والحلقات -->
-    <div id="detailsOverlay" onclick="if(event.target===this) closeDetails()">
-        <div class="details-window">
-            <div class="details-header-img" id="detailBanner">
+    <!-- نافذة الحلقات الهادئة -->
+    <div id="detailsModal" onclick="if(event.target===this) closeDetailsModal()">
+        <div class="details-inner-card">
+            <div class="details-hero-cover" id="modalHeroCover">
                 <div style="position:relative; z-index:3; width:100%;">
-                    <h2 style="font-size:2rem; font-weight:800; margin-bottom:8px;" id="detailTitle">العنوان</h2>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn-play-white" id="detailPlayBtn">▶ بدء المشاهدة</button>
-                        <button class="btn-info-dark" onclick="closeDetails()">✕ إغلاق</button>
+                    <h2 style="font-size:1.85rem; font-weight:800; margin-bottom:10px;" id="modalHeroTitle">العنوان</h2>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-capsule-play" id="modalPlayBtn">▶ Play</button>
+                        <button class="btn-circle-icon" onclick="closeDetailsModal()">✕</button>
                     </div>
                 </div>
             </div>
-            <div class="details-content">
-                <p id="detailOverview" style="color:#9ca3af; line-height:1.6; font-size:0.95rem;"></p>
-                <div id="seasonsSection" style="display:none;">
+            <div class="details-card-body">
+                <p id="modalOverview" style="color:#94a3b8; line-height:1.6; font-size:0.92rem;"></p>
+                <div id="modalEpisodesWrap" style="display:none;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 style="font-size:1.1rem; font-weight:700;">حلقات الموسم</h3>
-                        <div id="seasonsPills" style="display:flex; gap:6px;"></div>
+                        <h3 style="font-size:1rem; font-weight:700;">Episodes</h3>
+                        <div id="modalSeasonsPills" style="display:flex; gap:6px;"></div>
                     </div>
-                    <div class="episodes-grid" id="episodesList"></div>
+                    <div class="episodes-clean-grid" id="modalEpisodesList"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- مشغل الفيديو فائق السرعة -->
-    <div id="playerModal">
-        <div class="player-top">
+    <div id="watchModal">
+        <div class="watch-top-bar">
             <div style="display:flex; align-items:center; gap:12px;">
-                <button class="btn-info-dark" style="padding:6px 16px;" onclick="closePlayer()">✕ خروج</button>
+                <button class="btn-circle-icon" style="width:36px; height:36px;" onclick="closeWatchModal()">✕</button>
                 <div>
-                    <div style="font-weight:700; font-size:0.95rem;" id="playerTitle">العنوان</div>
-                    <div style="color:var(--text-muted); font-size:0.75rem;" id="playerSub">الموسم 1 - الحلقة 1</div>
+                    <div style="font-weight:700; font-size:0.92rem;" id="watchTitle">العنوان</div>
+                    <div style="color:var(--text-muted); font-size:0.75rem;" id="watchSub">S1 : E1</div>
                 </div>
             </div>
 
             <!-- السيرفرات السريعة المعتمدة -->
-            <div class="server-switcher">
-                <button class="active" id="srv-0" onclick="switchServer(0)">VidLink 4K</button>
-                <button id="srv-1" onclick="switchServer(1)">EmbedSU</button>
-                <button id="srv-2" onclick="switchServer(2)">VidSrc Pro</button>
-                <button id="srv-3" onclick="switchServer(3)">MultiEmbed</button>
+            <div class="watch-servers-capsule">
+                <button class="active" id="ws-0" onclick="switchStreamServer(0)">VidLink 4K</button>
+                <button id="ws-1" onclick="switchStreamServer(1)">EmbedSU</button>
+                <button id="ws-2" onclick="switchStreamServer(2)">VidSrc Pro</button>
+                <button id="ws-3" onclick="switchStreamServer(3)">MultiEmbed</button>
             </div>
         </div>
 
-        <div class="player-screen">
-            <iframe id="videoIframe" src="" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        <div class="watch-video-container">
+            <iframe id="watchIframe" src="" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
         </div>
     </div>
 
     <script>
-        let currentPlayback = null;
-        let activeServer = 0;
-        let currentItem = null;
+        let heroList = [];
+        let heroIndex = 0;
+        let heroTimer = null;
+        let activePlaybackState = null;
+        let currentModalItem = null;
+        let activeMediaType = 'all';
 
         async function initPlatform() {
             try {
@@ -750,28 +903,65 @@
                     fetch('/api/trending?type=tv&time=week').then(r => r.json())
                 ]);
 
-                // تعيين البانر الرئيسي
-                const heroItem = (trend.results || [])[0];
-                if (heroItem) {
-                    document.getElementById('heroBanner').style.backgroundImage = `url('/api/image?path=${encodeURIComponent(heroItem.backdrop_path)}&size=original')`;
-                    document.getElementById('heroTitle').innerText = heroItem.title || heroItem.name;
-                    document.getElementById('heroDesc').innerText = heroItem.overview || '';
-                    document.getElementById('heroRate').innerText = `★ ${(heroItem.vote_average || 8.5).toFixed(1)}`;
-                    document.getElementById('heroYear').innerText = (heroItem.release_date || heroItem.first_air_date || '2026').split('-')[0];
-                    document.getElementById('heroType').innerText = heroItem.media_type === 'tv' ? 'مسلسل' : 'فيلم';
-
-                    document.getElementById('heroPlayBtn').onclick = () => openItem(heroItem.id, heroItem.media_type === 'tv' ? 'tv' : 'movie', true);
-                    document.getElementById('heroInfoBtn').onclick = () => openItem(heroItem.id, heroItem.media_type === 'tv' ? 'tv' : 'movie', false);
+                heroList = (trend.results || []).slice(0, 6);
+                if (heroList.length > 0) {
+                    renderHeroStepper();
+                    setHeroItem(0);
+                    startHeroRotation();
                 }
 
-                // عرض القوائم
                 renderTop10((trend.results || []).slice(0, 10));
-                renderRow(anime.results || [], 'animeRow', 'tv');
-                renderRow(movies.results || [], 'moviesRow', 'movie');
-                renderRow(series.results || [], 'seriesRow', 'tv');
-            } catch (err) {
-                console.error(err);
-            }
+                renderRow(anime.results || [], 'animeItemsRow', 'tv');
+                renderRow(movies.results || [], 'moviesItemsRow', 'movie');
+                renderRow(series.results || [], 'seriesItemsRow', 'tv');
+            } catch (err) {}
+        }
+
+        function renderHeroStepper() {
+            const wrap = document.getElementById('heroDashStepper');
+            wrap.innerHTML = '';
+            heroList.forEach((_, idx) => {
+                const d = document.createElement('div');
+                d.className = `dash-step ${idx === 0 ? 'active' : ''}`;
+                d.onclick = () => {
+                    setHeroItem(idx);
+                    startHeroRotation();
+                };
+                wrap.appendChild(d);
+            });
+        }
+
+        function startHeroRotation() {
+            if (heroTimer) clearInterval(heroTimer);
+            heroTimer = setInterval(() => {
+                if (heroList.length > 0) {
+                    const next = (heroIndex + 1) % heroList.length;
+                    setHeroItem(next);
+                }
+            }, 7000);
+        }
+
+        function setHeroItem(idx) {
+            heroIndex = idx;
+            const item = heroList[idx];
+            if (!item) return;
+
+            const isTv = item.media_type === 'tv' || (!item.title && item.name);
+            const title = item.title || item.name;
+
+            document.getElementById('heroViewport').style.backgroundImage = `url('/api/image?path=${encodeURIComponent(item.backdrop_path)}&size=original')`;
+            document.getElementById('heroTitle').innerText = title;
+            document.getElementById('heroSummary').innerText = item.overview || '';
+            document.getElementById('heroRate').innerText = `★ ${(item.vote_average || 8.5).toFixed(1)}`;
+            document.getElementById('heroYear').innerText = (item.release_date || item.first_air_date || '2026').split('-')[0];
+            document.getElementById('heroType').innerText = isTv ? 'مسلسل' : 'فيلم';
+
+            document.getElementById('heroPlayBtn').onclick = () => openDetails(item.id, isTv ? 'tv' : 'movie', true);
+            document.getElementById('heroDetailsBtn').onclick = () => openDetails(item.id, isTv ? 'tv' : 'movie', false);
+
+            document.querySelectorAll('.dash-step').forEach((el, i) => {
+                el.classList.toggle('active', i === idx);
+            });
         }
 
         function renderRow(items, containerId, defaultMedia) {
@@ -783,79 +973,140 @@
                 const year = (item.release_date || item.first_air_date || '2026').split('-')[0];
 
                 const card = document.createElement('div');
-                card.className = 'clean-poster-card';
+                card.className = 'clean-media-unit';
                 card.innerHTML = `
-                    <div class="poster-img-box">
+                    <div class="unit-poster-box">
                         <img src="/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" loading="lazy">
-                        <span class="poster-rate">★ ${(item.vote_average || 8).toFixed(1)}</span>
+                        <span class="unit-rate-badge">★ ${(item.vote_average || 8).toFixed(1)}</span>
                     </div>
-                    <div class="poster-info-title">${title}</div>
-                    <div class="poster-info-meta">${isTv ? 'مسلسل' : 'فيلم'} • ${year}</div>
+                    <div class="unit-title-text">${title}</div>
+                    <div class="unit-meta-sub">${isTv ? 'مسلسل' : 'فيلم'} • ${year}</div>
                 `;
-                card.onclick = () => openItem(item.id, isTv ? 'tv' : 'movie', false);
+                card.onclick = () => openDetails(item.id, isTv ? 'tv' : 'movie', false);
                 row.appendChild(card);
             });
         }
 
         function renderTop10(items) {
-            const row = document.getElementById('top10Row');
+            const row = document.getElementById('top10ItemsRow');
             row.innerHTML = '';
             items.slice(0, 10).forEach((item, idx) => {
                 const isTv = item.media_type === 'tv';
-                const div = document.createElement('div');
-                div.className = 'top10-item';
-                div.innerHTML = `
-                    <span class="top10-big-num">${idx + 1}</span>
-                    <div class="top10-img-container">
+                const card = document.createElement('div');
+                card.className = 'top10-card-unit';
+                card.innerHTML = `
+                    <span class="top10-outline-number">${idx + 1}</span>
+                    <div class="top10-thumb-container">
                         <img src="/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500">
                     </div>
                 `;
-                div.onclick = () => openItem(item.id, isTv ? 'tv' : 'movie', false);
-                row.appendChild(div);
+                card.onclick = () => openDetails(item.id, isTv ? 'tv' : 'movie', false);
+                row.appendChild(card);
             });
         }
 
-        async function openItem(id, mediaType, autoPlay = false) {
+        function switchMainTab(tab) {
+            document.querySelectorAll('.nav-link-btn').forEach(b => b.classList.remove('active'));
+            const btn = document.getElementById(`tab-${tab}`);
+            if (btn) btn.classList.add('active');
+
+            const filterBar = document.getElementById('showsFilterBar');
+            if (tab === 'series') {
+                filterBar.style.display = 'flex';
+                activeMediaType = 'tv';
+            } else if (tab === 'movies') {
+                filterBar.style.display = 'flex';
+                activeMediaType = 'movie';
+            } else {
+                filterBar.style.display = 'none';
+                activeMediaType = 'all';
+            }
+        }
+
+        async function applyAdvancedFilters() {
+            const genre = document.getElementById('filterGenre').value;
+            const year = document.getElementById('filterYear').value;
+            const sort = document.getElementById('filterSort').value;
+            const country = document.getElementById('filterCountry').value;
+
+            let url = `/api/discover?media=${activeMediaType === 'all' ? 'tv' : activeMediaType}&sort_by=${sort}&page=1`;
+            if (genre) url += `&genres=${genre}`;
+            if (country) url += `&origin=${country}`;
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                document.getElementById('top10Section').style.display = 'none';
+                document.getElementById('animeSection').style.display = 'none';
+                document.getElementById('moviesSection').style.display = 'none';
+
+                const seriesSec = document.getElementById('seriesSection');
+                seriesSec.querySelector('.row-clean-title').innerText = 'Filtered Results';
+                renderRow(data.results || [], 'seriesItemsRow', activeMediaType);
+            } catch (e) {}
+        }
+
+        async function filterByGenre(genreId) {
+            document.querySelectorAll('.genre-capsule-pill').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            let url = `/api/discover?media=tv&page=1`;
+            if (genreId) url += `&genres=${genreId}`;
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                renderRow(data.results || [], 'seriesItemsRow', 'tv');
+            } catch (e) {}
+        }
+
+        function loadTrendingDefault() {
+            document.querySelectorAll('.provider-logo-card').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            initPlatform();
+        }
+
+        async function openDetails(id, mediaType, autoPlay = false) {
             try {
                 const res = await fetch(`/api/item/full-details?id=${id}&media=${mediaType}`);
                 const data = await res.json();
-                currentItem = { ...data, mediaType };
+                currentModalItem = { ...data, mediaType };
                 const isTv = mediaType === 'tv';
                 const title = data.title || data.name;
 
                 if (autoPlay && !isTv) {
-                    launchPlayer(id, false, 1, 1, title, 'فيلم كامل');
+                    launchPlayer(id, false, 1, 1, title, 'Movie');
                     return;
                 }
 
-                document.getElementById('detailBanner').style.backgroundImage = `url('/api/image?path=${encodeURIComponent(data.backdrop_path || data.poster_path)}&size=original')`;
-                document.getElementById('detailTitle').innerText = title;
-                document.getElementById('detailOverview').innerText = data.overview || '';
-                document.getElementById('detailPlayBtn').onclick = () => {
-                    closeDetails();
+                document.getElementById('modalHeroCover').style.backgroundImage = `url('/api/image?path=${encodeURIComponent(data.backdrop_path || data.poster_path)}&size=original')`;
+                document.getElementById('modalHeroTitle').innerText = title;
+                document.getElementById('modalOverview').innerText = data.overview || '';
+                document.getElementById('modalPlayBtn').onclick = () => {
+                    closeDetailsModal();
                     if (isTv) loadSeason(id, 1, true);
-                    else launchPlayer(id, false, 1, 1, title, 'فيلم كامل');
+                    else launchPlayer(id, false, 1, 1, title, 'Movie');
                 };
 
-                const seasonsSec = document.getElementById('seasonsSection');
+                const seasonsWrap = document.getElementById('modalEpisodesWrap');
                 if (isTv) {
-                    seasonsSec.style.display = 'block';
-                    const pills = document.getElementById('seasonsPills');
+                    seasonsWrap.style.display = 'block';
+                    const pills = document.getElementById('modalSeasonsPills');
                     pills.innerHTML = '';
                     (data.seasons || []).filter(s => s.season_number > 0).forEach((s, idx) => {
                         const b = document.createElement('button');
-                        b.className = 'btn-info-dark';
-                        b.style.padding = '4px 12px';
-                        b.innerText = s.name || `الموسم ${s.season_number}`;
+                        b.className = 'genre-capsule-pill';
+                        b.style.padding = '3px 12px';
+                        b.innerText = s.name || `Season ${s.season_number}`;
                         b.onclick = () => loadSeason(id, s.season_number, false);
                         pills.appendChild(b);
                     });
                     loadSeason(id, 1, autoPlay);
                 } else {
-                    seasonsSec.style.display = 'none';
+                    seasonsWrap.style.display = 'none';
                 }
 
-                document.getElementById('detailsOverlay').style.display = 'flex';
+                document.getElementById('detailsModal').style.display = 'flex';
             } catch (e) {}
         }
 
@@ -863,56 +1114,53 @@
             try {
                 const res = await fetch(`/api/tv/season?id=${tvId}&season=${seasonNum}`);
                 const data = await res.json();
-                const list = document.getElementById('episodesList');
+                const list = document.getElementById('modalEpisodesList');
                 list.innerHTML = '';
                 const eps = data.episodes || [];
 
                 if (autoPlayFirst && eps.length > 0) {
-                    launchPlayer(tvId, true, seasonNum, eps[0].episode_number, currentItem.name, `الموسم ${seasonNum} - الحلقة 1`);
+                    launchPlayer(tvId, true, seasonNum, eps[0].episode_number, currentModalItem.name, `S${seasonNum} : E1`);
                     return;
                 }
 
                 eps.forEach(ep => {
                     const card = document.createElement('div');
-                    card.className = 'episode-card';
-                    const img = ep.still_path ? `/api/image?path=${encodeURIComponent(ep.still_path)}&size=w500` : `/api/image?path=${encodeURIComponent(currentItem.backdrop_path || currentItem.poster_path)}&size=w500`;
+                    card.className = 'ep-row-item';
+                    const img = ep.still_path ? `/api/image?path=${encodeURIComponent(ep.still_path)}&size=w500` : `/api/image?path=${encodeURIComponent(currentModalItem.backdrop_path || currentModalItem.poster_path)}&size=w500`;
                     card.innerHTML = `
-                        <img src="${img}">
+                        <img class="ep-row-thumb" src="${img}">
                         <div style="flex:1; min-width:0;">
-                            <div style="font-weight:700; font-size:0.85rem; color:#fff;">الحلقة ${ep.episode_number}</div>
-                            <div style="font-size:0.75rem; color:#9ca3af; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ep.name || ''}</div>
+                            <div style="font-weight:700; font-size:0.84rem; color:#fff;">E${ep.episode_number}: ${ep.name || ''}</div>
                         </div>
                     `;
                     card.onclick = () => {
-                        closeDetails();
-                        launchPlayer(tvId, true, seasonNum, ep.episode_number, currentItem.name, `الموسم ${seasonNum} - الحلقة ${ep.episode_number}`);
+                        closeDetailsModal();
+                        launchPlayer(tvId, true, seasonNum, ep.episode_number, currentModalItem.name, `S${seasonNum} : E${ep.episode_number}`);
                     };
                     list.appendChild(card);
                 });
             } catch (e) {}
         }
 
-        function closeDetails() {
-            document.getElementById('detailsOverlay').style.display = 'none';
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').style.display = 'none';
         }
 
         function launchPlayer(id, isTv, season, episode, title, sub) {
-            currentPlayback = { id, isTv, season, episode, title, sub };
-            document.getElementById('playerTitle').innerText = title;
-            document.getElementById('playerSub').innerText = sub;
-            document.getElementById('playerModal').style.display = 'flex';
-            switchServer(0);
+            activePlaybackState = { id, isTv, season, episode, title, sub };
+            document.getElementById('watchTitle').innerText = title;
+            document.getElementById('watchSub').innerText = sub;
+            document.getElementById('watchModal').style.display = 'flex';
+            switchStreamServer(0);
         }
 
-        function switchServer(idx) {
-            activeServer = idx;
-            document.querySelectorAll('.server-switcher button').forEach((b, i) => b.classList.toggle('active', i === idx));
-
-            const { id, isTv, season, episode } = currentPlayback;
+        function switchStreamServer(idx) {
+            document.querySelectorAll('.watch-servers-capsule button').forEach((b, i) => b.classList.toggle('active', i === idx));
+            const { id, isTv, season, episode } = activePlaybackState;
             let url = '';
 
             if (idx === 0) {
-                url = isTv ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=3b82f6&autoplay=true` : `https://vidlink.pro/movie/${id}?primaryColor=3b82f6&autoplay=true`;
+                url = isTv ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=ffffff&autoplay=true` : `https://vidlink.pro/movie/${id}?primaryColor=ffffff&autoplay=true`;
             } else if (idx === 1) {
                 url = isTv ? `https://embed.su/embed/tv/${id}/${season}/${episode}` : `https://embed.su/embed/movie/${id}`;
             } else if (idx === 2) {
@@ -921,31 +1169,37 @@
                 url = isTv ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}` : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
             }
 
-            document.getElementById('videoIframe').src = url;
+            document.getElementById('watchIframe').src = url;
         }
 
-        function closePlayer() {
-            document.getElementById('videoIframe').src = '';
-            document.getElementById('playerModal').style.display = 'none';
+        function closeWatchModal() {
+            document.getElementById('watchIframe').src = '';
+            document.getElementById('watchModal').style.display = 'none';
         }
 
-        async function handleSearch(q) {
-            const sec = document.getElementById('searchContainer');
+        function toggleSearchInput() {
+            const bar = document.getElementById('searchExpandBar');
+            bar.style.display = bar.style.display === 'block' ? 'none' : 'block';
+            if (bar.style.display === 'block') document.getElementById('searchInput').focus();
+        }
+
+        async function executeSearch(q) {
+            const area = document.getElementById('searchResultArea');
             if (!q.trim()) {
-                sec.style.display = 'none';
+                area.style.display = 'none';
                 return;
             }
-            sec.style.display = 'flex';
+            area.style.display = 'flex';
             try {
                 const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
                 const data = await res.json();
-                renderRow(data.results || [], 'searchResultsRow', 'movie');
+                renderRow(data.results || [], 'searchOutputRow', 'movie');
             } catch (e) {}
         }
 
-        function closeSearch() {
+        function closeSearchArea() {
             document.getElementById('searchInput').value = '';
-            document.getElementById('searchContainer').style.display = 'none';
+            document.getElementById('searchResultArea').style.display = 'none';
         }
 
         initPlatform();
