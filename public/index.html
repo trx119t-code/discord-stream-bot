@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbit Cinema VIP</title>
+    <title>Orbit Cinema & Live</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -13,6 +13,7 @@
             --primary: #6366F1;
             --primary-glow: rgba(99, 102, 241, 0.4);
             --accent-yellow: #FFB800;
+            --live-red: #EF4444;
             --bg-black: #050406;
             --bg-surface: #0C0A0F;
             --bg-card: rgba(20, 17, 24, 0.7);
@@ -57,7 +58,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            background: rgba(12, 10, 15, 0.85);
+            background: rgba(12, 10, 15, 0.88);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid var(--border);
@@ -70,14 +71,14 @@
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 8px 18px;
+            padding: 8px 16px;
             border-radius: 20px;
             font-size: 0.95rem;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.25s;
         }
 
@@ -89,6 +90,22 @@
             background: #1F1B26;
             color: #FFF;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .pill-live-tag {
+            background: var(--live-red);
+            color: #FFF;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 900;
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         .pill-divider {
@@ -118,7 +135,228 @@
             background: rgba(255, 255, 255, 0.08);
         }
 
-        /* 2. بنر العرض الرئيسي السينمائي */
+        /* 2. قسم البث المباشر والمباريات (Live Sports View) */
+        #live-view {
+            display: none;
+            padding: 100px 54px 60px 54px;
+            min-height: 90vh;
+        }
+
+        .live-banner-header {
+            background: linear-gradient(135deg, rgba(31, 27, 38, 0.9) 0%, rgba(12, 10, 15, 0.9) 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px 36px;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .live-banner-header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .live-channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+
+        .channel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .channel-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .channel-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: #18151f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .channel-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #FFF;
+        }
+
+        .channel-status {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* شبكة بطاقات المباريات */
+        .matches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        .match-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .match-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--border-hover);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .match-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .tournament-badge {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--text-muted);
+        }
+
+        .live-indicator {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: var(--live-red);
+            font-size: 0.75rem;
+            font-weight: 900;
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .live-dot-pulse {
+            width: 6px;
+            height: 6px;
+            background: var(--live-red);
+            border-radius: 50%;
+            animation: pulse-red 1.2s infinite;
+        }
+
+        .match-teams-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .team-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 40%;
+            text-align: center;
+        }
+
+        .team-logo-placeholder {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #1B1722;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+        }
+
+        .team-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #FFF;
+        }
+
+        .match-score-time {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .score-text {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            letter-spacing: 2px;
+        }
+
+        .match-footer {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* 3. واجهة البحث */
+        #search-view {
+            display: none;
+            padding: 100px 54px 60px 54px;
+            min-height: 90vh;
+        }
+
+        .search-hero-box {
+            max-width: 850px;
+            margin: 0 auto 24px auto;
+        }
+
+        .search-field-large {
+            width: 100%;
+            background: #141217;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 16px 24px;
+            color: #FFF;
+            font-size: 1.15rem;
+            outline: none;
+            transition: border-color 0.25s;
+        }
+
+        .search-field-large:focus {
+            border-color: var(--primary);
+        }
+
+        /* 4. الصفحة الرئيسية */
         .hero-banner {
             position: relative;
             width: 100%;
@@ -232,10 +470,6 @@
             transition: all 0.2s;
         }
 
-        .btn-info-hero:hover {
-            background: rgba(255, 255, 255, 0.22);
-        }
-
         .slider-dots {
             position: absolute;
             bottom: 30px;
@@ -265,7 +499,7 @@
             background: #FFFFFF;
         }
 
-        /* 3. شريط آخر مشاهدة (Continue Watching) الفخم */
+        /* آخر مشاهداتي */
         #continueWatchingSec {
             display: none;
             padding: 10px 54px 24px 54px;
@@ -286,13 +520,11 @@
             overflow: hidden;
             cursor: pointer;
             transition: all 0.25s;
-            position: relative;
         }
 
         .cw-item-card:hover {
             transform: translateY(-5px);
             border-color: var(--primary);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
         }
 
         .cw-thumb-wrap {
@@ -339,12 +571,76 @@
             font-size: 0.8rem;
             color: var(--text-muted);
             margin-top: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
-        /* 4. التقسيم العام والعرض الأفقي */
+        /* السلاسل والعرض الأفقي */
+        .collections-wrap {
+            padding: 24px 54px 10px 54px;
+        }
+
+        .sec-title {
+            font-size: 1.3rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sec-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .collections-grid {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-top: 14px;
+        }
+
+        .collection-card {
+            flex: 0 0 240px;
+            height: 110px;
+            border-radius: 12px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: transform 0.25s, border-color 0.25s;
+        }
+
+        .collection-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+        }
+
+        .collection-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 12px;
+        }
+
+        .collection-name {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #FFF;
+        }
+
+        .collection-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
         .cinema-layout-grid {
             display: grid;
             grid-template-columns: 1fr 280px;
@@ -364,22 +660,6 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
-        }
-
-        .sec-title {
-            font-size: 1.3rem;
-            font-weight: 900;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .sec-title::before {
-            content: '';
-            width: 4px;
-            height: 20px;
-            background: var(--primary);
-            border-radius: 4px;
         }
 
         .nav-arrows-group {
@@ -489,7 +769,7 @@
             margin-top: 2px;
         }
 
-        /* القائمة الجانبية (Sidebar) */
+        /* القائمة الجانبية */
         .sidebar-column {
             display: flex;
             flex-direction: column;
@@ -566,7 +846,7 @@
             color: var(--text-muted);
         }
 
-        /* 5. صفحة تفاصيل العمل المتطورة والحلقات */
+        /* 5. صفحة تفاصيل العمل */
         #details-view {
             display: none;
             position: fixed;
@@ -663,7 +943,6 @@
             margin-top: 6px;
         }
 
-        /* طاقم التمثيل */
         .cast-container {
             padding: 24px 54px 0 54px;
         }
@@ -704,7 +983,6 @@
             width: 100%;
         }
 
-        /* عرض الحلقات والمواسم */
         .seasons-capsules-bar {
             display: flex;
             gap: 12px;
@@ -801,7 +1079,7 @@
             line-height: 1.4;
         }
 
-        /* 6. مشغل السينما الفخم */
+        /* 6. مشغل السينما والبث المباشر */
         #cinema-player-modal {
             display: none;
             position: fixed;
@@ -949,6 +1227,10 @@
             <button class="pill-btn" id="tab-series" onclick="switchTab('series')">
                 <span data-i18n="series">المسلسلات</span>
             </button>
+            <button class="pill-btn" id="tab-live" onclick="switchTab('live')">
+                <span data-i18n="liveSports">بث مباشر</span>
+                <span class="pill-live-tag">LIVE</span>
+            </button>
 
             <div class="pill-divider"></div>
 
@@ -962,10 +1244,139 @@
         </nav>
     </header>
 
-    <!-- 2. واجهة البحث الاحترافية -->
-    <div id="search-view" style="display:none; padding: 100px 54px 60px 54px;">
-        <div class="search-hero-box" style="max-width:850px; margin:0 auto 24px auto;">
-            <input type="text" id="mainSearchInput" class="search-field-large" style="width:100%; background:#141217; border:1px solid var(--border); border-radius:30px; padding:16px 24px; color:#FFF; font-size:1.15rem; outline:none;" placeholder="ابحث عن فيلم، مسلسل، أنمي..." oninput="onSearchInput(this.value)">
+    <!-- 2. قسم البث المباشر والمباريات (Live Sports View) -->
+    <div id="live-view">
+        <div class="live-banner-header">
+            <div>
+                <h1>⚽ <span data-i18n="liveMatchesToday">مباريات اليوم والبث المباشر</span></h1>
+                <p style="color:var(--text-muted); margin-top:6px;" data-i18n="liveSub">تابع أقوى المباريات والبطولات بجودة عالية وبدون تقطيع.</p>
+            </div>
+            <div class="live-indicator">
+                <div class="live-dot-pulse"></div>
+                <span data-i18n="serverOnline">السيرفرات متصلة</span>
+            </div>
+        </div>
+
+        <!-- القنوات الرياضية المباشرة 24/7 -->
+        <h2 class="sec-title" style="margin-bottom:16px;" data-i18n="liveChannels">القنوات الرياضية المباشرة (Live Channels)</h2>
+        <div class="live-channels-grid">
+            <div class="channel-card" onclick="launchLiveStream('https://topembed.pw/channel/beIN_Sports_1_HD', 'beIN Sports 1 HD')">
+                <div class="channel-icon">📺</div>
+                <div>
+                    <div class="channel-name">beIN Sports 1 HD</div>
+                    <div class="channel-status">🔴 مباشر 1080p</div>
+                </div>
+            </div>
+            <div class="channel-card" onclick="launchLiveStream('https://topembed.pw/channel/beIN_Sports_2_HD', 'beIN Sports 2 HD')">
+                <div class="channel-icon">📺</div>
+                <div>
+                    <div class="channel-name">beIN Sports 2 HD</div>
+                    <div class="channel-status">🔴 مباشر 1080p</div>
+                </div>
+            </div>
+            <div class="channel-card" onclick="launchLiveStream('https://topembed.pw/channel/beIN_Sports_3_HD', 'beIN Sports 3 HD')">
+                <div class="channel-icon">📺</div>
+                <div>
+                    <div class="channel-name">beIN Sports 3 HD</div>
+                    <div class="channel-status">🔴 مباشر 1080p</div>
+                </div>
+            </div>
+            <div class="channel-card" onclick="launchLiveStream('https://topembed.pw/channel/SSC_1_HD', 'SSC 1 HD')">
+                <div class="channel-icon">⚽</div>
+                <div>
+                    <div class="channel-name">SSC 1 HD</div>
+                    <div class="channel-status">🔴 دوري روشن السعودي</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- جدول المباريات الحية -->
+        <h2 class="sec-title" style="margin-bottom:16px;" data-i18n="todaysSchedule">جدول أهم مباريات اليوم</h2>
+        <div class="matches-grid" id="matchesContainer">
+            <!-- مباراة 1 -->
+            <div class="match-card" onclick="launchLiveStream('https://topembed.pw/channel/beIN_Sports_1_HD', 'ريال مدريد ضد برشلونة')">
+                <div class="match-top-row">
+                    <span class="tournament-badge">🏆 الدوري الإسباني (الكلاسيكو)</span>
+                    <div class="live-indicator"><div class="live-dot-pulse"></div> مباشر الآن</div>
+                </div>
+                <div class="match-teams-box">
+                    <div class="team-col">
+                        <div class="team-logo-placeholder">👑</div>
+                        <div class="team-name">ريال مدريد</div>
+                    </div>
+                    <div class="match-score-time">
+                        <div class="score-text">2 - 1</div>
+                        <span style="font-size:0.75rem; color:#46D369;">الشوط الثاني 75'</span>
+                    </div>
+                    <div class="team-col">
+                        <div class="team-logo-placeholder">🔵🔴</div>
+                        <div class="team-name">برشلونة</div>
+                    </div>
+                </div>
+                <div class="match-footer">
+                    <span>🎙️ تعليق: عصام الشوالي</span>
+                    <span>📺 beIN Sports 1 HD</span>
+                </div>
+            </div>
+
+            <!-- مباراة 2 -->
+            <div class="match-card" onclick="launchLiveStream('https://topembed.pw/channel/beIN_Sports_2_HD', 'مانشستر سيتي ضد ليفربول')">
+                <div class="match-top-row">
+                    <span class="tournament-badge">🏴󠁧󠁢󠁥󠁮󠁧󠁿 الدوري الإنجليزي الممتاز</span>
+                    <div class="live-indicator"><div class="live-dot-pulse"></div> مباشر الآن</div>
+                </div>
+                <div class="match-teams-box">
+                    <div class="team-col">
+                        <div class="team-logo-placeholder">🔵</div>
+                        <div class="team-name">مانشستر سيتي</div>
+                    </div>
+                    <div class="match-score-time">
+                        <div class="score-text">1 - 1</div>
+                        <span style="font-size:0.75rem; color:#46D369;">الشوط الأول 38'</span>
+                    </div>
+                    <div class="team-col">
+                        <div class="team-logo-placeholder">🔴</div>
+                        <div class="team-name">ليفربول</div>
+                    </div>
+                </div>
+                <div class="match-footer">
+                    <span>🎙️ تعليق: حفيظ دراجي</span>
+                    <span>📺 beIN Sports 2 HD</span>
+                </div>
+            </div>
+
+            <!-- مباراة 3 -->
+            <div class="match-card" onclick="launchLiveStream('https://topembed.pw/channel/SSC_1_HD', 'الهلال ضد النصر')">
+                <div class="match-top-row">
+                    <span class="tournament-badge">🇸🇦 دوري روشن السعودي (ديربي الرياض)</span>
+                    <div class="live-indicator"><div class="live-dot-pulse"></div> مباشر الآن</div>
+                </div>
+                <div class="match-teams-box">
+                    <div class="team-col">
+                        <div class="team-logo-placeholder">🌙</div>
+                        <div class="team-name">الهلال</div>
+                    </div>
+                    <div class="match-score-time">
+                        <div class="score-text">3 - 2</div>
+                        <span style="font-size:0.75rem; color:#46D369;">الشوط الثاني 82'</span>
+                    </div>
+                    <div class="team-col">
+                        <div class="team-logo-placeholder">🟡</div>
+                        <div class="team-name">النصر</div>
+                    </div>
+                </div>
+                <div class="match-footer">
+                    <span>🎙️ تعليق: فارس عوض</span>
+                    <span>📺 SSC 1 HD</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. واجهة البحث -->
+    <div id="search-view">
+        <div class="search-hero-box">
+            <input type="text" id="mainSearchInput" class="search-field-large" placeholder="ابحث عن فيلم، مسلسل، أنمي..." oninput="onSearchInput(this.value)">
         </div>
         <div id="searchResultsWrap">
             <div id="searchMoviesSec" style="display:none; margin-top:24px;">
@@ -979,9 +1390,8 @@
         </div>
     </div>
 
-    <!-- 3. الصفحة الرئيسية -->
+    <!-- 4. الصفحة الرئيسية -->
     <div id="home-view">
-        <!-- البنر الرئيسي -->
         <div class="hero-banner" id="heroBanner">
             <div class="hero-overlay"></div>
             <div class="hero-content">
@@ -1001,13 +1411,11 @@
             <div class="slider-dots" id="sliderDots"></div>
         </div>
 
-        <!-- قسم آخر مشاهداتي (Continue Watching) -->
         <div id="continueWatchingSec">
             <h2 class="sec-title" data-i18n="continueWatching">متابعة المشاهدة (Continue Watching)</h2>
             <div class="cw-row" id="continueWatchingTrack" style="margin-top:14px;"></div>
         </div>
 
-        <!-- السلاسل السينمائية -->
         <div class="collections-wrap">
             <h2 class="sec-title" data-i18n="collections">السلاسل السينمائية (Collections)</h2>
             <div class="collections-grid">
@@ -1026,7 +1434,6 @@
             </div>
         </div>
 
-        <!-- تقسيم الموقع العام -->
         <div class="cinema-layout-grid">
             <div class="sliders-column">
                 <section>
@@ -1076,7 +1483,7 @@
         </div>
     </div>
 
-    <!-- صفحة تفاصيل العمل السينمائي والحلقات -->
+    <!-- 5. صفحة تفاصيل العمل -->
     <div id="details-view">
         <div class="details-hero-banner" id="detailsHero">
             <div class="hero-overlay"></div>
@@ -1104,14 +1511,33 @@
             <div class="cast-scroll-track" id="castRow"></div>
         </div>
 
-        <!-- قسم الحلقات والمواسم -->
         <div id="seasonsSection" style="display:none; margin-top:20px;">
             <div class="seasons-capsules-bar" id="seasonsBar"></div>
             <div class="episodes-cards-grid" id="episodesGrid"></div>
         </div>
     </div>
 
-    <!-- صفحة الإعدادات -->
+    <!-- 6. مشغل السينما والبث المباشر المدمج -->
+    <div id="cinema-player-modal">
+        <div class="player-top-header">
+            <div style="display:flex; align-items:center; gap:16px;">
+                <button class="btn-circle-back" onclick="closeCinemaPlayer()">‹</button>
+                <div>
+                    <div style="font-size:1.15rem; font-weight:900;" id="playerWorkTitle">اسم العمل</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);" id="playerEpTitle">S1:E1</div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button class="player-server-pill" id="playerServerBtn" onclick="cyclePlayerServer()" title="تبديل السيرفر لمنع التعليق">
+                    ⚡ <span id="currentServerLabel">سيرفر البرق (Fast Seek)</span>
+                </button>
+                <button class="btn-next-ep-trigger" id="btnNextEpisode" onclick="playNextEpisode()" data-i18n="nextEp">الحلقة التالية ⏭️</button>
+            </div>
+        </div>
+        <iframe id="cinemaIframe" class="player-iframe-frame" src="" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    </div>
+
+    <!-- 7. صفحة الإعدادات -->
     <div id="settings-view">
         <h1 style="font-size:2.2rem; font-weight:900; margin-bottom:8px;" data-i18n="settingsTitle">الإعدادات (Settings)</h1>
         <p style="color:var(--text-muted); margin-bottom:24px;" data-i18n="settingsSub">تخصيص مظهر ولغة المنصة.</p>
@@ -1137,30 +1563,10 @@
         </div>
     </div>
 
-    <!-- صفحة قائمتي -->
+    <!-- 8. صفحة قائمتي -->
     <div id="my-list-view" style="display:none; padding: 110px 54px 60px 54px;">
         <h2 class="sec-title" data-i18n="myListTitle">قائمتي المفضلة</h2>
         <div class="cards-scroll-track" id="myListGrid" style="flex-wrap:wrap; margin-top:16px;"></div>
-    </div>
-
-    <!-- مشغل السينما الفخم -->
-    <div id="cinema-player-modal">
-        <div class="player-top-header">
-            <div style="display:flex; align-items:center; gap:16px;">
-                <button class="btn-circle-back" onclick="closeCinemaPlayer()">‹</button>
-                <div>
-                    <div style="font-size:1.15rem; font-weight:900;" id="playerWorkTitle">اسم العمل</div>
-                    <div style="font-size:0.85rem; color:var(--text-muted);" id="playerEpTitle">S1:E1</div>
-                </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button class="player-server-pill" onclick="cyclePlayerServer()" title="تبديل السيرفر لمنع التعليق">
-                    ⚡ <span id="currentServerLabel">سيرفر البرق (Fast Seek)</span>
-                </button>
-                <button class="btn-next-ep-trigger" id="btnNextEpisode" onclick="playNextEpisode()" data-i18n="nextEp">الحلقة التالية ⏭️</button>
-            </div>
-        </div>
-        <iframe id="cinemaIframe" class="player-iframe-frame" src="" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
     </div>
 
     <script>
@@ -1178,6 +1584,12 @@
                 home: "الرئيسية",
                 movies: "الأفلام",
                 series: "المسلسلات",
+                liveSports: "بث مباشر",
+                liveMatchesToday: "مباريات اليوم والبث المباشر",
+                liveSub: "تابع أقوى المباريات والبطولات بجودة عالية وبدون تقطيع.",
+                serverOnline: "السيرفرات متصلة",
+                liveChannels: "القنوات الرياضية المباشرة (Live Channels)",
+                todaysSchedule: "جدول أهم مباريات اليوم",
                 playNow: "تشغيل الآن",
                 workDetails: "تفاصيل العمل",
                 collections: "السلاسل السينمائية (Collections)",
@@ -1199,6 +1611,12 @@
                 home: "Home",
                 movies: "Movies",
                 series: "TV Shows",
+                liveSports: "Live Sports",
+                liveMatchesToday: "Today's Matches & Live Sports",
+                liveSub: "Watch live matches in high quality without buffering.",
+                serverOnline: "Servers Online",
+                liveChannels: "Live Channels",
+                todaysSchedule: "Featured Matches",
                 playNow: "Play Now",
                 workDetails: "Details",
                 collections: "Collections",
@@ -1266,17 +1684,22 @@
             if (tabBtn) tabBtn.classList.add('active');
 
             const homeView = document.getElementById('home-view');
+            const liveView = document.getElementById('live-view');
             const searchView = document.getElementById('search-view');
             const myListView = document.getElementById('my-list-view');
             const settingsView = document.getElementById('settings-view');
             closeDetails();
 
             homeView.style.display = 'none';
+            liveView.style.display = 'none';
             searchView.style.display = 'none';
             myListView.style.display = 'none';
             settingsView.style.display = 'none';
 
-            if (tab === 'search') {
+            if (tab === 'live') {
+                liveView.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (tab === 'search') {
                 searchView.style.display = 'block';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else if (tab === 'settings') {
@@ -1294,7 +1717,17 @@
             }
         }
 
-        /* 2. نظام متابعة المشاهدة (Continue Watching) */
+        /* تشغيل البث المباشر */
+        function launchLiveStream(streamUrl, title) {
+            document.getElementById('playerWorkTitle').innerText = title;
+            document.getElementById('playerEpTitle').innerText = "🔴 بث مباشر بدون تقطيع";
+            document.getElementById('btnNextEpisode').style.display = 'none';
+            document.getElementById('playerServerBtn').style.display = 'none';
+            document.getElementById('cinemaIframe').src = streamUrl;
+            document.getElementById('cinema-player-modal').style.display = 'flex';
+        }
+
+        /* متابعة المشاهدة */
         function recordWatchHistory(id, isTv, season, episode, title, poster) {
             watchHistory = watchHistory.filter(item => item.id !== id);
             watchHistory.unshift({ id, isTv, season, episode, title, poster, timestamp: Date.now() });
@@ -1331,13 +1764,13 @@
                     </div>
                 `;
                 el.onclick = () => {
-                    launchCinemaDirect(item.id, item.isTv, item.season || 1, item.episode || 1, item.title, item.isTv ? `الموسم ${item.season} - الحلقة ${item.episode}` : 'فيلم كامل');
+                    launchCinemaDirect(item.id, item.isTv, item.season || 1, item.episode || 1, item.title, item.isTv ? `الموسم ${item.season} - الحلقة ${item.episode}` : 'فيلم كامل', 1, item.poster);
                 };
                 track.appendChild(el);
             });
         }
 
-        /* 3. تحميل المحتوى العام */
+        /* تحميل المحتوى */
         async function loadAllContent() {
             try {
                 const [trendRes, nowPlayRes, upRes, animeRes] = await Promise.all([
@@ -1473,7 +1906,6 @@
             });
         }
 
-        /* 4. صفحة تفاصيل العمل وعرض الحلقات الحصري */
         async function openDetailsPage(id, mediaType) {
             const view = document.getElementById('details-view');
             view.style.display = 'block';
@@ -1577,7 +2009,7 @@
             }
         }
 
-        /* 5. مشغل السينما الفخم */
+        /* تشغيل الأفلام والمسلسلات */
         function getOptimalStreamUrl(id, isTv, season, episode, serverType = 0) {
             const primaryHex = encodeURIComponent(savedTheme.replace('#',''));
             if (serverType === 0) {
@@ -1601,6 +2033,7 @@
             document.getElementById('playerWorkTitle').innerText = workTitle;
             document.getElementById('playerEpTitle').innerText = epTitle;
             document.getElementById('btnNextEpisode').style.display = isTv ? 'block' : 'none';
+            document.getElementById('playerServerBtn').style.display = 'flex';
             document.getElementById('currentServerLabel').innerText = "سيرفر البرق (Fast Seek)";
 
             if (poster) {
