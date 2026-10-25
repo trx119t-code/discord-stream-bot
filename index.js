@@ -67,15 +67,16 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 2. البحث
+    // 2. البحث الشامل المصنف والمفصل (أفلام، مسلسلات، وممثلين مثل CineLite)
     if (req.url.startsWith('/api/search')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const q = urlParams.searchParams.get('q') || '';
+        const lang = urlParams.searchParams.get('lang') || 'ar-SA';
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=ar-SA`);
-            const data = await tmdbRes.text();
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=${lang}`);
+            const data = await tmdbRes.json();
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
+            res.end(JSON.stringify(data));
         } catch (err) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ results: [] }));
@@ -100,7 +101,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 4. في السينما الآن (Now Playing)
+    // 4. في السينما الآن
     if (req.url.startsWith('/api/now-playing')) {
         try {
             const tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=ar-SA&page=1`);
@@ -114,7 +115,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 5. قريباً في السينما (Coming Soon)
+    // 5. قريباً في السينما
     if (req.url.startsWith('/api/upcoming')) {
         try {
             const tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${TMDB_API_KEY}&language=ar-SA&page=1`);
@@ -128,7 +129,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 6. استكشاف التصنيفات (أنمي، 4K، خيال)
+    // 6. استكشاف التصنيفات
     if (req.url.startsWith('/api/discover')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const media = urlParams.searchParams.get('media') || 'tv';
@@ -185,7 +186,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // تقديم الواجهة
+    // تقديم صفحة HTML
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
