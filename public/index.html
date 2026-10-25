@@ -8,21 +8,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Cinzel:wght@700;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- مكتبات المشغل السحابي الأصلي -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
-
     <style>
         :root {
-            --gold: #E5B84B;
-            --gold-rgb: 229, 184, 75;
-            --gold-glow: rgba(229, 184, 75, 0.45);
-            --bg-void: #030305;
-            --bg-obsidian: #0A0A0F;
-            --bg-glass: rgba(14, 14, 22, 0.72);
+            --gold: #FF2948;
+            --gold-rgb: 255, 41, 72;
+            --gold-glow: rgba(255, 41, 72, 0.24);
+            --bg-void: #050507;
+            --bg-obsidian: #0B0B10;
+            --bg-glass: rgba(14, 14, 20, 0.82);
             --bg-glass-heavy: rgba(10, 10, 16, 0.92);
             --border-subtle: rgba(255, 255, 255, 0.07);
-            --border-gold: rgba(var(--gold-rgb), 0.35);
+            --border-gold: rgba(var(--gold-rgb), 0.28);
             --text-main: #F8FAFC;
             --text-muted: #94A3B8;
             --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -814,7 +810,7 @@
         }
 
         /* ==========================================
-           6. استوديو البث الهجين (Torbox Cloud Direct + 6 Servers)
+           6. استوديو المشاهدة واختيار مزود التضمين
            ========================================== */
         #imperialStudioModal {
             display: none;
@@ -865,7 +861,7 @@
             box-shadow: 0 0 18px var(--gold-glow);
         }
 
-        /* شريط رادار Torbox السحابي والترجمة الخارجية */
+        /* شريط حالة المشغل الخارجي */
         .torbox-cloud-radar {
             display: flex;
             justify-content: space-between;
@@ -988,6 +984,60 @@
             .studio-split-stage { flex-direction: column; }
             .studio-ep-playlist { width: 100%; height: 220px; }
         }
+
+
+        /* ORBIT IMPERIAL — Crimson Cinema UI refresh */
+        html { scroll-behavior: smooth; scrollbar-color: #FF2948 #050507; }
+        body {
+            background: radial-gradient(ellipse at 50% -15%, rgba(255,41,72,.09), transparent 48%), var(--bg-void);
+        }
+        .imperial-island {
+            background: rgba(8,8,12,.88);
+            border-color: rgba(255,41,72,.24);
+            box-shadow: 0 18px 60px rgba(0,0,0,.48), 0 0 30px rgba(255,41,72,.055);
+            transition: background .3s ease, border-color .3s ease, box-shadow .3s ease;
+        }
+        .nav-tab.active, .studio-srv-btn.active {
+            background: linear-gradient(135deg,#FF536B,#E50930);
+            color: #fff;
+            border-color: rgba(255,100,120,.6);
+            box-shadow: 0 4px 22px rgba(255,41,72,.18);
+        }
+        .studio-servers-strip { gap: 10px; padding: 4px 0; }
+        .studio-srv-btn {
+            position: relative; isolation: isolate;
+            border: 1px solid rgba(255,255,255,.09);
+            background: linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.015));
+            white-space: nowrap;
+            transition: transform .25s ease, border-color .25s ease, background .25s ease;
+        }
+        .studio-srv-btn:hover { transform: translateY(-2px); border-color: rgba(255,41,72,.55); }
+        .studio-srv-btn.active { color:#fff; border-color:#FF2948; background:linear-gradient(135deg,rgba(255,41,72,.22),rgba(255,41,72,.07)); box-shadow:inset 0 0 0 1px rgba(255,41,72,.12),0 0 22px rgba(255,41,72,.10); }
+        .studio-srv-btn.active::before { content:""; position:absolute; top:-1px; left:18px; right:18px; height:2px; background:#FF536B; border-radius:10px; box-shadow:0 0 12px rgba(255,41,72,.6); }
+        .studio-video-box { border-color: rgba(255,41,72,.25); box-shadow: 0 16px 60px rgba(0,0,0,.45); }
+        button:focus-visible, input:focus-visible, select:focus-visible { outline:2px solid #FF536B; outline-offset:4px; }
+        img { height:auto; }
+        @media (max-width:768px) {
+            .imperial-navbar-wrapper { top:8px; padding:0 10px; }
+            .imperial-island { gap:8px; padding:8px 10px; border-radius:20px; flex-wrap:wrap; }
+            .brand-name-en { font-size:.95rem; letter-spacing:1px; }
+            .island-actions { width:100%; gap:7px; }
+            .spotlight-search-bar, .spotlight-search-bar:focus-within { width:auto; flex:1; min-width:0; }
+            .spotlight-search-bar input { min-width:0; font-size:.8rem; }
+            .imax-hero-stage { height:78svh; min-height:540px; padding:0 20px 32px; }
+            .imax-giant-title { font-size:clamp(2rem,9vw,3.2rem); }
+            .imperial-main-container { padding:0 16px 55px; }
+            .studio-command-bar { padding:10px; }
+            .studio-servers-strip { overflow-x:auto; flex-wrap:nowrap; max-width:100%; padding-bottom:8px; }
+            .studio-srv-btn { flex-shrink:0; }
+            .studio-video-box { min-height:220px; }
+            .studio-split-stage { flex-direction:column; }
+            .studio-ep-playlist { width:100%; height:220px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+        }
+
     </style>
 </head>
 <body>
@@ -1034,11 +1084,10 @@
                         <span class="pill-spatial-glass" id="imaxRate">★ 9.1</span>
                         <span class="pill-spatial-glass" id="imaxYear">2026</span>
                         <span class="pill-spatial-glass" id="imaxType">مسلسل</span>
-                        <span class="pill-spatial-glass" style="color:#34D399;">☁️ TORBOX CLOUD READY</span>
                     </div>
 
                     <h1 class="imax-giant-title" id="imaxTitle">جاري استدعاء المسرح الملكي...</h1>
-                    <p class="imax-synopsis" id="imaxDesc">استمتع بتجربة سينمائية غير مسبوقة مع اتصال سحابي مباشر بـ Torbox 4K و6 خوادم بث عالمية فائقة السرعة.</p>
+                    <p class="imax-synopsis" id="imaxDesc">استمتع بواجهة سينمائية حديثة، واكتشف الأعمال وتابع الحلقات من مكان واحد.</p>
 
                     <div class="imax-cta-group">
                         <button class="btn-imperial-play" id="imaxPlayBtn">▶ بدء العرض السينمائي</button>
@@ -1200,7 +1249,7 @@
     </div>
 
     <!-- ==========================================
-         6. استوديو البث الهجين (Direct Client-Side Torbox + 6 Global Servers)
+         6. استوديو المشاهدة ومزودو التضمين
          ========================================== -->
     <div id="imperialStudioModal">
         <div class="studio-command-bar">
@@ -1212,14 +1261,13 @@
                 </div>
             </div>
 
-            <!-- السيرفرات الـ 6 + سحابة Torbox المباشرة من المتصفح -->
+            <!-- مزودو المشغل الخارجي -->
             <div class="studio-servers-strip">
-                <button class="studio-srv-btn active" id="st-srv-0" onclick="selectStudioServer(0)">👑 VidLink 4K Ultra</button>
-                <button class="studio-srv-btn" id="st-srv-1" onclick="selectStudioServer(1)">⚡ EmbedSU 4K</button>
-                <button class="studio-srv-btn" id="st-srv-2" onclick="selectStudioServer(2)">🔥 VidSrc ICU Pro</button>
-                <button class="studio-srv-btn" id="st-srv-3" onclick="selectStudioServer(3)">💎 MultiEmbed VIP</button>
-                <button class="studio-srv-btn" id="st-srv-4" onclick="selectStudioServer(4)">🚀 AutoEmbed 4K</button>
-                <button class="studio-srv-btn" id="st-srv-5" onclick="selectStudioServer(5)">☁️ سحابة Torbox Pro المباشرة</button>
+                <button class="studio-srv-btn active" id="st-srv-0" onclick="selectStudioServer(0)">👑 VidLink</button>
+                <button class="studio-srv-btn" id="st-srv-1" onclick="selectStudioServer(1)">⚡ EmbedSU</button>
+                <button class="studio-srv-btn" id="st-srv-2" onclick="selectStudioServer(2)">🔥 VidSrc ICU</button>
+                <button class="studio-srv-btn" id="st-srv-3" onclick="selectStudioServer(3)">💎 MultiEmbed</button>
+                <button class="studio-srv-btn" id="st-srv-4" onclick="selectStudioServer(4)">🚀 AutoEmbed</button>
             </div>
 
             <div style="display:flex; gap:8px; align-items:center;">
@@ -1228,22 +1276,12 @@
             </div>
         </div>
 
-        <!-- شريط رادار Torbox المباشر ورفع ملفات الترجمة -->
+        <!-- Playback status: third-party embeds may provide their own subtitles and quality controls. -->
         <div class="torbox-cloud-radar">
-            <span id="studioStatusMsg" style="font-size:0.84rem; font-weight:800; color:#FDE68A;">
-                ✨ البث يعمل بأعلى جودة. للترجمة العربية اضغط (CC) داخل المشغل، أو افتح «سحابة Torbox Pro» لسحب ملفات 4K الخام مباشرة من متصفحك.
+            <span id="studioStatusMsg" role="status" aria-live="polite" style="font-size:0.84rem; font-weight:800; color:#FF9AAA;">
+                اختر أحد مشغلات التضمين. الجودة والترجمة والتوفر تعتمد على مزود المشغل الخارجي.
             </span>
-
-            <div style="display:flex; gap:8px; align-items:center;">
-                <input type="file" id="localSubFileInput" accept=".srt,.vtt" style="display:none;" onchange="loadUserLocalSubtitle(this)">
-                <button class="btn-gold-outline" style="padding:4px 12px; font-size:0.76rem;" onclick="document.getElementById('localSubFileInput').click()">
-                    📂 رفع ملف ترجمة خارجي (.SRT / .VTT)
-                </button>
-            </div>
         </div>
-
-        <!-- درج روابط Torbox المسحوبة مباشرة من متصفح المستخدم -->
-        <div class="torbox-streams-drawer" id="torboxStreamsDrawer"></div>
 
         <!-- شاشة الفيديو + قائمة الحلقات -->
         <div class="studio-split-stage">
@@ -1260,8 +1298,9 @@
         </div>
     </div>
 
+    <script src="./config.js"></script>
     <script>
-        const TORBOX_USER_KEY = 'fbb21907-7aef-4e48-b6e8-d87970df407f';
+        const API_BASE_URL = String(window.ORBIT_API_BASE_URL || "").replace(/\/+$/, "");
 
         let heroItemsPool = [];
         let activeHeroIndex = 0;
@@ -1269,8 +1308,6 @@
         let activeHubItem = null;
         let activeStudioState = null;
         let activeServerIdx = 0;
-        let artInstance = null;
-        let fetchedTorboxStreams = [];
 
         let catalogState = { category: 'anime', media: 'tv', genres: '16', origin: 'JP', page: 1 };
         let savedVault = JSON.parse(localStorage.getItem('orbit_royal_favs') || '[]');
@@ -1278,20 +1315,18 @@
         let currentLang = localStorage.getItem('orbit_royal_lang') || 'ar';
 
         const palettes = [
-            { gold: '#E5B84B', rgb: '229, 184, 75' },   // Royal Champagne Gold
-            { gold: '#A855F7', rgb: '168, 85, 247' },   // Imperial Amethyst
-            { gold: '#10B981', rgb: '16, 185, 129' },   // Cyber Emerald
-            { gold: '#FF2A42', rgb: '255, 42, 66' }     // Crimson IMAX
+            { gold: '#FF2948', rgb: '255, 41, 72' }
         ];
         let paletteIdx = 0;
 
         function getLangCode() { return currentLang === 'en' ? 'en-US' : 'ar-SA'; }
 
         function cycleImperialPalette() {
-            paletteIdx = (paletteIdx + 1) % palettes.length;
-            document.documentElement.style.setProperty('--gold', palettes[paletteIdx].gold);
-            document.documentElement.style.setProperty('--gold-rgb', palettes[paletteIdx].rgb);
-            document.documentElement.style.setProperty('--gold-glow', `rgba(${palettes[paletteIdx].rgb}, 0.45)`);
+            // ORBIT keeps its signature crimson identity for a consistent brand.
+            const root = document.documentElement;
+            root.style.setProperty('--gold', '#FF2948');
+            root.style.setProperty('--gold-rgb', '255, 41, 72');
+            root.style.setProperty('--gold-glow', 'rgba(255, 41, 72, 0.24)');
         }
 
         function toggleSiteLanguage() {
@@ -1337,10 +1372,10 @@
             try {
                 const lang = getLangCode();
                 const [trendRes, animeRes, moviesRes, tvRes] = await Promise.all([
-                    fetch(`/api/trending?type=all&time=week&lang=${lang}`),
-                    fetch(`/api/discover?media=tv&genres=16,10759&origin=JP&lang=${lang}`),
-                    fetch(`/api/now-playing?lang=${lang}`),
-                    fetch(`/api/trending?type=tv&time=week&lang=${lang}`)
+                    fetch(`${API_BASE_URL}/api/trending?type=all&time=week&lang=${lang}`),
+                    fetch(`${API_BASE_URL}/api/discover?media=tv&genres=16,10759&origin=JP&lang=${lang}`),
+                    fetch(`${API_BASE_URL}/api/now-playing?lang=${lang}`),
+                    fetch(`${API_BASE_URL}/api/trending?type=tv&time=week&lang=${lang}`)
                 ]);
 
                 const trendData = await trendRes.json();
@@ -1364,7 +1399,9 @@
                 renderExpandingRow((tvData.results || []).map(x => ({ ...x, media_type: 'tv' })), 'seriesExpandingTrack');
                 renderContinueWatchingRow();
             } catch (err) {
-                console.error(err);
+                console.error('ORBIT startup failed:', err);
+                const status = document.getElementById('studioStatusMsg');
+                if (status) status.textContent = 'تعذر تحميل بيانات الموقع. تحقق من رابط API وإعدادات الخادم ثم أعد المحاولة.';
             }
         }
 
@@ -1374,7 +1411,7 @@
             heroItemsPool.forEach((item, idx) => {
                 const card = document.createElement('div');
                 card.className = `hero-mini-poster ${idx === activeHeroIndex ? 'active' : ''}`;
-                card.innerHTML = `<img src="/api/image?path=${encodeURIComponent(item.poster_path)}&size=w342" alt="poster">`;
+                card.innerHTML = `<img src="${API_BASE_URL}/api/image?path=${encodeURIComponent(item.poster_path)}&size=w342" alt="poster">`;
                 card.onclick = () => activateHeroSlide(idx);
                 dock.appendChild(card);
             });
@@ -1389,7 +1426,7 @@
             const title = item.title || item.name;
             const year = (item.release_date || item.first_air_date || '2026').split('-')[0];
 
-            document.getElementById('imaxBackdrop').style.backgroundImage = `url('/api/image?path=${encodeURIComponent(item.backdrop_path)}&size=original')`;
+            document.getElementById('imaxBackdrop').style.backgroundImage = `url('${API_BASE_URL}/api/image?path=${encodeURIComponent(item.backdrop_path)}&size=original')`;
             document.getElementById('imaxTitle').innerText = title;
             document.getElementById('imaxDesc').innerText = item.overview || '';
             document.getElementById('imaxRate').innerText = `★ ${(item.vote_average || 8.8).toFixed(1)}`;
@@ -1417,7 +1454,7 @@
                 card.innerHTML = `
                     <span class="podium-Outline-num">${idx + 1}</span>
                     <div class="podium-poster-frame">
-                        <img src="/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" loading="lazy">
+                        <img src="${API_BASE_URL}/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" loading="lazy">
                     </div>
                 `;
                 card.onclick = () => openSpatialHub(item.id, isTv ? 'tv' : 'movie', false);
@@ -1439,8 +1476,8 @@
                 const card = document.createElement('div');
                 card.className = 'accordion-media-card';
                 card.innerHTML = `
-                    <img class="card-img-poster" src="/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" loading="lazy">
-                    <img class="card-img-backdrop" src="/api/image?path=${encodeURIComponent(backdrop)}&size=w780" loading="lazy">
+                    <img class="card-img-poster" src="${API_BASE_URL}/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" loading="lazy">
+                    <img class="card-img-backdrop" src="${API_BASE_URL}/api/image?path=${encodeURIComponent(backdrop)}&size=w780" loading="lazy">
                     <span class="card-floating-rating">★ ${(item.vote_average || 8.2).toFixed(1)}</span>
                     <span class="card-floating-quality">4K HDR</span>
                     <div class="card-Bottom-shade">
@@ -1469,7 +1506,7 @@
                 const box = document.createElement('div');
                 box.className = 'grid-poster-item';
                 box.innerHTML = `
-                    <img src="/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" loading="lazy">
+                    <img src="${API_BASE_URL}/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" loading="lazy">
                     <span class="card-floating-rating">★ ${(item.vote_average || 8.0).toFixed(1)}</span>
                     <span class="card-floating-quality">4K</span>
                     <div class="card-Bottom-shade">
@@ -1558,7 +1595,7 @@
 
         async function fetchCatalogGrid(append) {
             try {
-                const url = `/api/discover?media=${catalogState.media}&genres=${catalogState.genres}&origin=${catalogState.origin}&page=${catalogState.page}&lang=${getLangCode()}`;
+                const url = `${API_BASE_URL}/api/discover?media=${catalogState.media}&genres=${catalogState.genres}&origin=${catalogState.origin}&page=${catalogState.page}&lang=${getLangCode()}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 const list = (data.results || []).map(x => ({ ...x, media_type: catalogState.media }));
@@ -1577,13 +1614,13 @@
         async function openSpatialHub(id, mediaType, autoLaunchFirst = false) {
             document.getElementById('spatialDetailsModal').style.display = 'flex';
             try {
-                const res = await fetch(`/api/item/full-details?id=${id}&media=${mediaType}&lang=${getLangCode()}`);
+                const res = await fetch(`${API_BASE_URL}/api/item/full-details?id=${id}&media=${mediaType}&lang=${getLangCode()}`);
                 const data = await res.json();
                 activeHubItem = { ...data, mediaType };
                 const isTv = mediaType === 'tv';
                 const title = data.title || data.name;
 
-                document.getElementById('hubBannerImg').style.backgroundImage = `url('/api/image?path=${encodeURIComponent(data.backdrop_path || data.poster_path)}&size=original')`;
+                document.getElementById('hubBannerImg').style.backgroundImage = `url('${API_BASE_URL}/api/image?path=${encodeURIComponent(data.backdrop_path || data.poster_path)}&size=original')`;
                 document.getElementById('hubTitle').innerText = title;
                 document.getElementById('hubRateBadge').innerText = `★ ${(data.vote_average || 8.6).toFixed(1)}`;
                 document.getElementById('hubYearBadge').innerText = (data.release_date || data.first_air_date || '2026').split('-')[0];
@@ -1631,7 +1668,7 @@
             const grid = document.getElementById('hubEpisodesGrid');
             grid.innerHTML = `<p style="color:var(--text-muted)">جاري استدعاء الحلقات...</p>`;
             try {
-                const res = await fetch(`/api/tv/season?id=${tvId}&season=${seasonNum}&lang=${getLangCode()}`);
+                const res = await fetch(`${API_BASE_URL}/api/tv/season?id=${tvId}&season=${seasonNum}&lang=${getLangCode()}`);
                 const data = await res.json();
                 grid.innerHTML = '';
                 const eps = data.episodes || [];
@@ -1645,12 +1682,12 @@
                 eps.forEach(ep => {
                     const card = document.createElement('div');
                     card.className = 'hub-ep-card';
-                    const img = ep.still_path ? `/api/image?path=${encodeURIComponent(ep.still_path)}&size=w500` : `/api/image?path=${encodeURIComponent(activeHubItem.backdrop_path || activeHubItem.poster_path)}&size=w500`;
+                    const img = ep.still_path ? `${API_BASE_URL}/api/image?path=${encodeURIComponent(ep.still_path)}&size=w500` : `${API_BASE_URL}/api/image?path=${encodeURIComponent(activeHubItem.backdrop_path || activeHubItem.poster_path)}&size=w500`;
                     card.innerHTML = `
                         <img class="hub-ep-thumb" src="${img}">
                         <div style="flex:1; min-width:0;">
                             <div style="font-weight:900; font-size:0.9rem; color:#FFF;">الحلقة ${ep.episode_number}: ${ep.name || ''}</div>
-                            <div style="font-size:0.75rem; color:var(--gold); margin-top:3px;">4K HDR • متوفر</div>
+                            <div style="font-size:0.75rem; color:var(--gold); margin-top:3px;">معلومات الحلقة</div>
                         </div>
                         <span style="color:var(--gold); font-size:1.1rem;">▶</span>
                     `;
@@ -1668,13 +1705,13 @@
         }
 
         /* ==========================================
-           6. استوديو البث الهجين + Client-Side Torbox Cloud Bypass
+           6. استوديو المشاهدة واختيار مزود التضمين
            ========================================== */
         function buildServerEmbedUrl(srvIdx, id, isTv, s, e) {
             if (srvIdx === 0) {
                 return isTv
-                    ? `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=E5B84B&secondaryColor=0A0A0F&iconColor=E5B84B&autoplay=true&nextbutton=true`
-                    : `https://vidlink.pro/movie/${id}?primaryColor=E5B84B&secondaryColor=0A0A0F&iconColor=E5B84B&autoplay=true`;
+                    ? `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=FF2948&secondaryColor=050507&iconColor=FF2948&autoplay=true&nextbutton=true`
+                    : `https://vidlink.pro/movie/${id}?primaryColor=FF2948&secondaryColor=050507&iconColor=FF2948&autoplay=true`;
             } else if (srvIdx === 1) {
                 return isTv ? `https://embed.su/embed/tv/${id}/${s}/${e}` : `https://embed.su/embed/movie/${id}`;
             } else if (srvIdx === 2) {
@@ -1688,9 +1725,7 @@
 
         async function openImperialStudio(id, isTv, season, episode, title, subTitle, backdropPath, fullItem) {
             const itemObj = fullItem || activeHubItem;
-            const imdbId = itemObj?.external_ids?.imdb_id || '';
-
-            activeStudioState = { id, isTv, season: Number(season), episode: Number(episode), title, subTitle, backdropPath, itemObj, imdbId };
+            activeStudioState = { id, isTv, season: Number(season), episode: Number(episode), title, subTitle, backdropPath, itemObj };
 
             document.getElementById('studioShowTitle').innerText = title;
             document.getElementById('studioEpSub').innerText = subTitle;
@@ -1712,156 +1747,26 @@
         }
 
         async function selectStudioServer(idx) {
+            if (!activeStudioState || idx < 0 || idx > 4) return;
             activeServerIdx = idx;
             document.querySelectorAll('.studio-srv-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
 
-            const artBox = document.getElementById('artplayerBox');
             const iframe = document.getElementById('studioEmbedIframe');
-            const drawer = document.getElementById('torboxStreamsDrawer');
+            const artBox = document.getElementById('artplayerBox');
             const msg = document.getElementById('studioStatusMsg');
+            artBox.style.display = 'none';
+            iframe.style.display = 'block';
+            iframe.src = 'about:blank';
+            msg.textContent = 'جارٍ فتح المشغل المحدد… قد يختلف التوفر والجودة حسب مزود الخدمة.';
 
-            if (artInstance) {
-                artInstance.destroy(false);
-                artInstance = null;
-            }
-
-            // إذا اختار المستخدم أحد السيرفرات الـ 5 الجاهزة
-            if (idx < 5) {
-                artBox.style.display = 'none';
-                drawer.style.display = 'none';
-                iframe.style.display = 'block';
-                msg.innerText = "✨ البث يعمل بأعلى جودة. للترجمة العربية اضغط أيقونة (CC) داخل المشغل.";
-                iframe.src = buildServerEmbedUrl(idx, activeStudioState.id, activeStudioState.isTv, activeStudioState.season, activeStudioState.episode);
-                return;
-            }
-
-            // الخيار 5: الاتصال المباشر بسحابة Torbox من متصفح المستخدم (Client-Side Bypass!)
-            iframe.src = '';
-            iframe.style.display = 'none';
-            artBox.style.display = 'block';
-            msg.innerText = "⏳ جاري الاتصال المباشر بسحابة Torbox Pro من متصفحك (تجاوز حظر Render)...";
-
-            let imdb = activeStudioState.imdbId;
-            if (!imdb) {
-                try {
-                    const r = await fetch(`/api/item/full-details?id=${activeStudioState.id}&media=${activeStudioState.isTv ? 'tv' : 'movie'}`);
-                    const d = await r.json();
-                    imdb = d.external_ids?.imdb_id || '';
-                    activeStudioState.imdbId = imdb;
-                } catch (e) {}
-            }
-
-            if (!imdb) {
-                msg.innerText = "⚠️ لم يتم العثور على معرف IMDb لهذا العمل، يرجى استخدام سيرفر VidLink 4K.";
-                return;
-            }
-
-            try {
-                // جلب الروابط مباشرة من متصفحك لتفادي حظر IP سيرفر Render!
-                const type = activeStudioState.isTv ? 'series' : 'movie';
-                const target = activeStudioState.isTv ? `${imdb}:${activeStudioState.season}:${activeStudioState.episode}` : imdb;
-                const directClientUrl = `https://torrentio.strem.fun/torbox=${TORBOX_USER_KEY}/stream/${type}/${target}.json`;
-
-                const cloudRes = await fetch(directClientUrl);
-                const cloudData = await cloudRes.json();
-                fetchedTorboxStreams = (cloudData.streams || []).filter(s => s.url);
-
-                if (fetchedTorboxStreams.length === 0) {
-                    msg.innerText = "⚠️ هذا العمل غير مخزن حالياً في كاش Torbox الفوري، جرب سيرفر VidLink 4K أو EmbedSU.";
-                    return;
-                }
-
-                // عرض جميع الجودات المسحوبة من Torbox ليختار منها المستخدم
-                drawer.style.display = 'flex';
-                drawer.innerHTML = '';
-                fetchedTorboxStreams.slice(0, 8).forEach((st, sIdx) => {
-                    const cleanName = (st.name || 'Torbox 4K').replace(/\n/g, ' ') + ' • ' + (st.title ? st.title.split('\n')[0].substring(0, 38) : `ملف ${sIdx + 1}`);
-                    const chip = document.createElement('button');
-                    chip.className = `cloud-stream-chip ${sIdx === 0 ? 'active' : ''}`;
-                    chip.innerText = `☁️ ${cleanName}`;
-                    chip.onclick = () => {
-                        drawer.querySelectorAll('.cloud-stream-chip').forEach(c => c.classList.remove('active'));
-                        chip.classList.add('active');
-                        launchArtPlayerWithTorbox(st.url, imdb);
-                    };
-                    drawer.appendChild(chip);
-                });
-
-                launchArtPlayerWithTorbox(fetchedTorboxStreams[0].url, imdb);
-            } catch (err) {
-                msg.innerText = "⚠️ تعذر الاتصال المباشر بالسحابة، يرجى اختيار سيرفر VidLink 4K.";
-            }
-        }
-
-        async function launchArtPlayerWithTorbox(streamUrl, imdbId) {
-            const msg = document.getElementById('studioStatusMsg');
-            msg.innerText = "✅ تم سحب الفيديو الخام من سحابة Torbox Pro! جاري تركيب الترجمة العربية...";
-
-            if (artInstance) {
-                artInstance.destroy(false);
-                artInstance = null;
-            }
-
-            let arabicSubUrl = '';
-            try {
-                const subRes = await fetch(`/api/subtitles/find?imdb=${imdbId}&is_tv=${activeStudioState.isTv}&season=${activeStudioState.season}&episode=${activeStudioState.episode}`);
-                const subData = await subRes.json();
-                if (subData.subtitles && subData.subtitles.length > 0) {
-                    arabicSubUrl = subData.subtitles[0].url;
-                }
-            } catch (e) {}
-
-            artInstance = new Artplayer({
-                container: '#artplayerBox',
-                url: streamUrl,
-                subtitle: {
-                    url: arabicSubUrl,
-                    type: 'vtt',
-                    style: {
-                        color: '#FFFFFF',
-                        fontSize: '26px',
-                        fontWeight: '900',
-                        textShadow: '0 3px 10px rgba(0,0,0,0.95)',
-                        marginBottom: '35px'
-                    },
-                    encoding: 'utf-8',
-                },
-                setting: true,
-                playbackRate: true,
-                aspectRatio: true,
-                fullscreen: true,
-                fullscreenWeb: true,
-                autoPlayback: true,
-                theme: '#E5B84B'
+            const state = activeStudioState;
+            const url = buildServerEmbedUrl(idx, state.id, state.isTv, state.season, state.episode);
+            // Avoid leaving the previous provider running in the background.
+            requestAnimationFrame(() => {
+                if (activeStudioState !== state) return;
+                iframe.src = url;
+                msg.textContent = 'تم اختيار المشغل. عناصر التحكم والترجمة تعتمد على مزود المشغل الخارجي.';
             });
-
-            msg.innerText = arabicSubUrl 
-                ? "👑 يعمل الآن عبر سحابة Torbox Pro مع الترجمة العربية! يمكنك أيضاً رفع أي ملف ترجمة من الزر على اليسار."
-                : "👑 يعمل الآن عبر سحابة Torbox Pro! يمكنك رفع ملف ترجمة عربي (.SRT) من الزر على اليسار.";
-        }
-
-        // ميزة رفع ملف ترجمة خارجي (.SRT / .VTT) من جهاز المستخدم مباشرة
-        function loadUserLocalSubtitle(inputEl) {
-            const file = inputEl.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                let content = e.target.result;
-                if (!content.trim().startsWith('WEBVTT')) {
-                    content = 'WEBVTT\n\n' + content.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
-                }
-                const blob = new Blob([content], { type: 'text/vtt;charset=utf-8' });
-                const subBlobUrl = URL.createObjectURL(blob);
-
-                if (artInstance) {
-                    artInstance.subtitle.switch(subBlobUrl, { name: file.name });
-                    document.getElementById('studioStatusMsg').innerText = `✅ تم تركيب ملف الترجمة الخارجي (${file.name}) بنجاح!`;
-                } else {
-                    alert('يرجى التبديل إلى «سحابة Torbox Pro المباشرة» لتفعيل ملف الترجمة الخارجي فوق المشغل.');
-                }
-            };
-            reader.readAsText(file, 'UTF-8');
         }
 
         async function populateStudioPlaylist(tvId, activeSeason, activeEp, itemObj) {
@@ -1870,7 +1775,7 @@
             let seasons = itemObj?.seasons || [];
             if (!seasons.length) {
                 try {
-                    const r = await fetch(`/api/item/full-details?id=${tvId}&media=tv&lang=${getLangCode()}`);
+                    const r = await fetch(`${API_BASE_URL}/api/item/full-details?id=${tvId}&media=tv&lang=${getLangCode()}`);
                     const d = await r.json();
                     seasons = d.seasons || [];
                 } catch (e) {}
@@ -1889,7 +1794,7 @@
             const box = document.getElementById('studioPlaylistItems');
             box.innerHTML = '';
             try {
-                const res = await fetch(`/api/tv/season?id=${activeStudioState.id}&season=${seasonNum}&lang=${getLangCode()}`);
+                const res = await fetch(`${API_BASE_URL}/api/tv/season?id=${activeStudioState.id}&season=${seasonNum}&lang=${getLangCode()}`);
                 const data = await res.json();
                 (data.episodes || []).forEach(ep => {
                     const isCur = Number(seasonNum) === Number(activeStudioState.season) && Number(ep.episode_number) === Number(activeStudioState.episode);
@@ -1933,10 +1838,6 @@
         }
 
         function closeImperialStudio() {
-            if (artInstance) {
-                artInstance.destroy(false);
-                artInstance = null;
-            }
             document.getElementById('studioEmbedIframe').src = '';
             document.getElementById('imperialStudioModal').style.display = 'none';
         }
@@ -1968,19 +1869,41 @@
             renderContinueWatchingRow();
         }
 
+        let searchTimer = null;
+        let searchController = null;
+        let searchRequestId = 0;
+
         async function triggerInstantSearch(q) {
             const sec = document.getElementById('searchSectionBlock');
-            if (!q.trim()) {
+            const query = q.trim();
+            const requestId = ++searchRequestId;
+            clearTimeout(searchTimer);
+
+            if (!query) {
+                if (searchController) searchController.abort();
                 sec.style.display = 'none';
+                document.getElementById('searchResultsGrid').replaceChildren();
                 return;
             }
+
             SwitchToHomeIfNeeded();
             sec.style.display = 'block';
-            try {
-                const res = await fetch(`/api/search?q=${encodeURIComponent(q.trim())}&lang=${getLangCode()}`);
-                const data = await res.json();
-                renderGridPosters(data.results || [], 'searchResultsGrid', false);
-            } catch (e) {}
+            searchTimer = setTimeout(async () => {
+                if (searchController) searchController.abort();
+                searchController = new AbortController();
+                try {
+                    const url = `${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}&lang=${getLangCode()}`;
+                    const res = await fetch(url, { signal: searchController.signal });
+                    if (!res.ok) throw new Error(`Search failed (${res.status})`);
+                    const data = await res.json();
+                    if (requestId !== searchRequestId) return;
+                    renderGridPosters(data.results || [], 'searchResultsGrid', false);
+                } catch (error) {
+                    if (error.name !== 'AbortError' && requestId === searchRequestId) {
+                        console.error('Search error:', error);
+                    }
+                }
+            }, 280);
         }
 
         function SwitchToHomeIfNeeded() {
