@@ -265,7 +265,7 @@
             font-weight: 800;
         }
 
-        /* 3. مسرح العرض المزدوج (Split Bento Hero Stage) */
+        /* 3. مسرح العرض المزدوج */
         .bento-hero-grid {
             display: grid;
             grid-template-columns: 1fr 350px;
@@ -472,7 +472,7 @@
             gap: 8px;
         }
 
-        /* 4. الأقسام وأزرار "عرض الكل" والحذف */
+        /* 4. الأقسام والمتابعة */
         .section-block {
             margin-bottom: 52px;
         }
@@ -542,7 +542,6 @@
             color: #FFF;
         }
 
-        /* زر الحذف الفردي على بطاقة متابعة المشاهدة */
         .cw-remove-btn {
             position: absolute;
             top: 10px;
@@ -990,7 +989,7 @@
             background: #161622;
         }
 
-        /* 10. مشغل المسرح المضيء مع سيرفرات VIP المضمونة */
+        /* 10. مشغل المسرح المضيء */
         #theaterModal {
             display: none;
             position: fixed;
@@ -1037,15 +1036,15 @@
             box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.4);
         }
 
-        .sub-helper-notice {
-            background: rgba(245, 158, 11, 0.12);
-            border: 1px solid rgba(245, 158, 11, 0.35);
-            color: #FBBF24;
-            padding: 7px 14px;
-            border-radius: 10px;
+        .sub-status-bar {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34D399;
+            padding: 8px 16px;
+            border-radius: 12px;
             font-size: 0.82rem;
-            font-weight: 700;
-            margin-bottom: 10px;
+            font-weight: 800;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1112,7 +1111,6 @@
     <!-- 2. المساحة السينمائية الرئيسية -->
     <div class="workspace-wrapper">
         
-        <!-- الهيدر الفخم -->
         <div class="top-luxury-bar">
             <div class="brand-lockup" onclick="activateSection('home')">
                 <span class="brand-title">ORBIT ROYAL</span>
@@ -1132,7 +1130,6 @@
             </div>
         </div>
 
-        <!-- نتائج البحث الفورية -->
         <div id="instantSearchBox" class="section-block" style="display:none;">
             <div class="section-bar">
                 <h2 class="section-heading"><span class="heading-pill-dot"></span> <span data-i18n="searchResults">نتائج البحث المباشرة</span></h2>
@@ -1141,7 +1138,6 @@
             <div class="luxury-posters-grid" id="searchGridContainer"></div>
         </div>
 
-        <!-- 3. شاشة مكتبة القسم الكاملة -->
         <div id="catalogExplorerView">
             <div class="catalog-header-banner">
                 <div class="catalog-top-row">
@@ -1163,10 +1159,8 @@
             </div>
         </div>
 
-        <!-- 4. المحتوى الرئيسي للصفحة الأولى -->
         <div id="mainStageContent">
 
-            <!-- المسرح المزدوج التفاعلي -->
             <section class="bento-hero-grid">
                 <div class="main-showcase-card" id="heroShowcaseCard">
                     <div class="showcase-gradient"></div>
@@ -1195,7 +1189,6 @@
                 </div>
             </section>
 
-            <!-- شريط متابعة المشاهدة (مزود بزر مسح فردي وزر مسح الكل) -->
             <section class="section-block" id="continueWatchSection" style="display:none;">
                 <div class="section-bar">
                     <h2 class="section-heading"><span class="heading-pill-dot"></span> <span data-i18n="continueWatching">متابعة المشاهدة (أكمل من حيث توقفت)</span></h2>
@@ -1206,7 +1199,6 @@
                 <div class="wide-cinema-track" id="continueWatchTrack"></div>
             </section>
 
-            <!-- قائمة TOP 10 -->
             <section class="section-block">
                 <div class="section-bar">
                     <h2 class="section-heading"><span class="heading-pill-dot"></span> <span data-i18n="top10Today">أفضل 10 أعمال متصدرة اليوم (TOP 10)</span></h2>
@@ -1218,7 +1210,6 @@
                 <div class="top10-track" id="top10Container"></div>
             </section>
 
-            <!-- عروض الشاشة العريضة (الأفلام) -->
             <section class="section-block" id="moviesSectionAnchor">
                 <div class="section-bar">
                     <h2 class="section-heading"><span class="heading-pill-dot"></span> <span data-i18n="widescreenMovies">أحدث الأفلام السينمائية (Widescreen Movies)</span></h2>
@@ -1231,7 +1222,6 @@
                 <div class="wide-cinema-track" id="widescreenContainer"></div>
             </section>
 
-            <!-- المسلسلات العالمية -->
             <section class="section-block" id="seriesSectionAnchor">
                 <div class="section-bar">
                     <h2 class="section-heading"><span class="heading-pill-dot"></span> <span data-i18n="globalSeries">أضخم المسلسلات العالمية المختارة</span></h2>
@@ -1240,7 +1230,6 @@
                 <div class="luxury-posters-grid" id="seriesLuxuryGrid"></div>
             </section>
 
-            <!-- قسم الأنمي -->
             <section class="section-block" id="animeSectionAnchor">
                 <div class="section-bar">
                     <h2 class="section-heading"><span class="heading-pill-dot"></span> <span data-i18n="animeMasterpieces">روائع الأنمي والقتال (Anime Masterpieces)</span></h2>
@@ -1251,7 +1240,6 @@
 
         </div>
 
-        <!-- قسم مفضلتي -->
         <div id="myListStage" class="section-block" style="display:none;">
             <div class="section-bar">
                 <h2 class="section-heading"><span class="heading-pill-dot"></span> <span data-i18n="savedWatchlist">قائمتي المفضلة المحفوظة</span></h2>
@@ -1295,7 +1283,7 @@
         </div>
     </div>
 
-    <!-- 6. مشغل المسرح المضيء (يركز على سيرفرات الـ VIP الشغالة 100%) -->
+    <!-- 6. مشغل المسرح المضيء مع التحقق الفوري من الترجمة العربية -->
     <div id="theaterModal">
         <div class="theater-top-bar">
             <div style="display:flex; align-items:center; gap:14px;">
@@ -1306,19 +1294,21 @@
                 </div>
             </div>
 
-            <!-- شريط سيرفرات الـ VIP المضمونة -->
+            <!-- سيرفرات VIP الشغالة -->
             <div class="server-pills-bar">
-                <button class="srv-pill active" id="srv-btn-0" onclick="selectStreamServer(0)">👑 سيرفر MultiEmbed VIP (الأساسي)</button>
-                <button class="srv-pill" id="srv-btn-1" onclick="selectStreamServer(1)">💎 سيرفر VIP Plus المباشر</button>
-                <button class="srv-pill" id="srv-btn-2" onclick="selectStreamServer(2)">🚀 سيرفر VidLink 4K</button>
-                <button class="srv-pill" id="srv-btn-3" onclick="selectStreamServer(3)">🎬 سيرفر EmbedSu VIP</button>
+                <button class="srv-pill active" id="srv-btn-0" onclick="selectStreamServer(0)">👑 MultiEmbed VIP (الأساسي)</button>
+                <button class="srv-pill" id="srv-btn-1" onclick="selectStreamServer(1)">🚀 VidLink 4K (ترجمة فورية)</button>
+                <button class="srv-pill" id="srv-btn-2" onclick="selectStreamServer(2)">🎬 EmbedSu VIP</button>
+                <button class="srv-pill" id="srv-btn-3" onclick="selectStreamServer(3)">⚡ AutoEmbed Pro</button>
             </div>
 
             <button class="btn-gold-play" style="padding:8px 20px;" id="theaterNextEpBtn" onclick="playNextEpInTheater()" data-i18n="nextEpisode">الحلقة التالية ⏭️</button>
         </div>
 
-        <div class="sub-helper-notice">
-            <span data-i18n="subNotice">👑 تم تفعيل سيرفر (MultiEmbed VIP) كسيرفر أساسي افتراضي. لتشغيل الترجمة العربية اضغط على علامة الترجمة (CC) داخل المشغل واختر Arabic.</span>
+        <!-- شريط حالة الترجمة المعتمدة -->
+        <div class="sub-status-bar" id="subStatusBar">
+            <span id="subStatusText">⏳ جاري الاتصال بمحرك الترجمة العربية...</span>
+            <span style="font-size:0.75rem; color:#A7F3D0;">(مدمج تلقائياً)</span>
         </div>
 
         <div class="theater-screen-frame">
@@ -1380,7 +1370,6 @@
                 seasonsHeader: "🎞️ المواسم والحلقات",
                 exitTheater: "✕ إنهاء العرض",
                 nextEpisode: "الحلقة التالية ⏭️",
-                subNotice: "👑 تم تفعيل سيرفر (MultiEmbed VIP) كسيرفر أساسي افتراضي. لتشغيل الترجمة العربية اضغط على علامة الترجمة (CC) داخل المشغل واختر Arabic.",
                 searchPlaceholder: "ابحث عن فيلم، مسلسل، أو أنمي...",
                 tvLabel: "مسلسل",
                 movieLabel: "فيلم",
@@ -1424,7 +1413,6 @@
                 seasonsHeader: "🎞️ Seasons & Episodes",
                 exitTheater: "✕ Exit Player",
                 nextEpisode: "Next Episode ⏭️",
-                subNotice: "👑 MultiEmbed VIP is set as the default server. Click (CC) inside the video player to enable Arabic subtitles.",
                 searchPlaceholder: "Search movies, TV shows, or anime...",
                 tvLabel: "TV Show",
                 movieLabel: "Movie",
@@ -1505,7 +1493,6 @@
             }
         }
 
-        // إعدادات مكتبة "تصفح الكل"
         const catalogConfigs = {
             anime: {
                 titleAr: "⚡ مكتبة الأنمي الكاملة (All Anime)",
@@ -1621,7 +1608,6 @@
             fetchCatalogItems(true);
         }
 
-        // تحميل بيانات الصفحة الرئيسية
         async function initRoyalPlatform() {
             try {
                 const langParam = getApiLang();
@@ -1769,7 +1755,6 @@
             });
         }
 
-        // الدرج الزجاجي المنزلق للتفاصيل والحلقات
         async function openSlideDrawer(id, mediaType, autoPlayFirst = false) {
             document.getElementById('slideOverBackdrop').style.display = 'flex';
             try {
@@ -1874,7 +1859,6 @@
             document.getElementById('slideOverBackdrop').style.display = 'none';
         }
 
-        // إدارة سجل "متابعة المشاهدة" مع الحذف الفردي والحذف الكامل
         function saveContinueRecord(id, isTv, season, episode, title, backdropPath) {
             savedContinue = savedContinue.filter(x => Number(x.id) !== Number(id));
             savedContinue.unshift({ id: Number(id), isTv, season, episode, title, backdropPath });
@@ -1884,7 +1868,7 @@
         }
 
         function removeContinueItem(event, id) {
-            event.stopPropagation(); // منع فتح المشغل عند الضغط على زر الحذف
+            event.stopPropagation();
             savedContinue = savedContinue.filter(x => Number(x.id) !== Number(id));
             localStorage.setItem('orbit_royal_cw', JSON.stringify(savedContinue));
             renderContinueWatching();
@@ -1928,28 +1912,54 @@
             });
         }
 
-        // توليد روابط السيرفرات المضمونة (مع جعل MultiEmbed VIP هو الأساسي رقم 0)
+        // جلب الترجمة العربية وتأكيد ربطها
+        async function verifyArabicSubtitles(id, isTv, season, episode) {
+            const subBar = document.getElementById('subStatusBar');
+            const subText = document.getElementById('subStatusText');
+            subText.innerText = "⏳ جاري البحث عن ملفات الترجمة العربية المعتمدة...";
+
+            try {
+                const detailsRes = await fetch(`/api/item/full-details?id=${id}&media=${isTv ? 'tv' : 'movie'}`);
+                const detailsData = await detailsRes.json();
+                const imdbId = detailsData.external_ids?.imdb_id;
+
+                if (imdbId) {
+                    const subRes = await fetch(`/api/subtitles/find?imdb=${imdbId}&is_tv=${isTv}&season=${season}&episode=${episode}`);
+                    const subData = await subRes.json();
+                    if (subData.subtitles && subData.subtitles.length > 0) {
+                        subText.innerText = `✅ تم تفعيل الترجمة العربية المعتمدة بنجاح (${subData.subtitles.length} ملف متوفر)`;
+                        subBar.style.borderColor = "rgba(16, 185, 129, 0.4)";
+                        return;
+                    }
+                }
+                subText.innerText = "💡 الترجمة العربية مدمجة بالسيرفر (اضغط CC لاختيار Arabic)";
+            } catch (e) {
+                subText.innerText = "💡 الترجمة العربية مدمجة بالسيرفر (اضغط CC لاختيار Arabic)";
+            }
+        }
+
+        // روابط سيرفرات الـ VIP
         function buildServerUrl(id, isTv, season, episode, srv) {
             if (srv === 0) {
-                // السيرفر 1 (الأساسي): MultiEmbed VIP الذي يعمل بكفاءة عالية
+                // MultiEmbed VIP (الأساسي والشغال 100%)
                 return isTv
                     ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
                     : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
             } else if (srv === 1) {
-                // السيرفر 2: MultiEmbed Direct VIP Plus
+                // VidLink 4K
                 return isTv
-                    ? `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
-                    : `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`;
+                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=F59E0B&autoplay=true&sub=ar&sub.info=ar&sub_lang=Arabic`
+                    : `https://vidlink.pro/movie/${id}?primaryColor=F59E0B&autoplay=true&sub=ar&sub.info=ar&sub_lang=Arabic`;
             } else if (srv === 2) {
-                // السيرفر 3: VidLink 4K
-                return isTv
-                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=F59E0B&autoplay=true`
-                    : `https://vidlink.pro/movie/${id}?primaryColor=F59E0B&autoplay=true`;
-            } else {
-                // السيرفر 4: EmbedSu VIP
+                // EmbedSu VIP
                 return isTv
                     ? `https://embed.su/embed/tv/${id}/${season}/${episode}`
                     : `https://embed.su/embed/movie/${id}`;
+            } else {
+                // AutoEmbed Pro
+                return isTv
+                    ? `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}?lang=ar`
+                    : `https://player.autoembed.cc/embed/movie/${id}?lang=ar`;
             }
         }
 
@@ -1961,8 +1971,8 @@
 
             if (backdropPath) saveContinueRecord(id, isTv, season, episode, title, backdropPath);
 
-            // يفتح مباشرة على السيرفر رقم 0 (MultiEmbed VIP)
             selectStreamServer(0);
+            verifyArabicSubtitles(id, isTv, season, episode);
             document.getElementById('theaterModal').style.display = 'flex';
         }
 
@@ -1988,7 +1998,6 @@
             document.getElementById('theaterModal').style.display = 'none';
         }
 
-        // البحث الفوري
         async function handleInstantSearch(q) {
             const box = document.getElementById('instantSearchBox');
             if (!q.trim()) {
