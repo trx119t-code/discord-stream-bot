@@ -100,7 +100,35 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 4. استكشاف التصنيفات (أنمي، فضاء، إلخ)
+    // 4. في السينما الآن (Now Playing)
+    if (req.url.startsWith('/api/now-playing')) {
+        try {
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=ar-SA&page=1`);
+            const data = await tmdbRes.text();
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(data);
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ results: [] }));
+        }
+        return;
+    }
+
+    // 5. قريباً في السينما (Coming Soon)
+    if (req.url.startsWith('/api/upcoming')) {
+        try {
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${TMDB_API_KEY}&language=ar-SA&page=1`);
+            const data = await tmdbRes.text();
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(data);
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ results: [] }));
+        }
+        return;
+    }
+
+    // 6. استكشاف التصنيفات (أنمي، 4K، خيال)
     if (req.url.startsWith('/api/discover')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const media = urlParams.searchParams.get('media') || 'tv';
@@ -123,7 +151,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 5. تفاصيل العمل الكاملة (مع طاقم التمثيل Cast + الأعمال المشابهة Similar)
+    // 7. تفاصيل العمل وطاقم التمثيل
     if (req.url.startsWith('/api/item/full-details')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
@@ -140,7 +168,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 6. جلب حلقات الموسم
+    // 8. حلقات الموسم
     if (req.url.startsWith('/api/tv/season')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
@@ -157,7 +185,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // تقديم واجهة الويب
+    // تقديم الواجهة
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
