@@ -8,10 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- مكتبات المشغل الداخلي Hls.js و ArtPlayer -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
-
     <style>
         :root {
             --accent: #FF2A42;
@@ -60,7 +56,6 @@
             width: 28px;
             height: 28px;
             filter: drop-shadow(0 0 10px rgba(var(--accent-rgb), 0.7));
-            transition: transform 0.3s ease;
         }
 
         /* 1. الدوك الجانبي */
@@ -993,7 +988,7 @@
             background: #180D12;
         }
 
-        /* 5. مشغل المسرح المدمج ArtPlayer */
+        /* 5. مشغل المسرح السريع */
         #theaterModal {
             display: none;
             position: fixed;
@@ -1067,22 +1062,11 @@
             position: relative;
         }
 
-        #artplayerContainer {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            inset: 0;
-            z-index: 5;
-        }
-
         #theaterIframe {
             width: 100%;
             height: 100%;
             border: none;
-            position: absolute;
-            inset: 0;
-            z-index: 4;
-            display: none;
+            display: block;
         }
 
         @media (max-width: 1024px) {
@@ -1279,7 +1263,7 @@
 
     </div>
 
-    <!-- الدرج المنزلق -->
+    <!-- الدرج المنزلق للتفاصيل -->
     <div id="slideOverBackdrop" onclick="if(event.target===this) closeSlideDrawer()">
         <div class="slide-over-drawer">
             <div class="drawer-cover" id="drawerBannerImg">
@@ -1313,7 +1297,7 @@
         </div>
     </div>
 
-    <!-- 5. مشغل المسرح المدمج ArtPlayer -->
+    <!-- المشغل الفوري المضمون 100% -->
     <div id="theaterModal">
         <div class="theater-top-bar">
             <div style="display:flex; align-items:center; gap:14px;">
@@ -1324,22 +1308,21 @@
                 </div>
             </div>
 
+            <!-- السيرفرات الحقيقية المضمونة -->
             <div class="server-pills-bar">
-                <button class="srv-pill active" id="srv-btn-0" onclick="switchPlayerMode(0)">⚡ مشغل أوربت الداخلي (ArtPlayer)</button>
-                <button class="srv-pill" id="srv-btn-1" onclick="switchPlayerMode(1)">👑 VidLink 4K (سريع)</button>
-                <button class="srv-pill" id="srv-btn-2" onclick="switchPlayerMode(2)">💎 MultiEmbed VIP</button>
+                <button class="srv-pill active" id="srv-btn-0" onclick="selectStreamServer(0)">👑 سيرفر أوربت (MultiEmbed VIP)</button>
+                <button class="srv-pill" id="srv-btn-1" onclick="selectStreamServer(1)">🚀 سيرفر VidLink 4K</button>
+                <button class="srv-pill" id="srv-btn-2" onclick="selectStreamServer(2)">⚡ سيرفر AutoEmbed PRO</button>
             </div>
 
             <button class="btn-gold-play" style="padding:8px 20px;" id="theaterNextEpBtn" onclick="playNextEpInTheater()" data-i18n="nextEpisode">الحلقة التالية ⏭️</button>
         </div>
 
         <div class="sub-status-bar" id="subStatusBar">
-            <span id="subStatusText">⏳ جاري الاتصال بمحرك الترجمة العربية وسحب مسار البث المباشر...</span>
-            <span style="font-size:0.75rem; color:#FFD1D6;">(أوربت ستور)</span>
+            <span id="subStatusText">💡 تم تعيين سيرفر MultiEmbed VIP كسيرفر افتراضي سريع ومستقر. للترجمة اضغط (CC) داخل الفيديو.</span>
         </div>
 
         <div class="theater-screen-frame">
-            <div id="artplayerContainer"></div>
             <iframe id="theaterIframe" src="" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
         </div>
     </div>
@@ -1349,8 +1332,7 @@
         let activeQueueIdx = 0;
         let currentDrawerItem = null;
         let activePlayback = null;
-        let art = null;
-        let currentMode = 0;
+        let serverIdx = 0;
 
         let currentCatalogCategory = 'anime';
         let currentCatalogMedia = 'tv';
@@ -1941,125 +1923,23 @@
             });
         }
 
-        // تشغيل مشغل ArtPlayer المخصص وحقن الترجمة العربية
-        async function launchCustomArtPlayer(id, isTv, season, episode) {
-            const container = document.getElementById('artplayerContainer');
-            const iframe = document.getElementById('theaterIframe');
-            container.style.display = 'block';
-            iframe.style.display = 'none';
-
-            if (art) {
-                art.destroy(false);
-                art = null;
-            }
-
-            const subText = document.getElementById('subStatusText');
-            subText.innerText = "⏳ جاري استخراج مسار التدفق وفحص ملفات الترجمة العربية...";
-
-            let subTrackUrl = '';
-            try {
-                const detailsRes = await fetch(`/api/item/full-details?id=${id}&media=${isTv ? 'tv' : 'movie'}`);
-                const detailsData = await detailsRes.json();
-                const imdbId = detailsData.external_ids?.imdb_id;
-
-                if (imdbId) {
-                    const subRes = await fetch(`/api/subtitles/find?imdb=${imdbId}&is_tv=${isTv}&season=${season}&episode=${episode}`);
-                    const subData = await subRes.json();
-                    if (subData.subtitles && subData.subtitles.length > 0) {
-                        subTrackUrl = subData.subtitles[0].url;
-                        subText.innerText = `✅ تم ربط الترجمة العربية المعتمدة بنجاح (${subData.subtitles.length} ملف متوفر)`;
-                    } else {
-                        subText.innerText = `💡 جاري التشغيل عبر مسار البث المباشر`;
-                    }
-                }
-            } catch (e) {}
-
-            let videoSource = '';
-            try {
-                const extRes = await fetch(`/api/stream/extract?id=${id}&is_tv=${isTv}&season=${season}&episode=${episode}`);
-                const extData = await extRes.json();
-                videoSource = extData.streamUrl;
-            } catch (e) {}
-
-            if (!videoSource) {
-                switchPlayerMode(1);
-                return;
-            }
-
-            art = new Artplayer({
-                container: '#artplayerContainer',
-                url: videoSource,
-                type: 'm3u8',
-                customType: {
-                    m3u8: function (video, url, artInstance) {
-                        if (Hls.isSupported()) {
-                            if (artInstance.hls) artInstance.hls.destroy();
-                            const hls = new Hls({ xhrSetup: function(xhr) { xhr.withCredentials = false; } });
-                            hls.loadSource(url);
-                            hls.attachMedia(video);
-                            artInstance.hls = hls;
-                        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                            video.src = url;
-                        } else {
-                            switchPlayerMode(1);
-                        }
-                    },
-                },
-                subtitle: {
-                    url: subTrackUrl,
-                    type: 'vtt',
-                    style: {
-                        color: '#FFF',
-                        fontSize: '24px',
-                        fontWeight: 'bold',
-                        textShadow: '0 2px 8px rgba(0,0,0,0.95)',
-                        marginBottom: '32px'
-                    },
-                    encoding: 'utf-8',
-                },
-                setting: true,
-                playbackRate: true,
-                aspectRatio: true,
-                fullscreen: true,
-                fullscreenWeb: true,
-                miniProgressBar: true,
-                autoPlayback: true,
-                theme: '#FF2A42',
-            });
-
-            art.on('error', () => {
-                switchPlayerMode(1);
-            });
-        }
-
-        function switchPlayerMode(modeIdx) {
-            currentMode = modeIdx;
-            document.querySelectorAll('.srv-pill').forEach((btn, idx) => {
-                btn.classList.toggle('active', idx === modeIdx);
-            });
-
-            const artContainer = document.getElementById('artplayerContainer');
-            const iframe = document.getElementById('theaterIframe');
-            const subText = document.getElementById('subStatusText');
-
-            if (modeIdx === 0) {
-                launchCustomArtPlayer(activePlayback.id, activePlayback.isTv, activePlayback.season, activePlayback.episode);
-            } else if (modeIdx === 1) {
-                if (art) { art.destroy(false); art = null; }
-                artContainer.style.display = 'none';
-                iframe.style.display = 'block';
-                subText.innerText = "👑 تم تفعيل سيرفر VidLink 4K السريع";
-                iframe.src = activePlayback.isTv
-                    ? `https://vidlink.pro/tv/${activePlayback.id}/${activePlayback.season}/${activePlayback.episode}?primaryColor=FF2A42&autoplay=true`
-                    : `https://vidlink.pro/movie/${activePlayback.id}?primaryColor=FF2A42&autoplay=true`;
+        // روابط سيرفرات البث الصافية والموثوقة
+        function buildServerStreamUrl(id, isTv, season, episode, srv) {
+            if (srv === 0) {
+                // 1. MultiEmbed VIP (السيرفر الأكثر ثباتاً وسرعة بالتشغيل)
+                return isTv
+                    ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
+                    : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
+            } else if (srv === 1) {
+                // 2. VidLink 4K
+                return isTv
+                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=FF2A42&autoplay=true`
+                    : `https://vidlink.pro/movie/${id}?primaryColor=FF2A42&autoplay=true`;
             } else {
-                if (art) { art.destroy(false); art = null; }
-                artContainer.style.display = 'none';
-                iframe.style.display = 'block';
-                subText.innerText = "💎 سيرفر MultiEmbed VIP الاحتياطي المباشر";
-                iframe.src = activePlayback.isTv
-                    ? `https://multiembed.mov/?video_id=${activePlayback.id}&tmdb=1&s=${activePlayback.season}&e=${activePlayback.episode}`
-                    : `https://multiembed.mov/?video_id=${activePlayback.id}&tmdb=1`;
+                // 3. AutoEmbed PRO
+                return isTv
+                    ? `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}`
+                    : `https://player.autoembed.cc/embed/movie/${id}`;
             }
         }
 
@@ -2071,8 +1951,19 @@
 
             if (backdropPath) saveContinueRecord(id, isTv, season, episode, title, backdropPath);
 
+            selectStreamServer(0);
             document.getElementById('theaterModal').style.display = 'flex';
-            switchPlayerMode(0);
+        }
+
+        function selectStreamServer(idx) {
+            if (!activePlayback) return;
+            serverIdx = idx;
+            document.querySelectorAll('.srv-pill').forEach((btn, i) => {
+                btn.classList.toggle('active', i === idx);
+            });
+            document.getElementById('theaterIframe').src = buildServerStreamUrl(
+                activePlayback.id, activePlayback.isTv, activePlayback.season, activePlayback.episode, serverIdx
+            );
         }
 
         function playNextEpInTheater() {
@@ -2082,10 +1973,6 @@
         }
 
         function closeTheaterModal() {
-            if (art) {
-                art.destroy(false);
-                art = null;
-            }
             document.getElementById('theaterIframe').src = '';
             document.getElementById('theaterModal').style.display = 'none';
         }
