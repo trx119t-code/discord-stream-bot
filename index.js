@@ -3,6 +3,8 @@ require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
+const axios = require('axios');
+const cheerio = require('cheerio');
 const { 
     Client, 
     GatewayIntentBits, 
@@ -61,13 +63,12 @@ const server = http.createServer(async (req, res) => {
             return res.end();
         }
         try {
-            const imgRes = await fetch(`https://image.tmdb.org/t/p/${size}${imgPath}`);
-            const buffer = await imgRes.arrayBuffer();
+            const imgRes = await axios.get(`https://image.tmdb.org/t/p/${size}${imgPath}`, { responseType: 'arraybuffer' });
             res.writeHead(200, {
-                'Content-Type': imgRes.headers.get('content-type') || 'image/jpeg',
+                'Content-Type': imgRes.headers['content-type'] || 'image/jpeg',
                 'Cache-Control': 'public, max-age=86400'
             });
-            res.end(Buffer.from(buffer));
+            res.end(imgRes.data);
         } catch (err) {
             res.writeHead(404);
             res.end();
@@ -79,10 +80,9 @@ const server = http.createServer(async (req, res) => {
     if (req.url.startsWith('/api/search')) {
         const q = urlParams.searchParams.get('q') || '';
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=${lang}&page=${page}`);
-            const data = await tmdbRes.text();
+            const tmdbRes = await axios.get(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=${lang}&page=${page}`);
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
+            res.end(JSON.stringify(tmdbRes.data));
         } catch (err) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ results: [] }));
@@ -95,10 +95,9 @@ const server = http.createServer(async (req, res) => {
         const type = urlParams.searchParams.get('type') || 'all';
         const time = urlParams.searchParams.get('time') || 'week';
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/${type}/${time}?api_key=${TMDB_API_KEY}&language=${lang}&page=${page}`);
-            const data = await tmdbRes.text();
+            const tmdbRes = await axios.get(`https://api.themoviedb.org/3/trending/${type}/${time}?api_key=${TMDB_API_KEY}&language=${lang}&page=${page}`);
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
+            res.end(JSON.stringify(tmdbRes.data));
         } catch (err) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ results: [] }));
@@ -109,10 +108,9 @@ const server = http.createServer(async (req, res) => {
     // 4. في السينما الآن
     if (req.url.startsWith('/api/now-playing')) {
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=${lang}&page=${page}`);
-            const data = await tmdbRes.text();
+            const tmdbRes = await axios.get(`https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=${lang}&page=${page}`);
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
+            res.end(JSON.stringify(tmdbRes.data));
         } catch (err) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ results: [] }));
@@ -120,7 +118,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 5. استكشاف الأقسام والأنمي
+    // 5. استكشاف الأقسام
     if (req.url.startsWith('/api/discover')) {
         const media = urlParams.searchParams.get('media') || 'tv';
         const genres = urlParams.searchParams.get('genres') || '';
@@ -131,10 +129,9 @@ const server = http.createServer(async (req, res) => {
         if (origin) apiUrl += `&with_origin_country=${origin}`;
 
         try {
-            const tmdbRes = await fetch(apiUrl);
-            const data = await tmdbRes.text();
+            const tmdbRes = await axios.get(apiUrl);
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
+            res.end(JSON.stringify(tmdbRes.data));
         } catch (err) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ results: [] }));
@@ -147,10 +144,9 @@ const server = http.createServer(async (req, res) => {
         const id = urlParams.searchParams.get('id');
         const media = urlParams.searchParams.get('media') || 'tv';
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/${media}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits,external_ids,similar&language=${lang}`);
-            const data = await tmdbRes.text();
+            const tmdbRes = await axios.get(`https://api.themoviedb.org/3/${media}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits,external_ids,similar&language=${lang}`);
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
+            res.end(JSON.stringify(tmdbRes.data));
         } catch (err) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({}));
@@ -163,10 +159,9 @@ const server = http.createServer(async (req, res) => {
         const id = urlParams.searchParams.get('id');
         const seasonNum = urlParams.searchParams.get('season') || '1';
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/${seasonNum}?api_key=${TMDB_API_KEY}&language=${lang}`);
-            const data = await tmdbRes.text();
+            const tmdbRes = await axios.get(`https://api.themoviedb.org/3/tv/${id}/season/${seasonNum}?api_key=${TMDB_API_KEY}&language=${lang}`);
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
+            res.end(JSON.stringify(tmdbRes.data));
         } catch (err) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ episodes: [] }));
@@ -174,7 +169,73 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 8. محرك سحب الترجمة العربية المعتمدة من OpenSubtitles
+    // 8. محرك استخراج رابط تدفق الفيديو الخام (Native M3U8 Extractor)
+    if (req.url.startsWith('/api/stream/extract')) {
+        const id = urlParams.searchParams.get('id');
+        const isTv = urlParams.searchParams.get('is_tv') === 'true';
+        const season = urlParams.searchParams.get('season') || '1';
+        const episode = urlParams.searchParams.get('episode') || '1';
+
+        try {
+            // محاولة استخراج تدفق البث النظيف عبر مزودي الـ Streams
+            const targetApi = isTv 
+                ? `https://vidsrc.net/api/proxy/tv/${id}/${season}/${episode}`
+                : `https://vidsrc.net/api/proxy/movie/${id}`;
+
+            const response = await axios.get(targetApi, {
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+                timeout: 5000
+            }).catch(() => null);
+
+            let streamUrl = null;
+            if (response && response.data && response.data.stream) {
+                streamUrl = response.data.stream;
+            }
+
+            // إذا تعذر الاستخراج المباشر نستخدم مسار البروكسي
+            if (!streamUrl) {
+                streamUrl = `/api/stream/proxy?id=${id}&is_tv=${isTv}&season=${season}&episode=${episode}`;
+            }
+
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ streamUrl, type: 'hls' }));
+        } catch (err) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ streamUrl: null }));
+        }
+        return;
+    }
+
+    // 9. بروكسي تمرير أجزاء تدفق الفيديو بدون حظر CORS
+    if (req.url.startsWith('/api/stream/proxy')) {
+        const streamSrc = urlParams.searchParams.get('src');
+        if (!streamSrc) {
+            res.writeHead(400);
+            return res.end();
+        }
+
+        try {
+            const proxyRes = await axios.get(streamSrc, {
+                responseType: 'stream',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                    'Referer': new URL(streamSrc).origin
+                }
+            });
+
+            res.writeHead(proxyRes.status, {
+                'Content-Type': proxyRes.headers['content-type'] || 'application/vnd.apple.mpegurl',
+                'Access-Control-Allow-Origin': '*'
+            });
+            proxyRes.data.pipe(res);
+        } catch (err) {
+            res.writeHead(502);
+            res.end();
+        }
+        return;
+    }
+
+    // 10. محرك جلب الترجمة العربية المعتمدة من OpenSubtitles
     if (req.url.startsWith('/api/subtitles/find')) {
         const imdbId = urlParams.searchParams.get('imdb');
         const isTv = urlParams.searchParams.get('is_tv') === 'true';
@@ -188,10 +249,9 @@ const server = http.createServer(async (req, res) => {
 
         try {
             const queryPath = isTv ? `series/${imdbId}:${season}:${episode}.json` : `movie/${imdbId}.json`;
-            const subRes = await fetch(`https://opensubtitles-v3.strem.io/subtitles/${queryPath}`);
-            const subData = await subRes.json();
+            const subRes = await axios.get(`https://opensubtitles-v3.strem.io/subtitles/${queryPath}`, { timeout: 6000 });
             
-            const arabicSubs = (subData.subtitles || [])
+            const arabicSubs = (subRes.data.subtitles || [])
                 .filter(s => s.lang === 'ara' || s.lang === 'ar' || (s.id && s.id.toLowerCase().includes('arabic')))
                 .map((s, idx) => ({
                     id: s.id || `ar-${idx}`,
@@ -208,7 +268,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 9. بروكسي تحويل وتمرير ملفات الترجمة (.vtt) للمشغل
+    // 11. بروكسي وتنسيق ملفات الترجمة (.vtt)
     if (req.url.startsWith('/api/subtitles/proxy')) {
         const subUrl = urlParams.searchParams.get('url');
         if (!subUrl) {
@@ -216,8 +276,8 @@ const server = http.createServer(async (req, res) => {
             return res.end();
         }
         try {
-            const fetchRes = await fetch(subUrl);
-            let subText = await fetchRes.text();
+            const fetchRes = await axios.get(subUrl, { responseType: 'text', timeout: 6000 });
+            let subText = fetchRes.data;
 
             if (!subText.trim().startsWith('WEBVTT')) {
                 subText = 'WEBVTT\n\n' + subText.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
@@ -225,7 +285,8 @@ const server = http.createServer(async (req, res) => {
 
             res.writeHead(200, {
                 'Content-Type': 'text/vtt; charset=utf-8',
-                'Cache-Control': 'public, max-age=86400'
+                'Cache-Control': 'public, max-age=86400',
+                'Access-Control-Allow-Origin': '*'
             });
             res.end(subText);
         } catch (err) {
@@ -235,14 +296,14 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // عرض الواجهة
+    // تقديم الواجهة
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(htmlData);
     } else {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end('<body style="background:#0f1015;color:#fff;text-align:center;padding-top:50px;"><h1>⚠️ ملف index.html غير موجود</h1></body>');
+        res.end('<body style="background:#080608;color:#fff;text-align:center;padding-top:50px;"><h1>⚠️ ملف index.html غير موجود</h1></body>');
     }
 });
 
@@ -292,7 +353,7 @@ client.on('messageCreate', async (message) => {
         }
 
         const embed = new EmbedBuilder()
-            .setColor('#F59E0B')
+            .setColor('#FF2A42')
             .setTitle('🍿 سينما ديسكورد التفاعلية (Orbit Royal)')
             .setDescription(`جاهز للعرض داخل: <#${voiceChannel.id}>\n\nاضغط على الزر بالأسفل لبدء المشاهدة مباشرة!`)
             .setImage('https://image.tmdb.org/t/p/w1280/8Z8W5pE2u4bX9QG5N0oP7jH8XvW.jpg');
