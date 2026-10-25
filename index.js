@@ -43,9 +43,12 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.removeHeader('X-Frame-Options');
 
+    const urlParams = new URL(req.url, `http://${req.headers.host}`);
+    const lang = urlParams.searchParams.get('lang') || 'ar-SA';
+    const page = urlParams.searchParams.get('page') || '1';
+
     // 1. بروكسي الصور
     if (req.url.startsWith('/api/image')) {
-        const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const imgPath = urlParams.searchParams.get('path');
         const size = urlParams.searchParams.get('size') || 'w500';
         if (!imgPath) {
@@ -67,16 +70,14 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 2. البحث الشامل المصنف والمفصل (أفلام، مسلسلات، وممثلين مثل CineLite)
+    // 2. البحث الشامل مع دعم اللغة
     if (req.url.startsWith('/api/search')) {
-        const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const q = urlParams.searchParams.get('q') || '';
-        const lang = urlParams.searchParams.get('lang') || 'ar-SA';
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=${lang}`);
-            const data = await tmdbRes.json();
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=${lang}&page=${page}`);
+            const data = await tmdbRes.text();
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(JSON.stringify(data));
+            res.end(data);
         } catch (err) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ results: [] }));
@@ -84,13 +85,12 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 3. المحتوى الرائج
+    // 3. المحتوى الرائج مع دعم اللغة والصفحات
     if (req.url.startsWith('/api/trending')) {
-        const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const type = urlParams.searchParams.get('type') || 'all';
         const time = urlParams.searchParams.get('time') || 'week';
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/${type}/${time}?api_key=${TMDB_API_KEY}&language=ar-SA`);
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/${type}/${time}?api_key=${TMDB_API_KEY}&language=${lang}&page=${page}`);
             const data = await tmdbRes.text();
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(data);
@@ -104,7 +104,7 @@ const server = http.createServer(async (req, res) => {
     // 4. في السينما الآن
     if (req.url.startsWith('/api/now-playing')) {
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=ar-SA&page=1`);
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=${lang}&page=${page}`);
             const data = await tmdbRes.text();
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(data);
@@ -115,28 +115,13 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 5. قريباً في السينما
-    if (req.url.startsWith('/api/upcoming')) {
-        try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${TMDB_API_KEY}&language=ar-SA&page=1`);
-            const data = await tmdbRes.text();
-            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(data);
-        } catch (err) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ results: [] }));
-        }
-        return;
-    }
-
-    // 6. استكشاف التصنيفات
+    // 5. استكشاف المكتبات الكاملة (أفلام، مسلسلات، أنمي مع تعدد الصفحات)
     if (req.url.startsWith('/api/discover')) {
-        const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const media = urlParams.searchParams.get('media') || 'tv';
         const genres = urlParams.searchParams.get('genres') || '';
         const origin = urlParams.searchParams.get('origin') || '';
 
-        let apiUrl = `https://api.themoviedb.org/3/discover/${media}?api_key=${TMDB_API_KEY}&language=ar-SA&sort_by=popularity.desc&page=1`;
+        let apiUrl = `https://api.themoviedb.org/3/discover/${media}?api_key=${TMDB_API_KEY}&language=${lang}&sort_by=popularity.desc&page=${page}`;
         if (genres) apiUrl += `&with_genres=${genres}`;
         if (origin) apiUrl += `&with_origin_country=${origin}`;
 
@@ -152,13 +137,12 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 7. تفاصيل العمل وطاقم التمثيل
+    // 6. تفاصيل العمل الكاملة مع اللغة
     if (req.url.startsWith('/api/item/full-details')) {
-        const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
         const media = urlParams.searchParams.get('media') || 'tv';
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/${media}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits,similar&language=ar-SA`);
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/${media}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits,similar&language=${lang}`);
             const data = await tmdbRes.text();
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(data);
@@ -169,13 +153,12 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 8. حلقات الموسم
+    // 7. حلقات الموسم مع اللغة
     if (req.url.startsWith('/api/tv/season')) {
-        const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
         const seasonNum = urlParams.searchParams.get('season') || '1';
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/${seasonNum}?api_key=${TMDB_API_KEY}&language=ar-SA`);
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/${seasonNum}?api_key=${TMDB_API_KEY}&language=${lang}`);
             const data = await tmdbRes.text();
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(data);
@@ -186,7 +169,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // تقديم صفحة HTML
+    // تقديم واجهة الموقع
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -243,8 +226,8 @@ client.on('messageCreate', async (message) => {
         }
 
         const embed = new EmbedBuilder()
-            .setColor('#6366F1')
-            .setTitle('🍿 سينما ديسكورد التفاعلية (Orbit Cinema)')
+            .setColor('#F59E0B')
+            .setTitle('🍿 سينما ديسكورد التفاعلية (Orbit Royal)')
             .setDescription(`جاهز للعرض داخل: <#${voiceChannel.id}>\n\nاضغط على الزر بالأسفل لبدء المشاهدة مباشرة!`)
             .setImage('https://image.tmdb.org/t/p/w1280/8Z8W5pE2u4bX9QG5N0oP7jH8XvW.jpg');
 
