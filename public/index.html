@@ -3,549 +3,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORBIT PRIME | السينما المطلقة</title>
+    <title>ORBIT ROYAL | المسرح السينمائي</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary: #6366F1;
-            --primary-glow: rgba(99, 102, 241, 0.5);
-            --accent-gold: #F59E0B;
-            --bg-void: #030204;
-            --bg-surface: rgba(14, 11, 18, 0.75);
-            --bg-glass: rgba(22, 18, 28, 0.6);
-            --border: rgba(255, 255, 255, 0.08);
-            --border-highlight: rgba(255, 255, 255, 0.22);
-            --text-main: #FFFFFF;
-            --text-sub: #A19AA7;
+            --accent: #F59E0B;
+            --accent-rgb: 245, 158, 11;
+            --accent-secondary: #EC4899;
+            --bg-deep: #07070A;
+            --bg-panel: rgba(18, 18, 24, 0.72);
+            --bg-card: rgba(26, 26, 36, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(245, 158, 11, 0.45);
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Tajawal', 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Cairo', 'Outfit', sans-serif;
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--bg-void);
-            color: var(--text-main);
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
             overflow-x: hidden;
             min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 85% 10%, rgba(var(--accent-rgb), 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 10% 80%, rgba(236, 72, 153, 0.08) 0%, transparent 40%);
         }
 
-        /* توهج ضبابي ملون في خلفية الموقع */
-        .ambient-aurora-glow {
+        /* شريط التمرير المخصص */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #07070A; }
+        ::-webkit-scrollbar-thumb { background: #262630; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        /* 1. الدوك الجانبي العائم (VisionOS Vertical Dock) */
+        .vision-dock {
             position: fixed;
-            top: -20vh;
-            right: 15vw;
-            width: 70vw;
-            height: 60vh;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(236, 72, 153, 0.08) 50%, transparent 70%);
-            filter: blur(100px);
-            pointer-events: none;
-            z-index: 0;
-            transition: all 1s ease;
-        }
-
-        /* 1. الشريط العلوي المركزي المصقول */
-        header {
-            position: fixed;
-            top: 24px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            pointer-events: none;
-        }
-
-        .master-pill-nav {
-            pointer-events: auto;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(10, 8, 14, 0.75);
+            top: 50%;
+            right: 22px;
+            transform: translateY(-50%);
+            background: rgba(15, 15, 22, 0.78);
             backdrop-filter: blur(28px);
             -webkit-backdrop-filter: blur(28px);
-            border: 1px solid var(--border);
-            border-radius: 40px;
-            padding: 6px 14px;
-            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 18px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            z-index: 1000;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.12);
         }
 
-        .nav-link-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-sub);
-            padding: 9px 20px;
-            border-radius: 24px;
-            font-size: 0.95rem;
-            font-weight: 700;
+        body[dir="ltr"] .vision-dock {
+            right: auto;
+            left: 22px;
+        }
+
+        .dock-brand {
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent) 0%, #D97706 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.3rem;
+            color: #000;
+            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.5);
+            margin-bottom: 6px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        .nav-link-btn:hover {
-            color: #FFF;
-        }
-
-        .nav-link-btn.active {
-            background: rgba(255, 255, 255, 0.12);
-            color: #FFF;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2);
-        }
-
-        .nav-divider-bar {
-            width: 1px;
-            height: 20px;
-            background: rgba(255, 255, 255, 0.15);
-            margin: 0 4px;
-        }
-
-        .nav-tool-btn {
+        .dock-item {
+            position: relative;
+            width: 46px;
+            height: 46px;
+            border-radius: 16px;
+            border: 1px solid transparent;
             background: transparent;
-            border: none;
-            color: var(--text-sub);
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.25s;
-            font-size: 1.05rem;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        .nav-tool-btn:hover {
+        .dock-item:hover {
             color: #FFF;
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.08);
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.1);
         }
 
-        /* 2. بنر العرض الرئيسي السينمائي الممتد */
-        .master-hero-stage {
-            position: relative;
-            width: 100%;
-            height: 86vh;
-            min-height: 580px;
-            display: flex;
-            align-items: flex-end;
-            padding: 0 60px 80px 60px;
-            background-size: cover;
-            background-position: center 25%;
-            transition: background-image 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1;
+        .dock-item.active {
+            background: rgba(var(--accent-rgb), 0.18);
+            color: var(--accent);
+            border-color: rgba(var(--accent-rgb), 0.4);
+            box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.25);
         }
 
-        .hero-vignette {
+        .dock-tooltip {
             position: absolute;
-            inset: 0;
-            background: linear-gradient(0deg, var(--bg-void) 8%, rgba(3, 2, 4, 0.65) 45%, rgba(3, 2, 4, 0.15) 100%),
-                        linear-gradient(270deg, var(--bg-void) 0%, rgba(3, 2, 4, 0.4) 50%, transparent 100%);
+            right: 60px;
+            background: #14141D;
+            border: 1px solid var(--glass-border);
+            color: #FFF;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(10px);
+            transition: all 0.2s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
         }
 
-        body[dir="ltr"] .hero-vignette {
-            background: linear-gradient(0deg, var(--bg-void) 8%, rgba(3, 2, 4, 0.65) 45%, rgba(3, 2, 4, 0.15) 100%),
-                        linear-gradient(90deg, var(--bg-void) 0%, rgba(3, 2, 4, 0.4) 50%, transparent 100%);
+        body[dir="ltr"] .dock-tooltip {
+            right: auto;
+            left: 60px;
+            transform: translateX(-10px);
         }
 
-        .hero-meta-panel {
-            position: relative;
-            z-index: 2;
-            max-width: 750px;
+        .dock-item:hover .dock-tooltip {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .dock-sep {
+            width: 24px;
+            height: 1px;
+            background: var(--glass-border);
+            margin: 4px 0;
+        }
+
+        /* 2. المساحة الرئيسية للموقع */
+        .workspace-wrapper {
+            padding: 28px 105px 80px 44px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        body[dir="ltr"] .workspace-wrapper {
+            padding: 28px 44px 80px 105px;
+        }
+
+        /* الشريط العلوي الفخم للبحث والهوية */
+        .top-luxury-bar {
             display: flex;
-            flex-direction: column;
-            gap: 18px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            gap: 20px;
         }
 
-        .hero-labels-row {
+        .brand-lockup {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 0.9rem;
+        }
+
+        .brand-title {
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #FFFFFF 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .vip-tag {
+            background: rgba(var(--accent-rgb), 0.15);
+            border: 1px solid rgba(var(--accent-rgb), 0.4);
+            color: var(--accent);
+            font-size: 0.7rem;
+            font-weight: 900;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+
+        .top-search-capsule {
+            flex: 1;
+            max-width: 520px;
+            position: relative;
+        }
+
+        .top-search-capsule input {
+            width: 100%;
+            background: rgba(20, 20, 28, 0.8);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 13px 46px 13px 20px;
+            color: #FFF;
+            font-size: 0.95rem;
+            outline: none;
+            backdrop-filter: blur(16px);
+            transition: all 0.3s;
+        }
+
+        .top-search-capsule input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 25px rgba(var(--accent-rgb), 0.2);
+            background: rgba(26, 26, 36, 0.95);
+        }
+
+        .top-search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            pointer-events: none;
+        }
+
+        .quick-genre-pills {
+            display: flex;
+            gap: 10px;
+        }
+
+        .genre-chip {
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .genre-chip:hover, .genre-chip.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
             font-weight: 800;
         }
 
-        .badge-prime-exclusive {
-            background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
-            color: #FFF;
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 0.78rem;
-            letter-spacing: 1px;
-            box-shadow: 0 0 20px var(--primary-glow);
+        /* 3. مسرح العرض المزدوج (Split Bento Hero Stage) */
+        .bento-hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 22px;
+            margin-bottom: 48px;
         }
 
-        .badge-hero-rating {
-            color: var(--accent-gold);
+        .main-showcase-card {
+            position: relative;
+            height: 520px;
+            border-radius: 28px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            background-size: cover;
+            background-position: center 20%;
+            display: flex;
+            align-items: flex-end;
+            padding: 44px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+            transition: background-image 0.6s ease-in-out;
+        }
+
+        .showcase-gradient {
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(0deg, rgba(7, 7, 10, 0.96) 5%, rgba(7, 7, 10, 0.55) 50%, rgba(7, 7, 10, 0.1) 100%),
+                linear-gradient(270deg, rgba(7, 7, 10, 0.85) 0%, transparent 65%);
+        }
+
+        body[dir="ltr"] .showcase-gradient {
+            background: 
+                linear-gradient(0deg, rgba(7, 7, 10, 0.96) 5%, rgba(7, 7, 10, 0.55) 50%, rgba(7, 7, 10, 0.1) 100%),
+                linear-gradient(90deg, rgba(7, 7, 10, 0.85) 0%, transparent 65%);
+        }
+
+        .showcase-content {
+            position: relative;
+            z-index: 2;
+            max-width: 640px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .showcase-badges {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .hero-super-title {
-            font-size: 4rem;
+        .badge-royal {
+            background: var(--accent);
+            color: #000;
             font-weight: 900;
-            line-height: 1.1;
-            letter-spacing: -0.5px;
-            text-shadow: 0 6px 30px rgba(0,0,0,0.95);
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 8px;
+            letter-spacing: 0.5px;
         }
 
-        .hero-story-brief {
-            font-size: 1.1rem;
-            color: #D6D0DA;
+        .badge-glass-meta {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .showcase-title {
+            font-size: 3.2rem;
+            font-weight: 900;
+            line-height: 1.12;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+        }
+
+        .showcase-desc {
+            color: #D1D5DB;
+            font-size: 1rem;
             line-height: 1.65;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
         }
 
-        .hero-call-to-actions {
+        .showcase-actions {
             display: flex;
-            gap: 16px;
-            margin-top: 10px;
+            gap: 14px;
+            margin-top: 8px;
         }
 
-        .btn-prime-play {
-            background: #FFFFFF;
-            color: #030204;
+        .btn-gold-play {
+            background: linear-gradient(135deg, var(--accent) 0%, #D97706 100%);
+            color: #000;
             border: none;
-            padding: 14px 36px;
-            border-radius: 12px;
-            font-size: 1.05rem;
+            padding: 13px 32px;
+            border-radius: 16px;
+            font-size: 1rem;
             font-weight: 900;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 10px;
+            box-shadow: 0 10px 25px rgba(var(--accent-rgb), 0.35);
             transition: all 0.25s;
-            box-shadow: 0 6px 25px rgba(255, 255, 255, 0.25);
         }
 
-        .btn-prime-play:hover {
-            transform: translateY(-2px) scale(1.03);
-            background: #F2EEF5;
+        .btn-gold-play:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 14px 30px rgba(var(--accent-rgb), 0.5);
         }
 
-        .btn-glass-info {
-            background: rgba(255, 255, 255, 0.12);
+        .btn-frosted {
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             color: #FFF;
-            border: 1px solid var(--border);
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-size: 1rem;
+            border: 1px solid var(--glass-border);
+            padding: 13px 24px;
+            border-radius: 16px;
+            font-size: 0.95rem;
             font-weight: 700;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
             transition: all 0.25s;
         }
 
-        .btn-glass-info:hover {
-            background: rgba(255, 255, 255, 0.22);
-            border-color: var(--border-highlight);
-        }
-
-        /* 3. شريط آخر المشاهدات (Continue Watching) الذكي الفخم */
-        #smartContinueTrack {
-            display: none;
-            padding: 15px 60px 25px 60px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .row-prime-headline {
-            font-size: 1.35rem;
-            font-weight: 900;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-
-        .row-prime-headline::before {
-            content: '';
-            width: 4px;
-            height: 22px;
-            background: var(--primary);
-            border-radius: 4px;
-            box-shadow: 0 0 12px var(--primary-glow);
-        }
-
-        .cw-horizontal-scroll {
-            display: flex;
-            gap: 18px;
-            overflow-x: auto;
-            padding-bottom: 12px;
-        }
-
-        .cw-poster-card {
-            flex: 0 0 290px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            position: relative;
-            backdrop-filter: blur(12px);
-        }
-
-        .cw-poster-card:hover {
-            transform: translateY(-6px);
-            border-color: var(--primary);
-            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.7);
-        }
-
-        .cw-visual-box {
-            position: relative;
-            width: 100%;
-            height: 160px;
-            background: #0D0A11;
-        }
-
-        .cw-visual-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .cw-neon-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
+        .btn-frosted:hover {
             background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
-        .cw-neon-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary) 0%, #A855F7 100%);
-            width: 65%;
-            box-shadow: 0 0 8px var(--primary);
-        }
-
-        .cw-info-padding {
-            padding: 14px 16px;
-        }
-
-        .cw-name {
-            font-size: 0.95rem;
-            font-weight: 800;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .cw-stamp {
-            font-size: 0.8rem;
-            color: var(--text-sub);
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* 4. التقسيم العام والقائمة الجانبية (Obsidian Layout) */
-        .prime-main-grid {
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 40px;
-            padding: 10px 60px 80px 60px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .prime-sliders-stack {
+        /* قائمة الاختيار الجانبية التفاعلية (Up Next Queue) */
+        .hero-queue-stack {
             display: flex;
             flex-direction: column;
-            gap: 44px;
-            min-width: 0;
+            gap: 12px;
+            height: 520px;
         }
 
-        .shelf-top-line {
+        .queue-header-label {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            padding: 0 4px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
         }
 
-        .shelf-scroll-dock {
-            display: flex;
-            gap: 18px;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            padding-bottom: 10px;
-        }
-
-        /* تصميم الكرت الزجاجي الاحترافي للبوسترات */
-        .cinema-poster-dock-item {
-            flex: 0 0 175px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        .cinema-poster-dock-item:hover {
-            transform: translateY(-8px);
-        }
-
-        .poster-glow-frame {
-            position: relative;
-            width: 100%;
-            height: 250px;
-            border-radius: 14px;
-            overflow: hidden;
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        .cinema-poster-dock-item:hover .poster-glow-frame {
-            border-color: var(--border-highlight);
-            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(99, 102, 241, 0.2);
-        }
-
-        .poster-glow-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .tag-corner-badge {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
-            color: #FFF;
-            font-size: 0.68rem;
-            font-weight: 800;
-            padding: 3px 7px;
-            border-radius: 6px;
-            letter-spacing: 0.5px;
-        }
-
-        .tag-corner-rate {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
-            color: var(--accent-gold);
-            font-size: 0.7rem;
-            font-weight: 900;
-            padding: 3px 7px;
-            border-radius: 6px;
-        }
-
-        .tag-4k-badge {
-            position: absolute;
-            bottom: 8px;
-            left: 8px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            color: #FFF;
-            font-size: 0.65rem;
-            font-weight: 900;
-            padding: 1px 5px;
-            border-radius: 4px;
-        }
-
-        .poster-item-heading {
-            font-size: 0.95rem;
-            font-weight: 800;
-            color: #FFF;
-            margin-top: 10px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .poster-item-year {
-            font-size: 0.78rem;
-            color: var(--text-sub);
-            margin-top: 3px;
-        }
-
-        /* القائمة الجانبية (Right Sidebar) الفاخرة */
-        .prime-sidebar-dock {
-            display: flex;
-            flex-direction: column;
-            gap: 36px;
-        }
-
-        .sidebar-panel-tag {
-            font-size: 0.95rem;
-            font-weight: 900;
-            color: #FF5A5F;
-            letter-spacing: 0.5px;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .sidebar-unit-entry {
+        .queue-card {
+            flex: 1;
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 10px;
             display: flex;
             align-items: center;
             gap: 14px;
             cursor: pointer;
-            padding: 8px;
-            border-radius: 12px;
             transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
         }
 
-        .sidebar-unit-entry:hover {
-            background: rgba(255, 255, 255, 0.06);
+        .queue-card:hover, .queue-card.active {
+            background: rgba(var(--accent-rgb), 0.12);
+            border-color: var(--glass-highlight);
             transform: translateX(-4px);
         }
 
-        body[dir="ltr"] .sidebar-unit-entry:hover {
+        body[dir="ltr"] .queue-card:hover, body[dir="ltr"] .queue-card.active {
             transform: translateX(4px);
         }
 
-        .sidebar-rank-num {
-            font-size: 1.35rem;
-            font-weight: 900;
-            color: var(--text-sub);
-            width: 22px;
-            text-align: center;
-        }
-
-        .sidebar-thumb-cut {
-            width: 52px;
-            height: 74px;
-            border-radius: 8px;
+        .queue-thumb {
+            width: 96px;
+            height: 100%;
+            border-radius: 12px;
             object-fit: cover;
-            border: 1px solid var(--border);
             flex-shrink: 0;
-            background: #141217;
         }
 
-        .sidebar-meta-col {
+        .queue-info {
             display: flex;
             flex-direction: column;
             gap: 4px;
             min-width: 0;
         }
 
-        .sidebar-text-title {
-            font-size: 0.92rem;
+        .queue-title {
+            font-size: 0.95rem;
             font-weight: 800;
             color: #FFF;
             white-space: nowrap;
@@ -553,820 +459,1039 @@
             text-overflow: ellipsis;
         }
 
-        .sidebar-text-sub {
+        .queue-sub {
             font-size: 0.78rem;
-            color: var(--text-sub);
-        }
-
-        /* 5. شاشة البحث الأفقية الزجاجية */
-        #searchFullView {
-            display: none;
-            padding: 110px 60px 80px 60px;
-            min-height: 90vh;
-            position: relative;
-            z-index: 2;
-        }
-
-        .search-spotlight-bar {
-            max-width: 880px;
-            margin: 0 auto 30px auto;
-        }
-
-        .search-spotlight-bar input {
-            width: 100%;
-            background: rgba(20, 16, 26, 0.85);
-            border: 1px solid var(--border);
-            border-radius: 35px;
-            padding: 18px 28px;
-            color: #FFF;
-            font-size: 1.15rem;
-            outline: none;
-            backdrop-filter: blur(20px);
-            transition: all 0.3s;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-        }
-
-        .search-spotlight-bar input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 30px var(--primary-glow);
-        }
-
-        /* 6. نافذة التفاصيل السينمائية المنبثقة الشاملة */
-        #detailsOverlayView {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: var(--bg-void);
-            z-index: 1500;
-            overflow-y: auto;
-            padding-bottom: 90px;
-        }
-
-        .details-backdrop-stage {
-            position: relative;
-            width: 100%;
-            min-height: 62vh;
-            background-size: cover;
-            background-position: center 20%;
+            color: var(--text-secondary);
             display: flex;
-            align-items: flex-end;
-            padding: 60px 60px 45px 60px;
+            gap: 8px;
         }
 
-        .btn-exit-details {
-            position: absolute;
-            top: 26px;
-            right: 60px;
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid var(--border);
+        /* 4. رؤوس الأقسام */
+        .section-block {
+            margin-bottom: 52px;
+        }
+
+        .section-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-heading {
+            font-size: 1.45rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .heading-pill-dot {
+            width: 10px;
+            height: 26px;
+            border-radius: 6px;
+            background: linear-gradient(180deg, var(--accent) 0%, #D97706 100%);
+            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.5);
+        }
+
+        .scroll-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .ctrl-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
             color: #FFF;
-            padding: 9px 24px;
-            border-radius: 25px;
-            font-weight: 800;
             cursor: pointer;
-            backdrop-filter: blur(14px);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.2s;
         }
 
-        .btn-exit-details:hover {
-            background: var(--primary);
+        .ctrl-btn:hover {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
         }
 
-        body[dir="ltr"] .btn-exit-details {
-            right: auto;
-            left: 60px;
-        }
-
-        .details-flex-container {
+        /* 5. قسم TOP 10 بالأرقام العملاقة المفرغة */
+        .top10-track {
             display: flex;
-            gap: 40px;
-            align-items: flex-end;
-            position: relative;
-            z-index: 2;
-        }
-
-        .details-hero-poster {
-            width: 220px;
-            height: 325px;
-            border-radius: 16px;
-            object-fit: cover;
-            box-shadow: 0 14px 45px rgba(0, 0, 0, 0.95);
-            border: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-
-        .details-summary-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .details-title-big {
-            font-size: 3.2rem;
-            font-weight: 900;
-            line-height: 1.1;
-        }
-
-        .details-badges-bar {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            font-weight: 800;
-            font-size: 0.95rem;
-        }
-
-        .details-para-text {
-            max-width: 720px;
-            color: #D6D0DA;
-            line-height: 1.65;
-            font-size: 1.05rem;
-        }
-
-        /* كبسولات المواسم وشبكة الحلقات */
-        .seasons-pill-dock {
-            display: flex;
-            gap: 12px;
-            padding: 24px 60px 10px 60px;
+            gap: 28px;
             overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 10px 6px 18px 6px;
         }
 
-        .season-choice-pill {
-            background: var(--bg-glass);
-            border: 1px solid var(--border);
-            color: var(--text-sub);
-            padding: 10px 26px;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-weight: 800;
+        .top10-unit {
+            flex: 0 0 215px;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
             cursor: pointer;
-            transition: all 0.25s;
-            white-space: nowrap;
+            height: 260px;
         }
 
-        .season-choice-pill.active {
-            background: var(--primary);
-            color: #FFF;
-            border-color: var(--primary);
-            box-shadow: 0 0 18px var(--primary-glow);
-        }
-
-        .episodes-cinematic-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-            gap: 22px;
-            padding: 20px 60px;
-        }
-
-        .episode-card-cell {
-            background: var(--bg-glass);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            overflow: hidden;
-            cursor: pointer;
+        .giant-rank-num {
+            font-family: 'Outfit', sans-serif;
+            font-size: 9.5rem;
+            font-weight: 900;
+            line-height: 0.8;
+            color: transparent;
+            -webkit-text-stroke: 3px rgba(var(--accent-rgb), 0.55);
+            position: absolute;
+            right: -10px;
+            bottom: 0;
+            z-index: 1;
             transition: all 0.3s;
         }
 
-        .episode-card-cell:hover {
-            transform: translateY(-6px);
-            border-color: var(--primary);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+        body[dir="ltr"] .giant-rank-num {
+            right: auto;
+            left: -10px;
         }
 
-        .episode-cell-thumb {
+        .top10-unit:hover .giant-rank-num {
+            -webkit-text-stroke: 3px var(--accent);
+            transform: scale(1.06);
+            filter: drop-shadow(0 0 20px rgba(var(--accent-rgb), 0.4));
+        }
+
+        .top10-poster-box {
+            width: 155px;
+            height: 235px;
+            border-radius: 18px;
+            overflow: hidden;
             position: relative;
-            width: 100%;
-            height: 165px;
-            background: #110E16;
+            z-index: 2;
+            margin-right: auto;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            transition: all 0.3s;
         }
 
-        .episode-cell-thumb img {
+        body[dir="ltr"] .top10-poster-box {
+            margin-right: 0;
+            margin-left: auto;
+        }
+
+        .top10-unit:hover .top10-poster-box {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+        }
+
+        .top10-poster-box img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .ep-badge-stamp {
+        /* 6. البطاقات البانورامية العريضة (16:9 Widescreen Cards) */
+        .wide-cinema-track {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding-bottom: 12px;
+        }
+
+        .wide-scene-card {
+            flex: 0 0 320px;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+        }
+
+        .wide-scene-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            border-color: var(--glass-highlight);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .wide-thumb-box {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            background: #111118;
+        }
+
+        .wide-thumb-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+
+        .wide-scene-card:hover .wide-thumb-box img {
+            transform: scale(1.08);
+        }
+
+        .wide-overlay-play {
             position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.8);
-            color: #FFF;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 800;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.25s;
         }
 
-        .episode-cell-body {
+        .wide-scene-card:hover .wide-overlay-play {
+            opacity: 1;
+        }
+
+        .circle-play-gold {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 900;
+            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.7);
+        }
+
+        .wide-card-meta {
             padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .episode-cell-title {
-            font-size: 0.98rem;
+        .wide-card-title {
+            font-size: 1rem;
             font-weight: 800;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 210px;
         }
 
-        .episode-cell-desc {
-            font-size: 0.82rem;
-            color: var(--text-sub);
-            margin-top: 6px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+        .wide-card-rate {
+            background: rgba(var(--accent-rgb), 0.15);
+            color: var(--accent);
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+
+        /* 7. بطاقات البوسترات الملكية بتفاصيل زجاجية مندمجة */
+        .luxury-posters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+            gap: 20px;
+        }
+
+        .royal-poster-card {
+            position: relative;
+            height: 275px;
+            border-radius: 20px;
             overflow: hidden;
-            line-height: 1.45;
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            background: #12121A;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        /* 7. مشغل السينما الفخم (Theater Mode) */
-        #ultraCinemaStage {
+        .royal-poster-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 16px 35px rgba(0,0,0,0.85), 0 0 20px rgba(var(--accent-rgb), 0.2);
+        }
+
+        .royal-poster-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+
+        .royal-poster-card:hover img {
+            transform: scale(1.06);
+        }
+
+        .royal-card-glass-footer {
+            position: absolute;
+            inset: auto 0 0 0;
+            background: linear-gradient(0deg, rgba(7,7,10,0.96) 0%, rgba(7,7,10,0.75) 65%, transparent 100%);
+            padding: 28px 14px 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .royal-card-badge-top {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(7, 7, 10, 0.78);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--accent);
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 900;
+        }
+
+        /* 8. الدرج الزجاجي المنزلق لتفاصيل المسلسل والحلقات (Slide-Over Drawer) */
+        #slideOverBackdrop {
             display: none;
             position: fixed;
             inset: 0;
-            background: #000;
-            z-index: 2000;
-            flex-direction: column;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            z-index: 1500;
+            justify-content: flex-end;
         }
 
-        .cinema-hud-header {
+        .slide-over-drawer {
+            width: 100%;
+            max-width: 860px;
+            height: 100vh;
+            background: #0B0B10;
+            border-right: 1px solid var(--glass-border);
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.95);
+            animation: slideIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .drawer-cover {
+            position: relative;
+            height: 360px;
+            background-size: cover;
+            background-position: center 20%;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 40px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, transparent 100%);
+            align-items: flex-end;
+            padding: 32px;
+        }
+
+        .drawer-close-fab {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 22px;
+            left: 22px;
             z-index: 10;
+            background: rgba(15, 15, 22, 0.85);
+            border: 1px solid var(--glass-border);
+            color: #FFF;
+            padding: 8px 18px;
+            border-radius: 14px;
+            font-weight: 800;
+            cursor: pointer;
         }
 
-        .btn-cinema-hud-back {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid var(--border);
-            color: #FFF;
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
+        .drawer-close-fab:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .drawer-body {
+            padding: 24px 32px 60px 32px;
+        }
+
+        .drawer-cast-strip {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding: 12px 0 24px 0;
+        }
+
+        .drawer-actor-pill {
+            flex: 0 0 auto;
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 6px 14px 6px 8px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
+            gap: 10px;
+        }
+
+        .drawer-actor-pill img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* قائمة الحلقات الأفقية الفخمة داخل الدرج */
+        .drawer-seasons-bar {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 20px;
+        }
+
+        .drawer-episode-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .drawer-ep-row {
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .btn-cinema-hud-back:hover {
-            background: var(--primary);
+        .drawer-ep-row:hover {
+            border-color: var(--accent);
+            background: rgba(var(--accent-rgb), 0.08);
+            transform: scale(1.01);
         }
 
-        .hud-server-switcher {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid var(--border);
-            color: #FFF;
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 800;
-            cursor: pointer;
+        .drawer-ep-thumb {
+            width: 145px;
+            height: 84px;
+            border-radius: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #161622;
+        }
+
+        /* 9. مشغل المسرح المضيء (Ambilight Theater Player) */
+        #theaterModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(4, 4, 7, 0.96);
+            backdrop-filter: blur(24px);
+            z-index: 2000;
+            flex-direction: column;
+            padding: 20px 36px;
+        }
+
+        .theater-top-bar {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
+            margin-bottom: 14px;
         }
 
-        .hud-next-ep-btn {
-            background: var(--primary);
-            color: #FFF;
-            border: none;
-            padding: 10px 22px;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-weight: 900;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .hud-next-ep-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .cinema-viewport-screen {
+        .theater-screen-frame {
+            flex: 1;
             width: 100%;
-            height: 100vh;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 1px solid rgba(var(--accent-rgb), 0.35);
+            box-shadow: 0 0 70px rgba(var(--accent-rgb), 0.18);
+            background: #000;
+        }
+
+        .theater-screen-frame iframe {
+            width: 100%;
+            height: 100%;
             border: none;
+        }
+
+        @media (max-width: 1024px) {
+            .bento-hero-grid { grid-template-columns: 1fr; }
+            .hero-queue-stack { height: auto; flex-direction: row; overflow-x: auto; }
+            .queue-card { flex: 0 0 260px; }
+            .workspace-wrapper { padding: 20px 85px 60px 20px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="ambient-aurora-glow" id="ambientGlow"></div>
+    <!-- 1. الدوك الجانبي الزجاجي العائم (VisionOS Dock) -->
+    <aside class="vision-dock">
+        <div class="dock-brand" onclick="activateSection('home')">O</div>
 
-    <!-- 1. شريط التنقل المركزي المصقول -->
-    <header>
-        <nav class="master-pill-nav">
-            <button class="nav-link-btn active" id="btnTabHome" onclick="switchMainTab('home')">
-                <span data-i18n="home">الرئيسية</span>
-            </button>
-            <button class="nav-link-btn" id="btnTabMovies" onclick="switchMainTab('movies')">
-                <span data-i18n="movies">الأفلام</span>
-            </button>
-            <button class="nav-link-btn" id="btnTabSeries" onclick="switchMainTab('series')">
-                <span data-i18n="series">المسلسلات</span>
-            </button>
+        <button class="dock-item active" id="dock-home" onclick="activateSection('home')">
+            🏠 <span class="dock-tooltip" data-i18n="home">الرئيسية</span>
+        </button>
+        <button class="dock-item" id="dock-movies" onclick="activateSection('movies')">
+            🎬 <span class="dock-tooltip" data-i18n="movies">الأفلام</span>
+        </button>
+        <button class="dock-item" id="dock-series" onclick="activateSection('series')">
+            📺 <span class="dock-tooltip" data-i18n="series">المسلسلات</span>
+        </button>
+        <button class="dock-item" id="dock-anime" onclick="activateSection('anime')">
+            ⚡ <span class="dock-tooltip" data-i18n="anime">الأنمي</span>
+        </button>
+        <button class="dock-item" id="dock-mylist" onclick="activateSection('mylist')">
+            ❤️ <span class="dock-tooltip" data-i18n="mylist">مفضلتي</span>
+        </button>
 
-            <div class="nav-divider-bar"></div>
+        <div class="dock-sep"></div>
 
-            <button class="nav-tool-btn" onclick="openSearchStage()" title="Search">🔍</button>
-            <button class="nav-tool-btn" onclick="switchMainTab('mylist')" title="Watchlist">🔖</button>
-            <button class="nav-tool-btn" onclick="toggleLanguageQuick()" title="Switch Language">🌐</button>
-        </nav>
-    </header>
+        <button class="dock-item" onclick="cycleLuxuryTheme()">
+            🎨 <span class="dock-tooltip">تغيير الثيم الملكي</span>
+        </button>
+        <button class="dock-item" onclick="switchSiteLang()">
+            🌐 <span class="dock-tooltip">AR / EN</span>
+        </button>
+    </aside>
 
-    <!-- 2. واجهة البحث الشاملة -->
-    <div id="searchFullView">
-        <div class="search-spotlight-bar">
-            <input type="text" id="mainSearchInput" placeholder="ابحث عن أي فيلم، مسلسل، أو أنمي..." oninput="onDynamicSearch(this.value)">
+    <!-- 2. المساحة السينمائية الرئيسية -->
+    <div class="workspace-wrapper">
+        
+        <!-- الهيدر الفخم مع البحث الفوري والفلاتر السريعة -->
+        <div class="top-luxury-bar">
+            <div class="brand-lockup">
+                <span class="brand-title">ORBIT ROYAL</span>
+                <span class="vip-tag">VISION EDITION</span>
+            </div>
+
+            <div class="top-search-capsule">
+                <span class="top-search-icon">🔍</span>
+                <input type="text" id="instantSearchInput" placeholder="ابحث عن فيلم، مسلسل، أو أنمي..." oninput="handleInstantSearch(this.value)">
+            </div>
+
+            <div class="quick-genre-pills">
+                <button class="genre-chip active" onclick="loadGenreFilter('all', this)">الكل</button>
+                <button class="genre-chip" onclick="loadGenreFilter('28', this)">أكشن</button>
+                <button class="genre-chip" onclick="loadGenreFilter('878', this)">خيال علمي</button>
+                <button class="genre-chip" onclick="loadGenreFilter('9648', this)">غموض</button>
+            </div>
         </div>
-        <div id="searchDynamicResults" class="shelf-scroll-dock" style="flex-wrap:wrap;"></div>
+
+        <!-- نتائج البحث الفورية (تظهر عند الكتابة) -->
+        <div id="instantSearchBox" class="section-block" style="display:none;">
+            <div class="section-bar">
+                <h2 class="section-heading"><span class="heading-pill-dot"></span> نتائج البحث المباشرة</h2>
+                <button class="genre-chip" onclick="clearInstantSearch()">✕ إغلاق البحث</button>
+            </div>
+            <div class="luxury-posters-grid" id="searchGridContainer"></div>
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div id="mainStageContent">
+
+            <!-- 3. المسرح المزدوج التفاعلي (Split Bento Hero + Up Next Queue) -->
+            <section class="bento-hero-grid">
+                <div class="main-showcase-card" id="heroShowcaseCard">
+                    <div class="showcase-gradient"></div>
+                    <div class="showcase-content">
+                        <div class="showcase-badges">
+                            <span class="badge-royal">EXCLUSIVE 4K</span>
+                            <span class="badge-glass-meta" id="heroRateBadge">★ 8.8</span>
+                            <span class="badge-glass-meta" id="heroYearBadge">2026</span>
+                            <span class="badge-glass-meta" id="heroTypeBadge">مسلسل</span>
+                        </div>
+                        <h1 class="showcase-title" id="heroMainTitle">جاري تجهيز المسرح...</h1>
+                        <p class="showcase-desc" id="heroMainDesc">اختر أي عمل من القائمة التفاعلية أو ابدأ المشاهدة الفورية بأعلى جودة.</p>
+                        <div class="showcase-actions">
+                            <button class="btn-gold-play" id="heroBtnPlay">▶ تشغيل العرض الآن</button>
+                            <button class="btn-frosted" id="heroBtnDetails">ℹ️ الحلقات والتفاصيل</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- القائمة التفاعلية لاختيار العرض في البنر -->
+                <div class="hero-queue-stack">
+                    <div class="queue-header-label">
+                        <span>🔥 مختارات المسرح الملكي</span>
+                        <span style="color:var(--accent)">اختر للتبديل</span>
+                    </div>
+                    <div id="heroQueueList" style="display:flex; flex-direction:column; gap:10px; flex:1;"></div>
+                </div>
+            </section>
+
+            <!-- 4. شريط متابعة المشاهدة العريض (Continue Watching) -->
+            <section class="section-block" id="continueWatchSection" style="display:none;">
+                <div class="section-bar">
+                    <h2 class="section-heading"><span class="heading-pill-dot"></span> متابعة المشاهدة (أكمل من حيث توقفت)</h2>
+                </div>
+                <div class="wide-cinema-track" id="continueWatchTrack"></div>
+            </section>
+
+            <!-- 5. قائمة TOP 10 بالأرقام العملاقة المفرغة -->
+            <section class="section-block">
+                <div class="section-bar">
+                    <h2 class="section-heading"><span class="heading-pill-dot"></span> أفضل 10 أعمال متصدرة اليوم (TOP 10)</h2>
+                    <div class="scroll-controls">
+                        <button class="ctrl-btn" onclick="scrollTrack('top10Container', -400)">‹</button>
+                        <button class="ctrl-btn" onclick="scrollTrack('top10Container', 400)">›</button>
+                    </div>
+                </div>
+                <div class="top10-track" id="top10Container"></div>
+            </section>
+
+            <!-- 6. البطاقات البانورامية العريضة (16:9 Widescreen Cinema) -->
+            <section class="section-block" id="moviesSectionAnchor">
+                <div class="section-bar">
+                    <h2 class="section-heading"><span class="heading-pill-dot"></span> عروض الشاشة العريضة (Widescreen Premieres)</h2>
+                    <div class="scroll-controls">
+                        <button class="ctrl-btn" onclick="scrollTrack('widescreenContainer', -450)">‹</button>
+                        <button class="ctrl-btn" onclick="scrollTrack('widescreenContainer', 450)">›</button>
+                    </div>
+                </div>
+                <div class="wide-cinema-track" id="widescreenContainer"></div>
+            </section>
+
+            <!-- 7. شبكة المسلسلات والأنمي الفاخرة -->
+            <section class="section-block" id="seriesSectionAnchor">
+                <div class="section-bar">
+                    <h2 class="section-heading"><span class="heading-pill-dot"></span> أضخم المسلسلات العالمية المختارة</h2>
+                </div>
+                <div class="luxury-posters-grid" id="seriesLuxuryGrid"></div>
+            </section>
+
+            <section class="section-block" id="animeSectionAnchor">
+                <div class="section-bar">
+                    <h2 class="section-heading"><span class="heading-pill-dot"></span> روائع الأنمي والقتال (Anime Masterpieces)</h2>
+                </div>
+                <div class="luxury-posters-grid" id="animeLuxuryGrid"></div>
+            </section>
+
+        </div>
+
+        <!-- قسم مفضلتي -->
+        <div id="myListStage" class="section-block" style="display:none;">
+            <div class="section-bar">
+                <h2 class="section-heading"><span class="heading-pill-dot"></span> قائمتي المفضلة المحفوظة</h2>
+            </div>
+            <div class="luxury-posters-grid" id="myListGridContainer"></div>
+        </div>
+
     </div>
 
-    <!-- 3. الصفحة الرئيسية -->
-    <div id="primeHomeView">
-        <!-- البنر الرئيسي السينمائي الممتد -->
-        <div class="master-hero-stage" id="masterHero">
-            <div class="hero-vignette"></div>
-            <div class="hero-meta-panel">
-                <div class="hero-labels-row">
-                    <span class="badge-prime-exclusive">ORBIT PREMIERE</span>
-                    <span class="badge-hero-rating" id="heroRateVal">⭐ 8.5</span>
-                    <span id="heroReleaseYear">2026</span>
-                    <span id="heroMediaKind">مسلسل</span>
-                </div>
-                <h1 class="hero-super-title" id="heroHeadlineTitle">جاري التحميل...</h1>
-                <p class="hero-story-brief" id="heroOverviewStory">استمتع بتجربة سينمائية متكاملة مع أحدث الأفلام والمسلسلات بجودة عالية وترجمة مدمجة.</p>
-                <div class="hero-call-to-actions">
-                    <button class="btn-prime-play" id="btnHeroDirectPlay">▶ <span data-i18n="playNow">تشغيل الآن</span></button>
-                    <button class="btn-glass-info" id="btnHeroMoreInfo">ℹ️ <span data-i18n="workDetails">تفاصيل العمل</span></button>
+    <!-- 8. الدرج الزجاجي المنزلق لتفاصيل المسلسل والحلقات (Slide-Over Drawer) -->
+    <div id="slideOverBackdrop" onclick="if(event.target===this) closeSlideDrawer()">
+        <div class="slide-over-drawer">
+            <div class="drawer-cover" id="drawerBannerImg">
+                <div class="showcase-gradient"></div>
+                <button class="drawer-close-fab" onclick="closeSlideDrawer()">✕ إغلاق</button>
+                <div style="position:relative; z-index:2; width:100%;">
+                    <div class="showcase-badges" style="margin-bottom:10px;">
+                        <span class="badge-royal" id="drawerRate">★ 9.0</span>
+                        <span class="badge-glass-meta" id="drawerYear">2026</span>
+                    </div>
+                    <h2 style="font-size:2.3rem; font-weight:900; margin-bottom:12px;" id="drawerTitle">عنوان العمل</h2>
+                    <div style="display:flex; gap:12px;">
+                        <button class="btn-gold-play" id="drawerPlayBtn">▶ بدء المشاهدة</button>
+                        <button class="btn-frosted" id="drawerFavBtn">+ حفظ في مفضلتي</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- شريط متابعة المشاهدة (Continue Watching) الفخم -->
-        <div id="smartContinueTrack">
-            <h2 class="row-prime-headline" data-i18n="continueWatching">متابعة المشاهدة (Continue Watching)</h2>
-            <div class="cw-horizontal-scroll" id="cwScrollTrack"></div>
-        </div>
+            <div class="drawer-body">
+                <p id="drawerOverview" style="color:#D1D5DB; line-height:1.7; margin-bottom:24px;"></p>
 
-        <!-- شبكة العرض والصفوف الأفقية -->
-        <div class="prime-main-grid">
-            <div class="prime-sliders-stack">
-                <section>
-                    <div class="shelf-top-line">
-                        <h2 class="row-prime-headline">4K Ultra HD</h2>
-                    </div>
-                    <div class="shelf-scroll-dock" id="shelfUltraHd"></div>
-                </section>
+                <h4 style="color:var(--accent); margin-bottom:10px;">🌟 أبطال العمل</h4>
+                <div class="drawer-cast-strip" id="drawerCastStrip"></div>
 
-                <section id="trendingShelfSec">
-                    <div class="shelf-top-line">
-                        <h2 class="row-prime-headline" data-i18n="trendingThisWeek">الأكثر تداولاً هذا الأسبوع</h2>
-                    </div>
-                    <div class="shelf-scroll-dock" id="shelfTrending"></div>
-                </section>
-
-                <section id="animeShelfSec">
-                    <div class="shelf-top-line">
-                        <h2 class="row-prime-headline" data-i18n="actionAnime">أنمي القتال والأكشن (Action Anime)</h2>
-                    </div>
-                    <div class="shelf-scroll-dock" id="shelfAnime"></div>
-                </section>
-            </div>
-
-            <!-- القائمة الجانبية (Obsidian Sidebar) -->
-            <div class="prime-sidebar-dock">
-                <div>
-                    <h3 class="sidebar-panel-tag">| NOW IN THEATERS</h3>
-                    <div id="sidebarTheatersList" style="display:flex; flex-direction:column; gap:12px;"></div>
-                </div>
-                <div>
-                    <h3 class="sidebar-panel-tag" style="color:var(--text-sub);">| COMING SOON</h3>
-                    <div id="sidebarUpcomingList" style="display:flex; flex-direction:column; gap:12px;"></div>
+                <div id="drawerSeasonsArea" style="display:none; margin-top:20px;">
+                    <h4 style="color:var(--accent); margin-bottom:12px;">🎞️ المواسم والحلقات</h4>
+                    <div class="drawer-seasons-bar" id="drawerSeasonsBar"></div>
+                    <div class="drawer-episode-list" id="drawerEpisodesList"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 4. شاشة تفاصيل العمل والحلقات -->
-    <div id="detailsOverlayView">
-        <div class="details-backdrop-stage" id="detailsStageHero">
-            <div class="hero-vignette"></div>
-            <button class="btn-exit-details" onclick="closeDetailsModal()" data-i18n="back">✕ العودة</button>
-            <div class="details-flex-container">
-                <img id="detailsPosterFrame" class="details-hero-poster" src="" alt="Poster">
-                <div class="details-summary-stack">
-                    <h1 class="details-title-big" id="detailsMainHeading">اسم العمل</h1>
-                    <div class="details-badges-bar">
-                        <span style="color:#46D369;">99% Match</span>
-                        <span id="detailsYearTag">2026</span>
-                        <span style="color:var(--accent-gold);" id="detailsRateScore">⭐ 8.5</span>
-                    </div>
-                    <p class="details-para-text" id="detailsStoryBlock"></p>
-                    <div class="hero-call-to-actions">
-                        <button class="btn-prime-play" id="btnDetailsDirectPlay">▶ <span data-i18n="play">تشغيل</span></button>
-                        <button class="btn-glass-info" id="btnDetailsToggleBookmark">+ <span data-i18n="addToList">إضافة لقائمتي</span></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="seasonsModularBlock" style="display:none;">
-            <div class="seasons-pill-dock" id="seasonsPillRow"></div>
-            <div class="episodes-cinematic-grid" id="episodesDockGrid"></div>
-        </div>
-    </div>
-
-    <!-- 5. مشغل السينما الفخم (Theater Mode) -->
-    <div id="ultraCinemaStage">
-        <div class="cinema-hud-header">
-            <div style="display:flex; align-items:center; gap:18px;">
-                <button class="btn-cinema-hud-back" onclick="exitUltraCinema()">‹</button>
-                <div>
-                    <div style="font-size:1.2rem; font-weight:900;" id="hudPlayingTitle">اسم العمل</div>
-                    <div style="font-size:0.85rem; color:var(--text-sub);" id="hudPlayingEp">S1:E1</div>
-                </div>
-            </div>
+    <!-- 9. مشغل المسرح السينمائي المضيء (Ambilight Theater Modal) -->
+    <div id="theaterModal">
+        <div class="theater-top-bar">
             <div style="display:flex; align-items:center; gap:14px;">
-                <button class="hud-server-switcher" onclick="switchPlaybackServer()">
-                    ⚡ <span id="hudServerStatus">سيرفر البرق (Fast Seek)</span>
+                <button class="btn-frosted" style="padding:8px 18px;" onclick="closeTheaterModal()">✕ إنهاء العرض</button>
+                <div>
+                    <div style="font-weight:900; font-size:1.1rem;" id="theaterTitle">اسم العمل</div>
+                    <div style="color:var(--accent); font-size:0.82rem; font-weight:700;" id="theaterSubTitle">S1 : E1</div>
+                </div>
+            </div>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <button class="btn-frosted" style="padding:8px 16px;" onclick="rotateStreamServer()">
+                    ⚡ <span id="serverNameLabel">سيرفر VIP 1 (ترجمة عربية)</span>
                 </button>
-                <button class="hud-next-ep-btn" id="btnHudNextEpisode" onclick="triggerNextEpisode()" data-i18n="nextEp">الحلقة التالية ⏭️</button>
+                <button class="btn-gold-play" style="padding:8px 20px;" id="theaterNextEpBtn" onclick="playNextEpInTheater()">الحلقة التالية ⏭️</button>
             </div>
         </div>
-        <iframe id="cinemaPlayerIframe" class="cinema-viewport-screen" src="" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-    </div>
-
-    <!-- 6. صفحة قائمتي -->
-    <div id="myListPageView" style="display:none; padding: 110px 60px 80px 60px;">
-        <h2 class="row-prime-headline" data-i18n="myListTitle">قائمتي المفضلة</h2>
-        <div class="shelf-scroll-dock" id="myListCardsDock" style="flex-wrap:wrap; margin-top:20px;"></div>
+        <div class="theater-screen-frame">
+            <iframe id="theaterIframe" src="" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        </div>
     </div>
 
     <script>
-        let heroBackdropPool = [];
-        let heroSliderCycleIdx = 0;
-        let heroSliderTimer = null;
-        let activeDetailSubject = null;
-        let activeStreamSession = null;
-        let currentStreamProviderIdx = 0;
+        let featuredPool = [];
+        let activeQueueIdx = 0;
+        let currentDrawerItem = null;
+        let activePlayback = null;
+        let serverIdx = 0;
 
-        let bookmarks = JSON.parse(localStorage.getItem('orbit_prime_bookmarks') || '[]');
-        let watchContinuum = JSON.parse(localStorage.getItem('orbit_prime_history') || '[]');
+        let savedFavorites = JSON.parse(localStorage.getItem('orbit_royal_favs') || '[]');
+        let savedContinue = JSON.parse(localStorage.getItem('orbit_royal_cw') || '[]');
 
-        const translations = {
-            ar: {
-                home: "الرئيسية",
-                movies: "الأفلام",
-                series: "المسلسلات",
-                playNow: "تشغيل الآن",
-                workDetails: "تفاصيل العمل",
-                trendingThisWeek: "الأكثر تداولاً هذا الأسبوع",
-                actionAnime: "أنمي القتال والأكشن (Action Anime)",
-                continueWatching: "متابعة المشاهدة (Continue Watching)",
-                myListTitle: "قائمتي المفضلة",
-                back: "✕ العودة",
-                play: "تشغيل",
-                addToList: "إضافة لقائمتي",
-                nextEp: "الحلقة التالية ⏭️"
-            },
-            en: {
-                home: "Home",
-                movies: "Movies",
-                series: "TV Shows",
-                playNow: "Play Now",
-                workDetails: "Details",
-                trendingThisWeek: "Trending This Week",
-                actionAnime: "Action Anime",
-                continueWatching: "Continue Watching",
-                myListTitle: "My Watchlist",
-                back: "✕ Back",
-                play: "Play",
-                addToList: "Add to List",
-                nextEp: "Next Episode ⏭️"
-            }
-        };
+        // ثيمات ملكية متعددة بضغطة زر
+        const themes = [
+            { hex: '#F59E0B', rgb: '245, 158, 11' }, // Royal Gold
+            { hex: '#06B6D4', rgb: '6, 182, 212' },  // Cyber Cyan
+            { hex: '#10B981', rgb: '16, 185, 129' }, // Emerald Neon
+            { hex: '#F43F5E', rgb: '244, 63, 94' }   // Crimson Rose
+        ];
+        let themeIdx = 0;
 
-        let currentLocale = localStorage.getItem('orbit_prime_lang') || 'ar';
-
-        function syncLanguageState(lang) {
-            currentLocale = lang;
-            localStorage.setItem('orbit_prime_lang', lang);
-            const isEn = lang === 'en';
-            document.documentElement.lang = isEn ? 'en' : 'ar';
-            document.documentElement.dir = isEn ? 'ltr' : 'rtl';
-
-            const t = translations[lang] || translations.ar;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) el.innerText = t[key];
-            });
+        function cycleLuxuryTheme() {
+            themeIdx = (themeIdx + 1) % themes.length;
+            document.documentElement.style.setProperty('--accent', themes[themeIdx].hex);
+            document.documentElement.style.setProperty('--accent-rgb', themes[themeIdx].rgb);
         }
 
-        function toggleLanguageQuick() {
-            syncLanguageState(currentLocale === 'ar' ? 'en' : 'ar');
-            fetchCatalogSources();
+        function switchSiteLang() {
+            const isRtl = document.documentElement.dir === 'rtl';
+            document.documentElement.dir = isRtl ? 'ltr' : 'rtl';
         }
 
-        function switchMainTab(tabKey) {
-            document.querySelectorAll('.nav-link-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById(tabKey === 'movies' ? 'btnTabMovies' : tabKey === 'series' ? 'btnTabSeries' : 'btnTabHome');
-            if (activeBtn) activeBtn.classList.add('active');
+        function scrollTrack(id, amount) {
+            const dir = document.documentElement.dir === 'rtl' ? -1 : 1;
+            document.getElementById(id).scrollBy({ left: amount * dir, behavior: 'smooth' });
+        }
 
-            const homeView = document.getElementById('primeHomeView');
-            const searchView = document.getElementById('searchFullView');
-            const myListView = document.getElementById('myListPageView');
-            closeDetailsModal();
+        function activateSection(sec) {
+            document.querySelectorAll('.dock-item').forEach(b => b.classList.remove('active'));
+            const btn = document.getElementById(`dock-${sec}`);
+            if (btn) btn.classList.add('active');
 
-            homeView.style.display = 'none';
-            searchView.style.display = 'none';
-            myListView.style.display = 'none';
+            const mainStage = document.getElementById('mainStageContent');
+            const myListStage = document.getElementById('myListStage');
+            document.getElementById('instantSearchBox').style.display = 'none';
 
-            if (tabKey === 'search') {
-                searchView.style.display = 'block';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } else if (tabKey === 'mylist') {
-                myListView.style.display = 'block';
-                renderShelfItems(bookmarks, 'myListCardsDock');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (sec === 'mylist') {
+                mainStage.style.display = 'none';
+                myListStage.style.display = 'block';
+                renderRoyalPosters(savedFavorites, 'myListGridContainer');
             } else {
-                homeView.style.display = 'block';
-                if (tabKey === 'movies') document.getElementById('trendingShelfSec').scrollIntoView({ behavior: 'smooth' });
-                else if (tabKey === 'series') document.getElementById('animeShelfSec').scrollIntoView({ behavior: 'smooth' });
+                mainStage.style.display = 'block';
+                myListStage.style.display = 'none';
+                if (sec === 'movies') document.getElementById('moviesSectionAnchor').scrollIntoView({ behavior: 'smooth' });
+                else if (sec === 'series') document.getElementById('seriesSectionAnchor').scrollIntoView({ behavior: 'smooth' });
+                else if (sec === 'anime') document.getElementById('animeSectionAnchor').scrollIntoView({ behavior: 'smooth' });
                 else window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
-        function openSearchStage() {
-            switchMainTab('search');
-            document.getElementById('mainSearchInput').focus();
-        }
-
-        /* إدارة سجل المتابعة الذكي (Continue Watching) */
-        function appendWatchHistory(id, isTv, season, episode, title, poster) {
-            watchContinuum = watchContinuum.filter(item => item.id !== id);
-            watchContinuum.unshift({ id, isTv, season, episode, title, poster, at: Date.now() });
-            if (watchContinuum.length > 8) watchContinuum.pop();
-            localStorage.setItem('orbit_prime_history', JSON.stringify(watchContinuum));
-            refreshContinueWatchingView();
-        }
-
-        function refreshContinueWatchingView() {
-            const sec = document.getElementById('smartContinueTrack');
-            const track = document.getElementById('cwScrollTrack');
-            track.innerHTML = '';
-
-            if (watchContinuum.length === 0) {
-                sec.style.display = 'none';
-                return;
-            }
-
-            sec.style.display = 'block';
-            watchContinuum.forEach(item => {
-                const el = document.createElement('div');
-                el.className = 'cw-poster-card';
-                el.innerHTML = `
-                    <div class="cw-visual-box">
-                        <img src="${item.poster}" alt="${item.title}">
-                        <div class="cw-neon-progress"><div class="cw-neon-fill"></div></div>
-                    </div>
-                    <div class="cw-info-padding">
-                        <div class="cw-name">${item.title}</div>
-                        <div class="cw-stamp">
-                            <span>▶ تابع الآن</span>
-                            ${item.isTv ? `• <span>الموسم ${item.season} ح${item.episode}</span>` : ''}
-                        </div>
-                    </div>
-                `;
-                el.onclick = () => {
-                    igniteTheaterScreen(item.id, item.isTv, item.season || 1, item.episode || 1, item.title, item.isTv ? `الموسم ${item.season} - الحلقة ${item.episode}` : 'فيلم كامل', 1, item.poster);
-                };
-                track.appendChild(el);
-            });
-        }
-
-        /* جلب المحتوى من السيرفر */
-        async function fetchCatalogSources() {
+        // جلب جميع البيانات وتشغيل الواجهة الجديدة
+        async function initRoyalPlatform() {
             try {
-                const [trendRes, nowPlayRes, upRes, animeRes] = await Promise.all([
-                    fetch(`/api/trending?type=all&time=week`),
-                    fetch(`/api/now-playing`),
-                    fetch(`/api/upcoming`),
-                    fetch(`/api/discover?media=tv&genres=16,10759&origin=JP`)
+                const [trendRes, nowRes, tvRes, animeRes] = await Promise.all([
+                    fetch('/api/trending?type=all&time=week'),
+                    fetch('/api/now-playing'),
+                    fetch('/api/trending?type=tv&time=week'),
+                    fetch('/api/discover?media=tv&genres=16,10759&origin=JP')
                 ]);
 
                 const trendData = await trendRes.json();
-                const nowData = await nowPlayRes.json();
-                const upData = await upRes.json();
+                const nowData = await nowRes.json();
+                const tvData = await tvRes.json();
                 const animeData = await animeRes.json();
 
-                renderShelfItems(trendData.results, 'shelfTrending');
-                renderShelfItems(nowData.results, 'shelfUltraHd');
-                renderShelfItems(animeData.results, 'shelfAnime');
+                featuredPool = (trendData.results || []).filter(i => i.backdrop_path).slice(0, 4);
+                if (featuredPool.length > 0) {
+                    selectHeroFromQueue(0);
+                    renderHeroQueue();
+                }
 
-                populateSidebarList(nowData.results.slice(0, 5), 'sidebarTheatersList');
-                populateSidebarList(upData.results.slice(0, 3), 'sidebarUpcomingList');
-
-                heroBackdropPool = trendData.results.slice(0, 5);
-                if (heroBackdropPool.length > 0) igniteHeroSlider();
-                refreshContinueWatchingView();
+                renderTop10Track((trendData.results || []).slice(0, 10));
+                renderWidescreenCards(nowData.results || [], 'widescreenContainer');
+                renderRoyalPosters((tvData.results || []).slice(0, 12), 'seriesLuxuryGrid');
+                renderRoyalPosters((animeData.results || []).slice(0, 12), 'animeLuxuryGrid');
+                renderContinueWatching();
             } catch (e) {
                 console.error(e);
             }
         }
 
-        function igniteHeroSlider() {
-            renderHeroFrame(heroBackdropPool[0]);
-            if (heroSliderTimer) clearInterval(heroSliderTimer);
-            heroSliderTimer = setInterval(() => {
-                heroSliderCycleIdx = (heroSliderCycleIdx + 1) % heroBackdropPool.length;
-                renderHeroFrame(heroBackdropPool[heroSliderCycleIdx]);
-            }, 6500);
-        }
+        // 1. المسرح المزدوج التفاعلي (Split Hero + Queue)
+        function selectHeroFromQueue(idx) {
+            activeQueueIdx = idx;
+            const item = featuredPool[idx];
+            if (!item) return;
 
-        function renderHeroFrame(item) {
             const isTv = item.media_type === 'tv' || (!item.title && item.name);
             const title = item.title || item.name;
             const year = (item.release_date || item.first_air_date || '2026').split('-')[0];
 
-            document.getElementById('masterHero').style.backgroundImage = `url('/api/image?path=${encodeURIComponent(item.backdrop_path)}&size=original')`;
-            document.getElementById('heroHeadlineTitle').innerText = title;
-            document.getElementById('heroOverviewStory').innerText = item.overview || 'قصة مشوقة وتفاصيل ممتعة تستحق المشاهدة الآن.';
-            document.getElementById('heroRateVal').innerText = `⭐ ${(item.vote_average || 8).toFixed(1)}`;
-            document.getElementById('heroReleaseYear').innerText = year;
-            document.getElementById('heroMediaKind').innerText = isTv ? (currentLocale === 'en' ? 'TV Series' : 'مسلسل') : (currentLocale === 'en' ? 'Movie' : 'فيلم');
+            document.getElementById('heroShowcaseCard').style.backgroundImage = `url('/api/image?path=${encodeURIComponent(item.backdrop_path)}&size=original')`;
+            document.getElementById('heroMainTitle').innerText = title;
+            document.getElementById('heroMainDesc').innerText = item.overview || 'عمل سينمائي حصري بجودة فائقة وترجمة احترافية.';
+            document.getElementById('heroRateBadge').innerText = `★ ${(item.vote_average || 8.5).toFixed(1)}`;
+            document.getElementById('heroYearBadge').innerText = year;
+            document.getElementById('heroTypeBadge').innerText = isTv ? 'مسلسل حصري' : 'فيلم سينمائي';
 
-            document.getElementById('btnHeroDirectPlay').onclick = () => {
-                if (isTv) openEntityDetails(item.id, 'tv');
-                else igniteTheaterScreen(item.id, false, 1, 1, title, currentLocale === 'en' ? 'Full Movie' : 'فيلم كامل', 1, item.backdrop_path || item.poster_path);
+            document.getElementById('heroBtnPlay').onclick = () => {
+                if (isTv) openSlideDrawer(item.id, 'tv', true);
+                else launchTheaterPlayer(item.id, false, 1, 1, title, 'فيلم كامل', item.backdrop_path);
             };
-            document.getElementById('btnHeroMoreInfo').onclick = () => openEntityDetails(item.id, isTv ? 'tv' : 'movie');
+            document.getElementById('heroBtnDetails').onclick = () => openSlideDrawer(item.id, isTv ? 'tv' : 'movie', false);
+
+            document.querySelectorAll('.queue-card').forEach((c, i) => {
+                c.classList.toggle('active', i === idx);
+            });
         }
 
-        function renderShelfItems(items, containerId) {
-            const dock = document.getElementById(containerId);
-            if (!dock) return;
-            dock.innerHTML = '';
+        function renderHeroQueue() {
+            const list = document.getElementById('heroQueueList');
+            list.innerHTML = '';
+            featuredPool.forEach((item, idx) => {
+                const isTv = item.media_type === 'tv' || (!item.title && item.name);
+                const title = item.title || item.name;
+                const card = document.createElement('div');
+                card.className = `queue-card ${idx === activeQueueIdx ? 'active' : ''}`;
+                card.innerHTML = `
+                    <img class="queue-thumb" src="/api/image?path=${encodeURIComponent(item.backdrop_path || item.poster_path)}&size=w500" alt="${title}">
+                    <div class="queue-info">
+                        <div class="queue-title">${title}</div>
+                        <div class="queue-sub">
+                            <span style="color:var(--accent)">★ ${(item.vote_average || 8).toFixed(1)}</span>
+                            <span>•</span>
+                            <span>${isTv ? 'مسلسل' : 'فيلم'}</span>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => selectHeroFromQueue(idx);
+                list.appendChild(card);
+            });
+        }
 
+        // 2. رسم قائمة TOP 10 بالأرقام العملاقة المفرغة
+        function renderTop10Track(items) {
+            const track = document.getElementById('top10Container');
+            track.innerHTML = '';
+            items.filter(i => i.poster_path).slice(0, 10).forEach((item, index) => {
+                const isTv = item.media_type === 'tv' || (!item.title && item.name);
+                const title = item.title || item.name;
+                const unit = document.createElement('div');
+                unit.className = 'top10-unit';
+                unit.innerHTML = `
+                    <span class="giant-rank-num">${index + 1}</span>
+                    <div class="top10-poster-box">
+                        <img src="/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" alt="${title}" loading="lazy">
+                    </div>
+                `;
+                unit.onclick = () => openSlideDrawer(item.id, isTv ? 'tv' : 'movie', false);
+                track.appendChild(unit);
+            });
+        }
+
+        // 3. رسم البطاقات البانورامية العريضة 16:9
+        function renderWidescreenCards(items, containerId) {
+            const track = document.getElementById(containerId);
+            track.innerHTML = '';
+            items.filter(i => i.backdrop_path).forEach(item => {
+                const isTv = item.media_type === 'tv' || (!item.title && item.name);
+                const title = item.title || item.name;
+                const card = document.createElement('div');
+                card.className = 'wide-scene-card';
+                card.innerHTML = `
+                    <div class="wide-thumb-box">
+                        <img src="/api/image?path=${encodeURIComponent(item.backdrop_path)}&size=w500" alt="${title}" loading="lazy">
+                        <div class="wide-overlay-play"><div class="circle-play-gold">▶</div></div>
+                    </div>
+                    <div class="wide-card-meta">
+                        <div class="wide-card-title">${title}</div>
+                        <span class="wide-card-rate">★ ${(item.vote_average || 8).toFixed(1)}</span>
+                    </div>
+                `;
+                card.onclick = () => openSlideDrawer(item.id, isTv ? 'tv' : 'movie', false);
+                track.appendChild(card);
+            });
+        }
+
+        // 4. رسم البوسترات الملكية
+        function renderRoyalPosters(items, containerId) {
+            const grid = document.getElementById(containerId);
+            if (!grid) return;
+            grid.innerHTML = '';
             (items || []).filter(i => i.poster_path).forEach(item => {
                 const isTv = item.media_type === 'tv' || (!item.title && item.name);
                 const title = item.title || item.name;
-                const year = (item.release_date || item.first_air_date || '----').split('-')[0];
-                const rating = item.vote_average ? item.vote_average.toFixed(1) : '8.0';
-
-                const card = document.createElement('div');
-                card.className = 'cinema-poster-dock-item';
-                card.innerHTML = `
-                    <div class="poster-glow-frame">
-                        <img src="/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" alt="${title}" loading="lazy">
-                        <span class="tag-corner-badge">${isTv ? 'TV' : 'MOVIE'}</span>
-                        <span class="tag-corner-rate">★ ${rating}</span>
-                        <span class="tag-4k-badge">4K</span>
-                    </div>
-                    <div class="poster-item-heading">${title}</div>
-                    <div class="poster-item-year">${year}</div>
-                `;
-                card.onclick = () => openEntityDetails(item.id, isTv ? 'tv' : 'movie');
-                dock.appendChild(card);
-            });
-        }
-
-        function populateSidebarList(items, containerId) {
-            const list = document.getElementById(containerId);
-            if (!list) return;
-            list.innerHTML = '';
-
-            (items || []).forEach((item, index) => {
-                const title = item.title || item.name;
                 const year = (item.release_date || item.first_air_date || '2026').split('-')[0];
-                const rating = item.vote_average ? item.vote_average.toFixed(1) : '7.5';
-
-                const el = document.createElement('div');
-                el.className = 'sidebar-unit-entry';
-                el.innerHTML = `
-                    <span class="sidebar-rank-num">${index + 1}</span>
-                    <img class="sidebar-thumb-cut" src="/api/image?path=${encodeURIComponent(item.poster_path)}&size=w185" alt="${title}">
-                    <div class="sidebar-meta-col">
-                        <div class="sidebar-text-title">${title}</div>
-                        <div class="sidebar-text-sub">
-                            <span>★ ${rating}</span> • <span>${year}</span>
-                        </div>
+                const card = document.createElement('div');
+                card.className = 'royal-poster-card';
+                card.innerHTML = `
+                    <img src="/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" alt="${title}" loading="lazy">
+                    <span class="royal-card-badge-top">★ ${(item.vote_average || 8).toFixed(1)}</span>
+                    <div class="royal-card-glass-footer">
+                        <div style="font-weight:800; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${title}</div>
+                        <div style="font-size:0.75rem; color:var(--text-secondary);">${isTv ? 'مسلسل' : 'فيلم'} • ${year}</div>
                     </div>
                 `;
-                el.onclick = () => openEntityDetails(item.id, 'movie');
-                list.appendChild(el);
+                card.onclick = () => openSlideDrawer(item.id, isTv ? 'tv' : 'movie', false);
+                grid.appendChild(card);
             });
         }
 
-        /* فتح صفحة تفاصيل العمل والحلقات */
-        async function openEntityDetails(id, mediaType) {
-            const view = document.getElementById('detailsOverlayView');
-            view.style.display = 'block';
-            window.scrollTo({ top: 0 });
-
+        // 5. الدرج الزجاجي المنزلق للتفاصيل والحلقات
+        async function openSlideDrawer(id, mediaType, autoPlayFirst = false) {
+            document.getElementById('slideOverBackdrop').style.display = 'flex';
             try {
                 const res = await fetch(`/api/item/full-details?id=${id}&media=${mediaType}`);
                 const data = await res.json();
-                activeDetailSubject = { ...data, mediaType };
+                currentDrawerItem = { ...data, mediaType };
                 const isTv = mediaType === 'tv';
                 const title = data.title || data.name;
 
-                document.getElementById('detailsStageHero').style.backgroundImage = `url('/api/image?path=${encodeURIComponent(data.backdrop_path || data.poster_path)}&size=original')`;
-                document.getElementById('detailsPosterFrame').src = `/api/image?path=${encodeURIComponent(data.poster_path)}&size=w500`;
-                document.getElementById('detailsMainHeading').innerText = title;
-                document.getElementById('detailsYearTag').innerText = (data.release_date || data.first_air_date || '').split('-')[0];
-                document.getElementById('detailsRateScore').innerText = `⭐ ${(data.vote_average || 8).toFixed(1)}`;
-                document.getElementById('detailsStoryBlock').innerText = data.overview || 'قصة هذا العمل وتفاصيله المشوقة.';
+                document.getElementById('drawerBannerImg').style.backgroundImage = `url('/api/image?path=${encodeURIComponent(data.backdrop_path || data.poster_path)}&size=original')`;
+                document.getElementById('drawerTitle').innerText = title;
+                document.getElementById('drawerRate').innerText = `★ ${(data.vote_average || 8.5).toFixed(1)}`;
+                document.getElementById('drawerYear').innerText = (data.release_date || data.first_air_date || '2026').split('-')[0];
+                document.getElementById('drawerOverview').innerText = data.overview || 'قصة مشوقة وأحداث درامية متكاملة.';
 
-                document.getElementById('btnDetailsDirectPlay').onclick = () => {
-                    if (isTv) loadSeasonEpisodes(data.id, 1, true);
-                    else igniteTheaterScreen(data.id, false, 1, 1, title, 'فيلم كامل', 1, data.backdrop_path || data.poster_path);
+                document.getElementById('drawerPlayBtn').onclick = () => {
+                    if (isTv) loadDrawerSeason(data.id, 1, true);
+                    else launchTheaterPlayer(data.id, false, 1, 1, title, 'فيلم كامل', data.backdrop_path || data.poster_path);
                 };
 
-                const seasonsSec = document.getElementById('seasonsModularBlock');
+                document.getElementById('drawerFavBtn').onclick = () => {
+                    const exists = savedFavorites.some(f => f.id === data.id);
+                    if (exists) savedFavorites = savedFavorites.filter(f => f.id !== data.id);
+                    else savedFavorites.push(data);
+                    localStorage.setItem('orbit_royal_favs', JSON.stringify(savedFavorites));
+                    document.getElementById('drawerFavBtn').innerText = !exists ? '✓ محفوظ في مفضلتي' : '+ حفظ في مفضلتي';
+                };
+
+                // الممثلين
+                const castStrip = document.getElementById('drawerCastStrip');
+                castStrip.innerHTML = '';
+                (data.credits?.cast || []).slice(0, 8).forEach(actor => {
+                    if (!actor.profile_path) return;
+                    const pill = document.createElement('div');
+                    pill.className = 'drawer-actor-pill';
+                    pill.innerHTML = `
+                        <img src="/api/image?path=${encodeURIComponent(actor.profile_path)}&size=w185" alt="${actor.name}">
+                        <span style="font-size:0.82rem; font-weight:700;">${actor.name}</span>
+                    `;
+                    castStrip.appendChild(pill);
+                });
+
+                const seasonsArea = document.getElementById('drawerSeasonsArea');
                 if (isTv) {
-                    seasonsSec.style.display = 'block';
-                    const seasonsBar = document.getElementById('seasonsPillRow');
-                    seasonsBar.innerHTML = '';
-                    (data.seasons || []).filter(s => s.season_number > 0).forEach((s, idx) => {
+                    seasonsArea.style.display = 'block';
+                    const bar = document.getElementById('drawerSeasonsBar');
+                    bar.innerHTML = '';
+                    (data.seasons || []).filter(s => s.season_number > 0).forEach((s, i) => {
                         const btn = document.createElement('button');
-                        btn.className = `season-choice-pill ${idx === 0 ? 'active' : ''}`;
+                        btn.className = `genre-chip ${i === 0 ? 'active' : ''}`;
                         btn.innerText = s.name || `الموسم ${s.season_number}`;
                         btn.onclick = () => {
-                            document.querySelectorAll('.season-choice-pill').forEach(b => b.classList.remove('active'));
+                            bar.querySelectorAll('.genre-chip').forEach(b => b.classList.remove('active'));
                             btn.classList.add('active');
-                            loadSeasonEpisodes(data.id, s.season_number, false);
+                            loadDrawerSeason(data.id, s.season_number, false);
                         };
-                        seasonsBar.appendChild(btn);
+                        bar.appendChild(btn);
                     });
-                    loadSeasonEpisodes(data.id, 1, false);
+                    loadDrawerSeason(data.id, 1, autoPlayFirst);
                 } else {
-                    seasonsSec.style.display = 'none';
+                    seasonsArea.style.display = 'none';
                 }
-            } catch (err) {
-                console.error(err);
+            } catch (e) {
+                console.error(e);
             }
         }
 
-        async function loadSeasonEpisodes(tvId, seasonNum, autoPlayFirst) {
-            const grid = document.getElementById('episodesDockGrid');
-            grid.innerHTML = '<p style="color:var(--text-sub)">جاري جلب الحلقات...</p>';
-
+        async function loadDrawerSeason(tvId, seasonNum, autoPlay) {
+            const list = document.getElementById('drawerEpisodesList');
+            list.innerHTML = '<p style="color:var(--text-secondary)">جاري تحميل الحلقات...</p>';
             try {
                 const res = await fetch(`/api/tv/season?id=${tvId}&season=${seasonNum}`);
                 const data = await res.json();
-                grid.innerHTML = '';
-                const episodes = data.episodes || [];
+                list.innerHTML = '';
+                const eps = data.episodes || [];
 
-                if (autoPlayFirst && episodes.length > 0) {
-                    const ep1 = episodes[0];
-                    const label = `الموسم ${seasonNum} - الحلقة ${ep1.episode_number}`;
-                    igniteTheaterScreen(tvId, true, seasonNum, ep1.episode_number, activeDetailSubject.name, label, episodes.length, ep1.still_path || activeDetailSubject.poster_path);
+                if (autoPlay && eps.length > 0) {
+                    launchTheaterPlayer(tvId, true, seasonNum, eps[0].episode_number, currentDrawerItem.name, `الموسم ${seasonNum} - الحلقة 1`, currentDrawerItem.backdrop_path);
                 }
 
-                episodes.forEach(ep => {
-                    const card = document.createElement('div');
-                    card.className = 'episode-card-cell';
-                    const thumb = ep.still_path ? `/api/image?path=${encodeURIComponent(ep.still_path)}&size=w500` : '';
-                    card.innerHTML = `
-                        <div class="episode-cell-thumb">
-                            <img src="${thumb}" alt="${ep.name}">
-                            <span class="ep-badge-stamp">${ep.runtime ? ep.runtime + 'm' : '45m'}</span>
+                eps.forEach(ep => {
+                    const row = document.createElement('div');
+                    row.className = 'drawer-ep-row';
+                    const thumb = ep.still_path ? `/api/image?path=${encodeURIComponent(ep.still_path)}&size=w500` : `/api/image?path=${encodeURIComponent(currentDrawerItem.backdrop_path || currentDrawerItem.poster_path)}&size=w500`;
+                    row.innerHTML = `
+                        <img class="drawer-ep-thumb" src="${thumb}" alt="${ep.name}">
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-weight:800; font-size:0.95rem; color:#FFF;">الحلقة ${ep.episode_number}: ${ep.name || ''}</div>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${ep.overview || 'اضغط للمشاهدة المباشرة بجودة عالية.'}</p>
                         </div>
-                        <div class="episode-cell-body">
-                            <div class="episode-cell-title">${ep.name || `الحلقة ${ep.episode_number}`}</div>
-                            <div class="episode-cell-desc">${ep.overview || 'لا يوجد ملخص متاح.'}</div>
-                        </div>
+                        <div class="circle-play-gold" style="width:40px; height:40px; flex-shrink:0;">▶</div>
                     `;
-                    card.onclick = () => {
-                        const label = `الموسم ${seasonNum} - الحلقة ${ep.episode_number}`;
-                        igniteTheaterScreen(tvId, true, seasonNum, ep.episode_number, activeDetailSubject.name, label, episodes.length, thumb);
-                    };
-                    grid.appendChild(card);
+                    row.onclick = () => launchTheaterPlayer(tvId, true, seasonNum, ep.episode_number, currentDrawerItem.name, `الموسم ${seasonNum} - الحلقة ${ep.episode_number}`, ep.still_path || currentDrawerItem.backdrop_path);
+                    list.appendChild(row);
                 });
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (e) {}
         }
 
-        /* 5. تشغيل السينما الفخم (Theater Stage) */
-        function craftStreamSourceUrl(id, isTv, season, episode, providerIdx = 0) {
-            if (providerIdx === 0) {
+        function closeSlideDrawer() {
+            document.getElementById('slideOverBackdrop').style.display = 'none';
+        }
+
+        // 6. سجل المشاهدة ومشغل المسرح المضيء
+        function saveContinueRecord(id, isTv, season, episode, title, backdropPath) {
+            savedContinue = savedContinue.filter(x => x.id !== id);
+            savedContinue.unshift({ id, isTv, season, episode, title, backdropPath });
+            if (savedContinue.length > 6) savedContinue.pop();
+            localStorage.setItem('orbit_royal_cw', JSON.stringify(savedContinue));
+            renderContinueWatching();
+        }
+
+        function renderContinueWatching() {
+            const sec = document.getElementById('continueWatchSection');
+            const track = document.getElementById('continueWatchTrack');
+            track.innerHTML = '';
+            if (savedContinue.length === 0) {
+                sec.style.display = 'none';
+                return;
+            }
+            sec.style.display = 'block';
+            savedContinue.forEach(item => {
+                const imgUrl = item.backdropPath?.startsWith('/api') ? item.backdropPath : `/api/image?path=${encodeURIComponent(item.backdropPath)}&size=w500`;
+                const card = document.createElement('div');
+                card.className = 'wide-scene-card';
+                card.innerHTML = `
+                    <div class="wide-thumb-box">
+                        <img src="${imgUrl}" alt="${item.title}">
+                        <div class="wide-overlay-play"><div class="circle-play-gold">▶</div></div>
+                        <div style="position:absolute; bottom:0; left:0; right:0; height:4px; background:rgba(255,255,255,0.2);">
+                            <div style="width:70%; height:100%; background:var(--accent);"></div>
+                        </div>
+                    </div>
+                    <div class="wide-card-meta">
+                        <div class="wide-card-title">${item.title}</div>
+                        <span class="wide-card-rate">${item.isTv ? `م${item.season} ح${item.episode}` : 'متابعة'}</span>
+                    </div>
+                `;
+                card.onclick = () => launchTheaterPlayer(item.id, item.isTv, item.season, item.episode, item.title, item.isTv ? `الموسم ${item.season} - الحلقة ${item.episode}` : 'فيلم كامل', item.backdropPath);
+                track.appendChild(card);
+            });
+        }
+
+        function buildServerUrl(id, isTv, season, episode, srv) {
+            if (srv === 0) {
                 return isTv 
-                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=6366F1&autoplay=true&sub=ar&sub.info=ar&sub_lang=Arabic`
-                    : `https://vidlink.pro/movie/${id}?primaryColor=6366F1&autoplay=true&sub=ar&sub.info=ar&sub_lang=Arabic`;
-            } else if (providerIdx === 1) {
+                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=F59E0B&autoplay=true&sub=ar&sub_lang=Arabic`
+                    : `https://vidlink.pro/movie/${id}?primaryColor=F59E0B&autoplay=true&sub=ar&sub_lang=Arabic`;
+            } else if (srv === 1) {
                 return isTv
                     ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
                     : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
@@ -1377,76 +1502,77 @@
             }
         }
 
-        function igniteTheaterScreen(id, isTv, season, episode, workTitle, epTitle, totalEpisodes = 1, poster = '') {
-            activeStreamSession = { id, isTv, season, episode, workTitle, epTitle, totalEpisodes };
-            currentStreamProviderIdx = 0;
-            document.getElementById('hudPlayingTitle').innerText = workTitle;
-            document.getElementById('hudPlayingEp').innerText = epTitle;
-            document.getElementById('btnHudNextEpisode').style.display = isTv ? 'block' : 'none';
-            document.getElementById('hudServerStatus').innerText = "سيرفر البرق (Fast Seek)";
+        function launchTheaterPlayer(id, isTv, season, episode, title, subTitle, backdropPath) {
+            activePlayback = { id, isTv, season, episode, title, backdropPath };
+            serverIdx = 0;
+            document.getElementById('theaterTitle').innerText = title;
+            document.getElementById('theaterSubTitle').innerText = subTitle;
+            document.getElementById('theaterNextEpBtn').style.display = isTv ? 'flex' : 'none';
+            document.getElementById('serverNameLabel').innerText = 'سيرفر VIP 1 (ترجمة عربية)';
 
-            if (poster) {
-                const finalPoster = poster.startsWith('http') ? poster : `/api/image?path=${encodeURIComponent(poster)}&size=w500`;
-                appendWatchHistory(id, isTv, season, episode, workTitle, finalPoster);
-            }
+            if (backdropPath) saveContinueRecord(id, isTv, season, episode, title, backdropPath);
 
-            document.getElementById('cinemaPlayerIframe').src = craftStreamSourceUrl(id, isTv, season, episode, 0);
-            document.getElementById('ultraCinemaStage').style.display = 'flex';
+            document.getElementById('theaterIframe').src = buildServerUrl(id, isTv, season, episode, 0);
+            document.getElementById('theaterModal').style.display = 'flex';
         }
 
-        function switchPlaybackServer() {
-            if (!activeStreamSession) return;
-            currentStreamProviderIdx = (currentStreamProviderIdx + 1) % 3;
-            const labels = ["سيرفر البرق (Fast Seek)", "سيرفر MultiEmbed (بدون تعليق)", "سيرفر EmbedSu VIP"];
-            document.getElementById('hudServerStatus').innerText = labels[currentStreamProviderIdx];
-            document.getElementById('cinemaPlayerIframe').src = craftStreamSourceUrl(
-                activeStreamSession.id,
-                activeStreamSession.isTv,
-                activeStreamSession.season,
-                activeStreamSession.episode,
-                currentStreamProviderIdx
+        function rotateStreamServer() {
+            if (!activePlayback) return;
+            serverIdx = (serverIdx + 1) % 3;
+            const names = ['سيرفر VIP 1 (ترجمة عربية)', 'سيرفر MultiEmbed السريع', 'سيرفر EmbedSu الاحتياطي'];
+            document.getElementById('serverNameLabel').innerText = names[serverIdx];
+            document.getElementById('theaterIframe').src = buildServerUrl(
+                activePlayback.id, activePlayback.isTv, activePlayback.season, activePlayback.episode, serverIdx
             );
         }
 
-        function triggerNextEpisode() {
-            if (!activeStreamSession || !activeStreamSession.isTv) return;
-            const nextEp = activeStreamSession.episode + 1;
-            const label = `الموسم ${activeStreamSession.season} - الحلقة ${nextEp}`;
-            igniteTheaterScreen(
-                activeStreamSession.id,
-                true,
-                activeStreamSession.season,
-                nextEp,
-                activeStreamSession.workTitle,
-                label,
-                activeStreamSession.totalEpisodes
-            );
+        function playNextEpInTheater() {
+            if (!activePlayback || !activePlayback.isTv) return;
+            const nextEp = activePlayback.episode + 1;
+            launchTheaterPlayer(activePlayback.id, true, activePlayback.season, nextEp, activePlayback.title, `الموسم ${activePlayback.season} - الحلقة ${nextEp}`, activePlayback.backdropPath);
         }
 
-        function exitUltraCinema() {
-            document.getElementById('cinemaPlayerIframe').src = '';
-            document.getElementById('ultraCinemaStage').style.display = 'none';
+        function closeTheaterModal() {
+            document.getElementById('theaterIframe').src = '';
+            document.getElementById('theaterModal').style.display = 'none';
         }
 
-        function closeDetailsModal() {
-            document.getElementById('detailsOverlayView').style.display = 'none';
-        }
-
-        async function onDynamicSearch(q) {
-            const dock = document.getElementById('searchDynamicResults');
+        // 7. البحث الفوري والفلترة
+        async function handleInstantSearch(q) {
+            const box = document.getElementById('instantSearchBox');
             if (!q.trim()) {
-                dock.innerHTML = '';
+                box.style.display = 'none';
                 return;
             }
+            box.style.display = 'block';
             try {
                 const res = await fetch(`/api/search?q=${encodeURIComponent(q.trim())}`);
                 const data = await res.json();
-                renderShelfItems(data.results || [], 'searchDynamicResults');
-            } catch (err) {}
+                renderRoyalPosters(data.results || [], 'searchGridContainer');
+            } catch (e) {}
         }
 
-        syncLanguageState(currentLocale);
-        fetchCatalogSources();
+        function clearInstantSearch() {
+            document.getElementById('instantSearchInput').value = '';
+            document.getElementById('instantSearchBox').style.display = 'none';
+        }
+
+        async function loadGenreFilter(genreId, btnEl) {
+            document.querySelectorAll('.quick-genre-pills .genre-chip').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+            if (genreId === 'all') {
+                initRoyalPlatform();
+                return;
+            }
+            try {
+                const res = await fetch(`/api/discover?media=movie&genres=${genreId}`);
+                const data = await res.json();
+                renderWidescreenCards(data.results || [], 'widescreenContainer');
+                document.getElementById('moviesSectionAnchor').scrollIntoView({ behavior: 'smooth' });
+            } catch (e) {}
+        }
+
+        initRoyalPlatform();
     </script>
 </body>
 </html>
