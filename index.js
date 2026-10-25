@@ -169,65 +169,54 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 8. محرك Torbox السحابي المطور (البحث المباشر وتجهيز الرابط الصافي)
+    // 8. محرك السحب السحابي الحقيقي (Torrentio + Torbox Direct Integration)
     if (req.url.startsWith('/api/debrid/stream')) {
-        const imdbId = urlParams.searchParams.get('imdb') || '';
+        let imdbId = urlParams.searchParams.get('imdb') || '';
+        const tmdbId = urlParams.searchParams.get('tmdb') || '';
         const isTv = urlParams.searchParams.get('is_tv') === 'true';
         const season = urlParams.searchParams.get('season') || '1';
         const episode = urlParams.searchParams.get('episode') || '1';
-        const queryTitle = urlParams.searchParams.get('title') || '';
+
+        // محاولة جلب معرف IMDb إذا لم يُرسل
+        if (!imdbId && tmdbId) {
+            try {
+                const extRes = await axios.get(`https://api.themoviedb.org/3/${isTv ? 'tv' : 'movie'}/${tmdbId}/external_ids?api_key=${TMDB_API_KEY}`);
+                imdbId = extRes.data.imdb_id || '';
+            } catch (e) {}
+        }
+
+        if (!imdbId) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ success: false, streamUrl: null }));
+        }
 
         try {
-            // صيغة البحث الدقيقة
-            let searchQuery = queryTitle;
-            if (isTv) {
-                const sPad = season.toString().padStart(2, '0');
-                const ePad = episode.toString().padStart(2, '0');
-                searchQuery += ` S${sPad}E${ePad}`;
-            }
+            const mediaType = isTv ? 'series' : 'movie';
+            const queryTarget = isTv ? `${imdbId}:${season}:${episode}` : `${imdbId}`;
+            
+            // استدعاء محرك التورنت السحابي المربوط بحساب Torbox الخاص بك
+            const torrentioUrl = `https://torrentio.strem.fun/torbox=${TORBOX_API_KEY}/stream/${mediaType}/${queryTarget}.json`;
 
-            // الاستعلام من Torbox API
-            const tbRes = await axios.get(`https://api.torbox.app/v1/api/torrents/search?query=${encodeURIComponent(searchQuery)}`, {
-                headers: { 'Authorization': `Bearer ${TORBOX_API_KEY}` },
-                timeout: 8000
-            }).catch(() => null);
+            const tbResponse = await axios.get(torrentioUrl, {
+                headers: { 'User-Agent': 'Mozilla/5.0' },
+                timeout: 10000
+            });
 
-            let directStreamUrl = null;
-
-            if (tbRes && tbRes.data && tbRes.data.data && tbRes.data.data.length > 0) {
-                // فلترة أفضل ملف فيديو متوفر
-                const torrent = tbRes.data.data[0];
-                directStreamUrl = torrent.stream_url || torrent.download_url;
-            }
-
-            // محاولة ثانية بالـ IMDb إذا لم يجد بالاسم
-            if (!directStreamUrl && imdbId) {
-                const tbImdbRes = await axios.get(`https://api.torbox.app/v1/api/torrents/search?query=${encodeURIComponent(imdbId)}`, {
-                    headers: { 'Authorization': `Bearer ${TORBOX_API_KEY}` },
-                    timeout: 6000
-                }).catch(() => null);
-
-                if (tbImdbRes && tbImdbRes.data && tbImdbRes.data.data && tbImdbRes.data.data.length > 0) {
-                    const torrent = tbImdbRes.data.data[0];
-                    directStreamUrl = torrent.stream_url || torrent.download_url;
+            if (tbResponse.data && tbResponse.data.streams && tbResponse.data.streams.length > 0) {
+                // العثور على أفضل رابط تدفق مباشر صافٍ
+                const streamItem = tbResponse.data.streams.find(s => s.url) || tbResponse.data.streams[0];
+                if (streamItem && streamItem.url) {
+                    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                    return res.end(JSON.stringify({ 
+                        success: true, 
+                        streamUrl: streamItem.url,
+                        title: streamItem.title || 'بث مباشر 1080p'
+                    }));
                 }
             }
 
-            if (directStreamUrl) {
-                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-                return res.end(JSON.stringify({ 
-                    success: true, 
-                    streamUrl: directStreamUrl 
-                }));
-            }
-
-            // إذا لم يتوفر بعد في السحابة يُرجع رسالة صريحة بدون كراش
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(JSON.stringify({ 
-                success: false, 
-                streamUrl: null,
-                message: 'جاري رفع الملف إلى السحابة أو غير متوفر حالياً' 
-            }));
+            res.end(JSON.stringify({ success: false, streamUrl: null }));
         } catch (err) {
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ success: false, streamUrl: null }));
