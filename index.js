@@ -169,51 +169,68 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 8. محرك Torbox السحابي لاستخراج تدفق الفيديو الخام والنظيف (1080p/4K)
+    // 8. محرك Torbox السحابي المطور (البحث المباشر وتجهيز الرابط الصافي)
     if (req.url.startsWith('/api/debrid/stream')) {
-        const imdbId = urlParams.searchParams.get('imdb');
+        const imdbId = urlParams.searchParams.get('imdb') || '';
         const isTv = urlParams.searchParams.get('is_tv') === 'true';
         const season = urlParams.searchParams.get('season') || '1';
         const episode = urlParams.searchParams.get('episode') || '1';
         const queryTitle = urlParams.searchParams.get('title') || '';
 
         try {
-            // البحث التلقائي في الكاش السحابي السريع
-            const searchTarget = imdbId ? imdbId : queryTitle;
-            const tbRes = await axios.get(`https://api.torbox.app/v1/api/torrents/search?query=${encodeURIComponent(searchTarget)}`, {
+            // صيغة البحث الدقيقة
+            let searchQuery = queryTitle;
+            if (isTv) {
+                const sPad = season.toString().padStart(2, '0');
+                const ePad = episode.toString().padStart(2, '0');
+                searchQuery += ` S${sPad}E${ePad}`;
+            }
+
+            // الاستعلام من Torbox API
+            const tbRes = await axios.get(`https://api.torbox.app/v1/api/torrents/search?query=${encodeURIComponent(searchQuery)}`, {
                 headers: { 'Authorization': `Bearer ${TORBOX_API_KEY}` },
-                timeout: 6000
+                timeout: 8000
             }).catch(() => null);
 
             let directStreamUrl = null;
+
             if (tbRes && tbRes.data && tbRes.data.data && tbRes.data.data.length > 0) {
-                const targetTorrent = tbRes.data.data[0];
-                directStreamUrl = targetTorrent.download_url || targetTorrent.stream_url;
+                // فلترة أفضل ملف فيديو متوفر
+                const torrent = tbRes.data.data[0];
+                directStreamUrl = torrent.stream_url || torrent.download_url;
             }
 
-            // نظام تراجع ذكي في حال لم يكن الكاش متوفراً بعد
-            if (!directStreamUrl) {
-                directStreamUrl = isTv 
-                    ? `https://vidlink.pro/tv/${urlParams.searchParams.get('tmdb') || ''}/${season}/${episode}?primaryColor=FF2A42`
-                    : `https://vidlink.pro/movie/${urlParams.searchParams.get('tmdb') || ''}?primaryColor=FF2A42`;
-                
+            // محاولة ثانية بالـ IMDb إذا لم يجد بالاسم
+            if (!directStreamUrl && imdbId) {
+                const tbImdbRes = await axios.get(`https://api.torbox.app/v1/api/torrents/search?query=${encodeURIComponent(imdbId)}`, {
+                    headers: { 'Authorization': `Bearer ${TORBOX_API_KEY}` },
+                    timeout: 6000
+                }).catch(() => null);
+
+                if (tbImdbRes && tbImdbRes.data && tbImdbRes.data.data && tbImdbRes.data.data.length > 0) {
+                    const torrent = tbImdbRes.data.data[0];
+                    directStreamUrl = torrent.stream_url || torrent.download_url;
+                }
+            }
+
+            if (directStreamUrl) {
                 res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
                 return res.end(JSON.stringify({ 
                     success: true, 
-                    isDirectStream: false, 
                     streamUrl: directStreamUrl 
                 }));
             }
 
+            // إذا لم يتوفر بعد في السحابة يُرجع رسالة صريحة بدون كراش
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(JSON.stringify({ 
-                success: true, 
-                isDirectStream: true, 
-                streamUrl: directStreamUrl 
+                success: false, 
+                streamUrl: null,
+                message: 'جاري رفع الملف إلى السحابة أو غير متوفر حالياً' 
             }));
         } catch (err) {
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, isDirectStream: false, streamUrl: '' }));
+            res.end(JSON.stringify({ success: false, streamUrl: null }));
         }
         return;
     }
