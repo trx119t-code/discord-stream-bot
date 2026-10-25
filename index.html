@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORBIT IMPERIAL | أوربت إمبريال سينما</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Cinzel:wght@700;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold: #FF2948;
+            --gold-rgb: 255, 41, 72;
+            --gold-glow: rgba(255, 41, 72, 0.24);
+            --bg-void: #050507;
+            --bg-obsidian: #0B0B10;
+            --bg-glass: rgba(14, 14, 20, 0.82);
+            --bg-glass-heavy: rgba(10, 10, 16, 0.92);
+            --border-subtle: rgba(255, 255, 255, 0.07);
+            --border-gold: rgba(var(--gold-rgb), 0.28);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', 'Outfit', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-void);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg-void); }
+        ::-webkit-scrollbar-thumb { background: rgba(var(--gold-rgb), 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        /* ==========================================
+           1. الجزيرة الزجاجية العائمة (Dynamic Island Header)
+           ========================================== */
+        .imperial-navbar-wrapper {
+            position: fixed;
+            top: 22px;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            padding: 0 24px;
+            pointer-events: none;
+        }
+
+        .imperial-island {
+            pointer-events: auto;
+            background: rgba(8, 8, 14, 0.78);
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            border: 1px solid var(--border-gold);
+            border-radius: 100px;
+            padding: 8px 18px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(var(--gold-rgb), 0.12);
+            max-width: 1350px;
+            width: 100%;
+            justify-content: space-between;
+            transition: all 0.4s var(--ease-out-expo);
+        }
+
+        .brand-emblem {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 4px 10px;
+        }
+
+        .crown-svg {
+            width: 32px;
+            height: 32px;
+            filter: drop-shadow(0 0 12px var(--gold));
+        }
+
+        .brand-name-en {
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #FFF 0%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 5px;
+            border-radius: 100px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .nav-tab {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 18px;
+            border-radius: 100px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out-expo);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            color: #FFF;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--gold) 0%, #B38220 100%);
+            color: #050507;
+            font-weight: 900;
+            box-shadow: 0 4px 20px var(--gold-glow);
+        }
+
+        .island-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spotlight-search-bar {
+            position: relative;
+            width: 240px;
+            transition: width 0.4s var(--ease-out-expo);
+        }
+
+        .spotlight-search-bar:focus-within {
+            width: 310px;
+        }
+
+        .spotlight-search-bar input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 100px;
+            padding: 9px 38px 9px 16px;
+            color: #FFF;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .spotlight-search-bar input:focus {
+            border-color: var(--gold);
+            background: rgba(0, 0, 0, 0.85);
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        .spotlight-icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gold);
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+
+        .icon-circle-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: #FFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            font-size: 0.95rem;
+        }
+
+        .icon-circle-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            transform: rotate(15deg) scale(1.08);
+        }
+
+        /* ==========================================
+           2. المسرح البانورامي الكامل (Full-Bleed IMAX Hero)
+           ========================================== */
+        .imax-hero-stage {
+            position: relative;
+            width: 100vw;
+            height: 92vh;
+            min-height: 640px;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 6vw 65px 6vw;
+            margin-bottom: 30px;
+        }
+
+        .imax-backdrop-layer {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center 18%;
+            transition: background-image 0.9s ease-in-out;
+            animation: kenBurnsZoom 24s infinite alternate ease-in-out;
+            z-index: 1;
+        }
+
+        @keyframes kenBurnsZoom {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .imax-vignette-overlay {
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 25% 40%, transparent 0%, rgba(3, 3, 5, 0.75) 80%),
+                linear-gradient(180deg, rgba(3, 3, 5, 0.5) 0%, transparent 25%, rgba(3, 3, 5, 0.85) 78%, var(--bg-void) 100%),
+                linear-gradient(270deg, rgba(3, 3, 5, 0.92) 0%, rgba(3, 3, 5, 0.5) 45%, transparent 100%);
+            z-index: 2;
+        }
+
+        body[dir="ltr"] .imax-vignette-overlay {
+            background: 
+                radial-gradient(circle at 75% 40%, transparent 0%, rgba(3, 3, 5, 0.75) 80%),
+                linear-gradient(180deg, rgba(3, 3, 5, 0.5) 0%, transparent 25%, rgba(3, 3, 5, 0.85) 78%, var(--bg-void) 100%),
+                linear-gradient(90deg, rgba(3, 3, 5, 0.92) 0%, rgba(3, 3, 5, 0.5) 45%, transparent 100%);
+        }
+
+        .imax-hero-grid {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            max-width: 1750px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .imax-hero-info {
+            max-width: 680px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .imax-meta-strip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pill-gold-vip {
+            background: linear-gradient(135deg, var(--gold) 0%, #B8860B 100%);
+            color: #000;
+            font-weight: 900;
+            font-size: 0.72rem;
+            padding: 4px 12px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        .pill-spatial-glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: #FFF;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 800;
+        }
+
+        .imax-giant-title {
+            font-size: clamp(2.4rem, 4.5vw, 4.2rem);
+            font-weight: 900;
+            line-height: 1.08;
+            letter-spacing: -0.5px;
+            text-shadow: 0 15px 40px rgba(0, 0, 0, 0.95);
+        }
+
+        .imax-synopsis {
+            color: #CBD5E1;
+            font-size: 1.05rem;
+            line-height: 1.75;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.9);
+        }
+
+        .imax-cta-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn-imperial-play {
+            background: linear-gradient(135deg, var(--gold) 0%, #C59B27 100%);
+            color: #050507;
+            border: none;
+            padding: 15px 36px;
+            border-radius: 100px;
+            font-size: 1.02rem;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 12px 35px var(--gold-glow);
+            transition: all 0.3s var(--ease-out-expo);
+        }
+
+        .btn-imperial-play:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 18px 45px rgba(var(--gold-rgb), 0.7);
+        }
+
+        .btn-spatial-glass {
+            background: rgba(255, 255, 255, 0.09);
+            backdrop-filter: blur(20px);
+            color: #FFF;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 28px;
+            border-radius: 100px;
+            font-size: 0.96rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-spatial-glass:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: var(--gold);
+        }
+
+        /* الكبسولات الزجاجية العائمة لاختيار البانر */
+        .imax-carousel-dock {
+            display: flex;
+            gap: 14px;
+            background: rgba(10, 10, 16, 0.65);
+            backdrop-filter: blur(25px);
+            padding: 12px;
+            border-radius: 24px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .hero-mini-poster {
+            width: 85px;
+            height: 125px;
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+            transition: all 0.35s var(--ease-out-expo);
+            opacity: 0.55;
+        }
+
+        .hero-mini-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-mini-poster:hover, .hero-mini-poster.active {
+            opacity: 1;
+            border-color: var(--gold);
+            transform: translateY(-8px) scale(1.06);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.8), 0 0 20px var(--gold-glow);
+        }
+
+        /* ==========================================
+           3. المحتوى الرئيسي وبطاقات الأكورديون المتمددة
+           ========================================== */
+        .imperial-main-container {
+            max-width: 1780px;
+            margin: 0 auto;
+            padding: 0 4vw 90px 4vw;
+        }
+
+        .imperial-row-section {
+            margin-bottom: 56px;
+        }
+
+        .row-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 22px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .row-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .row-eyebrow {
+            font-size: 0.72rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gold);
+        }
+
+        .row-main-heading {
+            font-size: 1.55rem;
+            font-weight: 900;
+            color: #FFF;
+        }
+
+        .row-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-gold-outline {
+            background: rgba(var(--gold-rgb), 0.08);
+            border: 1px solid var(--border-gold);
+            color: var(--gold);
+            padding: 7px 18px;
+            border-radius: 100px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn-gold-outline:hover {
+            background: var(--gold);
+            color: #000;
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        /* شريط البطاقات المتمددة بالعرض (Apple TV+ Accordion Cards) */
+        .expanding-cards-track {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 12px 4px 20px 4px;
+        }
+
+        .accordion-media-card {
+            flex: 0 0 200px;
+            height: 300px;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-obsidian);
+            transition: flex-basis 0.45s var(--ease-out-expo), transform 0.35s var(--ease-out-expo), border-color 0.3s;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.75);
+        }
+
+        .accordion-media-card:hover {
+            flex: 0 0 370px;
+            transform: translateY(-6px);
+            border-color: var(--gold);
+            box-shadow: 0 22px 45px rgba(0, 0, 0, 0.95), 0 0 25px rgba(var(--gold-rgb), 0.28);
+        }
+
+        .card-img-poster {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.4s;
+        }
+
+        .card-img-backdrop {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.4s, transform 0.6s;
+        }
+
+        .accordion-media-card:hover .card-img-poster {
+            opacity: 0;
+        }
+
+        .accordion-media-card:hover .card-img-backdrop {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .card-floating-rating {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 3;
+            background: rgba(5, 5, 8, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-gold);
+            color: var(--gold);
+            padding: 3px 10px;
+            border-radius: 100px;
+            font-size: 0.74rem;
+            font-weight: 900;
+        }
+
+        .card-floating-quality {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 3;
+            background: var(--gold);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.68rem;
+            font-weight: 900;
+        }
+
+        .card-Bottom-shade {
+            position: absolute;
+            inset: auto 0 0 0;
+            background: linear-gradient(0deg, rgba(3, 3, 5, 0.98) 10%, rgba(3, 3, 5, 0.75) 60%, transparent 100%);
+            padding: 40px 16px 16px 16px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .card-title-text {
+            font-size: 1rem;
+            font-weight: 900;
+            color: #FFF;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-hover-extra {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.35s var(--ease-out-expo);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .accordion-media-card:hover .card-hover-extra {
+            max-height: 90px;
+            opacity: 1;
+            margin-top: 4px;
+        }
+
+        .card-mini-desc {
+            font-size: 0.78rem;
+            color: #CBD5E1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.5;
+        }
+
+        /* ==========================================
+           4. منصة أفضل 10 أعمال (Royal Podium Top 10)
+           ========================================== */
+        .podium-top10-track {
+            display: flex;
+            gap: 32px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 16px 10px 24px 10px;
+        }
+
+        .podium-card {
+            flex: 0 0 235px;
+            height: 280px;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            cursor: pointer;
+        }
+
+        .podium-Outline-num {
+            font-family: 'Cinzel', serif;
+            font-size: 9.5rem;
+            font-weight: 900;
+            line-height: 0.78;
+            color: transparent;
+            -webkit-text-stroke: 2px rgba(var(--gold-rgb), 0.45);
+            position: absolute;
+            right: -12px;
+            bottom: 0;
+            z-index: 1;
+            transition: all 0.35s;
+        }
+
+        body[dir="ltr"] .podium-Outline-num { right: auto; left: -12px; }
+
+        .podium-card:hover .podium-Outline-num {
+            -webkit-text-stroke: 3px var(--gold);
+            filter: drop-shadow(0 0 25px var(--gold-glow));
+            transform: scale(1.06) translateY(-6px);
+        }
+
+        .podium-poster-frame {
+            width: 168px;
+            height: 252px;
+            border-radius: 18px;
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+            margin-right: auto;
+            border: 1px solid var(--border-gold);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.95);
+            transition: all 0.35s var(--ease-out-expo);
+        }
+
+        body[dir="ltr"] .podium-poster-frame { margin-right: 0; margin-left: auto; }
+
+        .podium-card:hover .podium-poster-frame {
+            transform: translateY(-10px) scale(1.03);
+            border-color: var(--gold);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.95), 0 0 25px var(--gold-glow);
+        }
+
+        .podium-poster-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* شبكة الكتالوج الكامل */
+        .imperial-catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 22px;
+        }
+
+        .grid-poster-item {
+            height: 300px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-obsidian);
+            cursor: pointer;
+            transition: all 0.35s var(--ease-out-expo);
+        }
+
+        .grid-poster-item:hover {
+            transform: translateY(-8px);
+            border-color: var(--gold);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.9), 0 0 25px rgba(var(--gold-rgb), 0.25);
+        }
+
+        .grid-poster-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .grid-poster-item:hover img { transform: scale(1.07); }
+
+        /* ==========================================
+           5. النافذة السينمائية الوسطية للتفاصيل (Spatial Hub Modal)
+           ========================================== */
+        #spatialDetailsModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 3, 5, 0.86);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            z-index: 1500;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+        }
+
+        .spatial-hub-window {
+            width: 100%;
+            max-width: 1180px;
+            max-height: 90vh;
+            background: var(--bg-obsidian);
+            border: 1px solid var(--border-gold);
+            border-radius: 32px;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 35px 90px rgba(0, 0, 0, 0.98), 0 0 50px rgba(var(--gold-rgb), 0.15);
+            animation: modalPopIn 0.35s var(--ease-out-expo);
+        }
+
+        @keyframes modalPopIn {
+            from { opacity: 0; transform: scale(0.94) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .hub-hero-banner {
+            position: relative;
+            height: 410px;
+            background-size: cover;
+            background-position: center 20%;
+            display: flex;
+            align-items: flex-end;
+            padding: 38px;
+        }
+
+        .hub-close-circle {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            z-index: 10;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(8, 8, 12, 0.85);
+            border: 1px solid var(--border-gold);
+            color: #FFF;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s;
+        }
+
+        .hub-close-circle:hover {
+            background: var(--gold);
+            color: #000;
+            transform: scale(1.1);
+        }
+
+        .hub-content-body {
+            padding: 32px 38px 50px 38px;
+        }
+
+        .hub-episodes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 14px;
+            max-height: 440px;
+            overflow-y: auto;
+            padding: 6px;
+        }
+
+        .hub-ep-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .hub-ep-card:hover {
+            background: rgba(var(--gold-rgb), 0.12);
+            border-color: var(--gold);
+            transform: translateY(-3px);
+        }
+
+        .hub-ep-thumb {
+            width: 128px;
+            height: 74px;
+            border-radius: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #14141D;
+        }
+
+        /* ==========================================
+           6. استوديو المشاهدة واختيار مزود التضمين
+           ========================================== */
+        #imperialStudioModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #020204;
+            z-index: 2000;
+            flex-direction: column;
+            padding: 14px 24px;
+        }
+
+        .studio-command-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(12, 12, 18, 0.92);
+            border: 1px solid var(--border-gold);
+            padding: 10px 20px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .studio-servers-strip {
+            display: flex;
+            gap: 7px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .studio-srv-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            padding: 8px 15px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .studio-srv-btn:hover, .studio-srv-btn.active {
+            background: linear-gradient(135deg, var(--gold) 0%, #B8860B 100%);
+            color: #000;
+            border-color: var(--gold);
+            box-shadow: 0 0 18px var(--gold-glow);
+        }
+
+        /* شريط حالة المشغل الخارجي */
+        .torbox-cloud-radar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(var(--gold-rgb), 0.08);
+            border: 1px solid var(--border-gold);
+            padding: 8px 18px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .torbox-streams-drawer {
+            display: none;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 14px;
+            background: rgba(10, 10, 16, 0.95);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            margin-bottom: 10px;
+        }
+
+        .cloud-stream-chip {
+            flex: 0 0 auto;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-gold);
+            color: #FFF;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cloud-stream-chip:hover, .cloud-stream-chip.active {
+            background: var(--gold);
+            color: #000;
+        }
+
+        .studio-split-stage {
+            flex: 1;
+            display: flex;
+            gap: 16px;
+            min-height: 0;
+            position: relative;
+        }
+
+        .studio-video-box {
+            flex: 1;
+            height: 100%;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 1px solid var(--border-gold);
+            background: #000;
+            position: relative;
+            box-shadow: 0 0 90px rgba(var(--gold-rgb), 0.22);
+        }
+
+        #artplayerBox {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            display: none;
+        }
+
+        #studioEmbedIframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            display: block;
+        }
+
+        .studio-ep-playlist {
+            width: 340px;
+            height: 100%;
+            background: rgba(10, 10, 16, 0.96);
+            border: 1px solid var(--border-subtle);
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            padding: 14px;
+            gap: 10px;
+        }
+
+        .studio-ep-playlist.collapsed { display: none; }
+
+        .playlist-ep-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 9px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .playlist-ep-item:hover {
+            background: rgba(var(--gold-rgb), 0.1);
+            border-color: var(--border-gold);
+        }
+
+        .playlist-ep-item.active {
+            background: rgba(var(--gold-rgb), 0.22);
+            border-color: var(--gold);
+        }
+
+        @media (max-width: 1080px) {
+            .nav-links-pill { display: none; }
+            .imax-carousel-dock { display: none; }
+            .studio-split-stage { flex-direction: column; }
+            .studio-ep-playlist { width: 100%; height: 220px; }
+        }
+
+
+        /* ORBIT IMPERIAL — Crimson Cinema UI refresh */
+        html { scroll-behavior: smooth; scrollbar-color: #FF2948 #050507; }
+        body {
+            background: radial-gradient(ellipse at 50% -15%, rgba(255,41,72,.09), transparent 48%), var(--bg-void);
+        }
+        .imperial-island {
+            background: rgba(8,8,12,.88);
+            border-color: rgba(255,41,72,.24);
+            box-shadow: 0 18px 60px rgba(0,0,0,.48), 0 0 30px rgba(255,41,72,.055);
+            transition: background .3s ease, border-color .3s ease, box-shadow .3s ease;
+        }
+        .nav-tab.active, .studio-srv-btn.active {
+            background: linear-gradient(135deg,#FF536B,#E50930);
+            color: #fff;
+            border-color: rgba(255,100,120,.6);
+            box-shadow: 0 4px 22px rgba(255,41,72,.18);
+        }
+        .studio-servers-strip { gap: 10px; padding: 4px 0; }
+        .studio-srv-btn {
+            position: relative; isolation: isolate;
+            border: 1px solid rgba(255,255,255,.09);
+            background: linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.015));
+            white-space: nowrap;
+            transition: transform .25s ease, border-color .25s ease, background .25s ease;
+        }
+        .studio-srv-btn:hover { transform: translateY(-2px); border-color: rgba(255,41,72,.55); }
+        .studio-srv-btn.active { color:#fff; border-color:#FF2948; background:linear-gradient(135deg,rgba(255,41,72,.22),rgba(255,41,72,.07)); box-shadow:inset 0 0 0 1px rgba(255,41,72,.12),0 0 22px rgba(255,41,72,.10); }
+        .studio-srv-btn.active::before { content:""; position:absolute; top:-1px; left:18px; right:18px; height:2px; background:#FF536B; border-radius:10px; box-shadow:0 0 12px rgba(255,41,72,.6); }
+        .studio-video-box { border-color: rgba(255,41,72,.25); box-shadow: 0 16px 60px rgba(0,0,0,.45); }
+        button:focus-visible, input:focus-visible, select:focus-visible { outline:2px solid #FF536B; outline-offset:4px; }
+        img { height:auto; }
+        @media (max-width:768px) {
+            .imperial-navbar-wrapper { top:8px; padding:0 10px; }
+            .imperial-island { gap:8px; padding:8px 10px; border-radius:20px; flex-wrap:wrap; }
+            .brand-name-en { font-size:.95rem; letter-spacing:1px; }
+            .island-actions { width:100%; gap:7px; }
+            .spotlight-search-bar, .spotlight-search-bar:focus-within { width:auto; flex:1; min-width:0; }
+            .spotlight-search-bar input { min-width:0; font-size:.8rem; }
+            .imax-hero-stage { height:78svh; min-height:540px; padding:0 20px 32px; }
+            .imax-giant-title { font-size:clamp(2rem,9vw,3.2rem); }
+            .imperial-main-container { padding:0 16px 55px; }
+            .studio-command-bar { padding:10px; }
+            .studio-servers-strip { overflow-x:auto; flex-wrap:nowrap; max-width:100%; padding-bottom:8px; }
+            .studio-srv-btn { flex-shrink:0; }
+            .studio-video-box { min-height:220px; }
+            .studio-split-stage { flex-direction:column; }
+            .studio-ep-playlist { width:100%; height:220px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. الجزيرة الزجاجية العائمة (Dynamic Island Navigation) -->
+    <header class="imperial-navbar-wrapper">
+        <nav class="imperial-island">
+            <div class="brand-emblem" onclick="switchView('home')">
+                <svg class="crown-svg" viewBox="0 0 24 24" fill="var(--gold)">
+                    <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5ZM19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"/>
+                </svg>
+                <span class="brand-name-en">ORBIT IMPERIAL</span>
+            </div>
+
+            <div class="nav-links-pill">
+                <button class="nav-tab active" id="tab-home" onclick="switchView('home')">🏛️ المسرح الرئيسي</button>
+                <button class="nav-tab" id="tab-movies" onclick="openImperialCatalog('movies')">🎬 صالة الأفلام 4K</button>
+                <button class="nav-tab" id="tab-series" onclick="openImperialCatalog('series')">📺 عالم المسلسلات</button>
+                <button class="nav-tab" id="tab-anime" onclick="openImperialCatalog('anime')">⚡ كوكب الأنمي</button>
+                <button class="nav-tab" id="tab-mylist" onclick="switchView('mylist')">💎 خزنتي المفضلة</button>
+            </div>
+
+            <div class="island-actions">
+                <div class="spotlight-search-bar">
+                    <span class="spotlight-icon">🔍</span>
+                    <input type="text" id="globalSearchInput" placeholder="ابحث عن فيلم، مسلسل، أنمي..." oninput="triggerInstantSearch(this.value)">
+                </div>
+                <button class="icon-circle-btn" onclick="cycleImperialPalette()" title="تغيير الهوية الملكية">🎨</button>
+                <button class="icon-circle-btn" onclick="toggleSiteLanguage()" title="تغيير اللغة">🌐</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 2. المسرح البانورامي الكامل (Full-Bleed IMAX Stage) -->
+    <div id="homeViewWrapper">
+        <section class="imax-hero-stage">
+            <div class="imax-backdrop-layer" id="imaxBackdrop"></div>
+            <div class="imax-vignette-overlay"></div>
+
+            <div class="imax-hero-grid">
+                <div class="imax-hero-info">
+                    <div class="imax-meta-strip">
+                        <span class="pill-gold-vip">IMPERIAL 4K HDR</span>
+                        <span class="pill-spatial-glass" id="imaxRate">★ 9.1</span>
+                        <span class="pill-spatial-glass" id="imaxYear">2026</span>
+                        <span class="pill-spatial-glass" id="imaxType">مسلسل</span>
+                    </div>
+
+                    <h1 class="imax-giant-title" id="imaxTitle">جاري استدعاء المسرح الملكي...</h1>
+                    <p class="imax-synopsis" id="imaxDesc">استمتع بواجهة سينمائية حديثة، واكتشف الأعمال وتابع الحلقات من مكان واحد.</p>
+
+                    <div class="imax-cta-group">
+                        <button class="btn-imperial-play" id="imaxPlayBtn">▶ بدء العرض السينمائي</button>
+                        <button class="btn-spatial-glass" id="imaxInfoBtn">✨ الحلقات والتفاصيل</button>
+                    </div>
+                </div>
+
+                <!-- شريط البوسترات الزجاجي العائم -->
+                <div class="imax-carousel-dock" id="imaxMiniDock"></div>
+            </div>
+        </section>
+
+        <!-- 3. صفوف العروض المتمددة والـ Top 10 -->
+        <main class="imperial-main-container">
+
+            <!-- قسم البحث المباشر -->
+            <section class="imperial-row-section" id="searchSectionBlock" style="display:none;">
+                <div class="row-header-bar">
+                    <div class="row-title-group">
+                        <span class="row-eyebrow">SPOTLIGHT SEARCH</span>
+                        <h2 class="row-main-heading">نتائج البحث الفورية</h2>
+                    </div>
+                    <button class="btn-gold-outline" onclick="closeSearchSection()">✕ إغلاق البحث</button>
+                </div>
+                <div class="imperial-catalog-grid" id="searchResultsGrid"></div>
+            </section>
+
+            <!-- متابعة المشاهدة -->
+            <section class="imperial-row-section" id="continueWatchBlock" style="display:none;">
+                <div class="row-header-bar">
+                    <div class="row-title-group">
+                        <span class="row-eyebrow">RESUME PLAYBACK</span>
+                        <h2 class="row-main-heading">أكمل المشاهدة من حيث توقفت</h2>
+                    </div>
+                    <button class="btn-gold-outline" onclick="clearContinueHistory()">🗑️ مسح السجل</button>
+                </div>
+                <div class="expanding-cards-track" id="continueCardsTrack"></div>
+            </section>
+
+            <!-- منصة أفضل 10 أعمال اليوم -->
+            <section class="imperial-row-section">
+                <div class="row-header-bar">
+                    <div class="row-title-group">
+                        <span class="row-eyebrow">GLOBAL CHARTS</span>
+                        <h2 class="row-main-heading">أفضل 10 عروض متصدرة في العالم اليوم</h2>
+                    </div>
+                    <div class="row-nav-actions">
+                        <button class="icon-circle-btn" onclick="scrollRow('top10PodiumTrack', -500)">‹</button>
+                        <button class="icon-circle-btn" onclick="scrollRow('top10PodiumTrack', 500)">›</button>
+                    </div>
+                </div>
+                <div class="podium-top10-track" id="top10PodiumTrack"></div>
+            </section>
+
+            <!-- روائع الأنمي الياباني المتمددة -->
+            <section class="imperial-row-section">
+                <div class="row-header-bar">
+                    <div class="row-title-group">
+                        <span class="row-eyebrow">ANIME MASTERPIECES</span>
+                        <h2 class="row-main-heading">أساطير الأنمي الياباني (مرر الماوس لتمديد البطاقة ⚡)</h2>
+                    </div>
+                    <div class="row-nav-actions">
+                        <button class="btn-gold-outline" onclick="openImperialCatalog('anime')">تصفح المكتبة الكاملة ➔</button>
+                        <button class="icon-circle-btn" onclick="scrollRow('animeExpandingTrack', -550)">‹</button>
+                        <button class="icon-circle-btn" onclick="scrollRow('animeExpandingTrack', 550)">›</button>
+                    </div>
+                </div>
+                <div class="expanding-cards-track" id="animeExpandingTrack"></div>
+            </section>
+
+            <!-- أحدث أفلام السينما 4K -->
+            <section class="imperial-row-section">
+                <div class="row-header-bar">
+                    <div class="row-title-group">
+                        <span class="row-eyebrow">BOX OFFICE PREMIERES</span>
+                        <h2 class="row-main-heading">أفلام شباك التذاكر السينمائية 4K</h2>
+                    </div>
+                    <div class="row-nav-actions">
+                        <button class="btn-gold-outline" onclick="openImperialCatalog('movies')">كل الأفلام ➔</button>
+                        <button class="icon-circle-btn" onclick="scrollRow('moviesExpandingTrack', -550)">‹</button>
+                        <button class="icon-circle-btn" onclick="scrollRow('moviesExpandingTrack', 550)">›</button>
+                    </div>
+                </div>
+                <div class="expanding-cards-track" id="moviesExpandingTrack"></div>
+            </section>
+
+            <!-- المسلسلات العالمية -->
+            <section class="imperial-row-section">
+                <div class="row-header-bar">
+                    <div class="row-title-group">
+                        <span class="row-eyebrow">PRESTIGE TELEVISION</span>
+                        <h2 class="row-main-heading">أضخم المسلسلات العالمية المختارة</h2>
+                    </div>
+                    <div class="row-nav-actions">
+                        <button class="btn-gold-outline" onclick="openImperialCatalog('series')">كل المسلسلات ➔</button>
+                        <button class="icon-circle-btn" onclick="scrollRow('seriesExpandingTrack', -550)">‹</button>
+                        <button class="icon-circle-btn" onclick="scrollRow('seriesExpandingTrack', 550)">›</button>
+                    </div>
+                </div>
+                <div class="expanding-cards-track" id="seriesExpandingTrack"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- 4. واجهة الكتالوج الشامل ومفضلتي -->
+    <div id="catalogViewWrapper" style="display:none; padding-top:115px;" class="imperial-main-container">
+        <div class="row-header-bar" style="margin-bottom:20px;">
+            <div class="row-title-group">
+                <span class="row-eyebrow">IMPERIAL ARCHIVE</span>
+                <h1 class="row-main-heading" id="catalogHeaderTitle" style="font-size:2.1rem;">الأرشيف الملكي</h1>
+            </div>
+            <button class="btn-spatial-glass" onclick="switchView('home')">🏠 العودة للمسرح الرئيسي</button>
+        </div>
+
+        <div id="catalogFilterPills" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px;"></div>
+        <div class="imperial-catalog-grid" id="catalogMasterGrid"></div>
+
+        <div style="display:flex; justify-content:center; margin-top:42px;" id="loadMoreWrap">
+            <button class="btn-imperial-play" onclick="loadMoreCatalogItems()">➕ استعراض المزيد من العروض</button>
+        </div>
+    </div>
+
+    <!-- 5. النافذة السينمائية الوسطية للتفاصيل والحلقات (Spatial Details Hub) -->
+    <div id="spatialDetailsModal" onclick="if(event.target===this) closeSpatialHub()">
+        <div class="spatial-hub-window">
+            <div class="hub-hero-banner" id="hubBannerImg">
+                <div class="imax-vignette-overlay"></div>
+                <button class="hub-close-circle" onclick="closeSpatialHub()">✕</button>
+                <div style="position:relative; z-index:3; width:100%;">
+                    <div class="imax-meta-strip" style="margin-bottom:10px;">
+                        <span class="pill-gold-vip" id="hubRateBadge">★ 9.0</span>
+                        <span class="pill-spatial-glass" id="hubYearBadge">2026</span>
+                        <span class="pill-spatial-glass">4K ULTRA HD</span>
+                    </div>
+                    <h2 style="font-size:2.6rem; font-weight:900; margin-bottom:14px;" id="hubTitle">عنوان العمل</h2>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <button class="btn-imperial-play" id="hubPlayBtn">▶ تشغيل في الاستوديو الملكي</button>
+                        <button class="btn-spatial-glass" id="hubFavBtn">+ إضافة إلى خزنتي</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hub-content-body">
+                <p id="hubOverview" style="color:#CBD5E1; font-size:1rem; line-height:1.75; margin-bottom:28px;"></p>
+
+                <div id="hubSeasonsContainer" style="display:none; margin-bottom:32px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                        <h3 style="color:var(--gold); font-size:1.2rem;">🎞️ المواسم والحلقات</h3>
+                        <div id="hubSeasonPills" style="display:flex; gap:8px; overflow-x:auto;"></div>
+                    </div>
+                    <div class="hub-episodes-grid" id="hubEpisodesGrid"></div>
+                </div>
+
+                <h3 style="color:var(--gold); font-size:1.15rem; margin-bottom:14px;">🌟 عروض مشابهة مقترحة</h3>
+                <div class="imperial-catalog-grid" id="hubSimilarGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         6. استوديو المشاهدة ومزودو التضمين
+         ========================================== -->
+    <div id="imperialStudioModal">
+        <div class="studio-command-bar">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <button class="btn-spatial-glass" style="padding:8px 18px;" onclick="closeImperialStudio()">✕ مغادرة الاستوديو</button>
+                <div>
+                    <div style="font-weight:900; font-size:1.05rem;" id="studioShowTitle">اسم العمل</div>
+                    <div style="color:var(--gold); font-size:0.8rem; font-weight:800;" id="studioEpSub">S1 : E1</div>
+                </div>
+            </div>
+
+            <!-- مزودو المشغل الخارجي -->
+            <div class="studio-servers-strip">
+                <button class="studio-srv-btn active" id="st-srv-0" onclick="selectStudioServer(0)">👑 VidLink</button>
+                <button class="studio-srv-btn" id="st-srv-1" onclick="selectStudioServer(1)">⚡ EmbedSU</button>
+                <button class="studio-srv-btn" id="st-srv-2" onclick="selectStudioServer(2)">🔥 VidSrc ICU</button>
+                <button class="studio-srv-btn" id="st-srv-3" onclick="selectStudioServer(3)">💎 MultiEmbed</button>
+                <button class="studio-srv-btn" id="st-srv-4" onclick="selectStudioServer(4)">🚀 AutoEmbed</button>
+            </div>
+
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button class="btn-gold-outline" id="btnTogglePlaylist" onclick="toggleStudioPlaylist()">📑 قائمة الحلقات</button>
+                <button class="btn-imperial-play" style="padding:8px 20px; font-size:0.88rem;" id="studioNextEpBtn" onclick="playNextStudioEpisode()">الحلقة التالية ⏭️</button>
+            </div>
+        </div>
+
+        <!-- Playback status: third-party embeds may provide their own subtitles and quality controls. -->
+        <div class="torbox-cloud-radar">
+            <span id="studioStatusMsg" role="status" aria-live="polite" style="font-size:0.84rem; font-weight:800; color:#FF9AAA;">
+                اختر أحد مشغلات التضمين. الجودة والترجمة والتوفر تعتمد على مزود المشغل الخارجي.
+            </span>
+        </div>
+
+        <!-- شاشة الفيديو + قائمة الحلقات -->
+        <div class="studio-split-stage">
+            <div class="studio-video-box">
+                <div id="artplayerBox"></div>
+                <iframe id="studioEmbedIframe" src="" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <aside class="studio-ep-playlist" id="studioPlaylistSidebar">
+                <div style="font-weight:900; color:var(--gold); font-size:0.95rem;">🎞️ حلقات الموسم</div>
+                <select id="studioSeasonSelect" class="spotlight-search-bar" style="width:100%; background:#12121A; color:#FFF; border:1px solid var(--border-gold); padding:8px; border-radius:10px; font-weight:800;" onchange="loadStudioPlaylistSeason(this.value)"></select>
+                <div id="studioPlaylistItems" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px;"></div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="./config.js"></script>
+    <script>
+        const API_BASE_URL = String(window.ORBIT_API_BASE_URL || "").replace(/\/+$/, "");
+
+        let heroItemsPool = [];
+        let activeHeroIndex = 0;
+        let heroInterval = null;
+        let activeHubItem = null;
+        let activeStudioState = null;
+        let activeServerIdx = 0;
+
+        let catalogState = { category: 'anime', media: 'tv', genres: '16', origin: 'JP', page: 1 };
+        let savedVault = JSON.parse(localStorage.getItem('orbit_royal_favs') || '[]');
+        let savedHistory = JSON.parse(localStorage.getItem('orbit_royal_cw') || '[]');
+        let currentLang = localStorage.getItem('orbit_royal_lang') || 'ar';
+
+        const palettes = [
+            { gold: '#FF2948', rgb: '255, 41, 72' }
+        ];
+        let paletteIdx = 0;
+
+        function getLangCode() { return currentLang === 'en' ? 'en-US' : 'ar-SA'; }
+
+        function cycleImperialPalette() {
+            // ORBIT keeps its signature crimson identity for a consistent brand.
+            const root = document.documentElement;
+            root.style.setProperty('--gold', '#FF2948');
+            root.style.setProperty('--gold-rgb', '255, 41, 72');
+            root.style.setProperty('--gold-glow', 'rgba(255, 41, 72, 0.24)');
+        }
+
+        function toggleSiteLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            localStorage.setItem('orbit_royal_lang', currentLang);
+            document.documentElement.lang = currentLang;
+            document.documentElement.dir = currentLang === 'en' ? 'ltr' : 'rtl';
+            bootImperialPlatform();
+        }
+
+        function scrollRow(id, offset) {
+            const dir = document.documentElement.dir === 'rtl' ? -1 : 1;
+            document.getElementById(id).scrollBy({ left: offset * dir, behavior: 'smooth' });
+        }
+
+        function setActiveNavTab(tabId) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            const el = document.getElementById(tabId);
+            if (el) el.classList.add('active');
+        }
+
+        function switchView(view) {
+            if (view === 'home') {
+                setActiveNavTab('tab-home');
+                document.getElementById('homeViewWrapper').style.display = 'block';
+                document.getElementById('catalogViewWrapper').style.display = 'none';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (view === 'mylist') {
+                setActiveNavTab('tab-mylist');
+                document.getElementById('homeViewWrapper').style.display = 'none';
+                document.getElementById('catalogViewWrapper').style.display = 'block';
+                document.getElementById('catalogHeaderTitle').innerText = '💎 خزنتي المفضلة المحفوظة';
+                document.getElementById('catalogFilterPills').innerHTML = '';
+                document.getElementById('loadMoreWrap').style.display = 'none';
+                renderGridPosters(savedVault, 'catalogMasterGrid', false);
+            }
+        }
+
+        /* ==========================================
+           تشغيل المنصة وجلب البيانات
+           ========================================== */
+        async function bootImperialPlatform() {
+            try {
+                const lang = getLangCode();
+                const [trendRes, animeRes, moviesRes, tvRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/api/trending?type=all&time=week&lang=${lang}`),
+                    fetch(`${API_BASE_URL}/api/discover?media=tv&genres=16,10759&origin=JP&lang=${lang}`),
+                    fetch(`${API_BASE_URL}/api/now-playing?lang=${lang}`),
+                    fetch(`${API_BASE_URL}/api/trending?type=tv&time=week&lang=${lang}`)
+                ]);
+
+                const trendData = await trendRes.json();
+                const animeData = await animeRes.json();
+                const moviesData = await moviesRes.json();
+                const tvData = await tvRes.json();
+
+                heroItemsPool = (trendData.results || []).filter(i => i.backdrop_path && i.poster_path).slice(0, 5);
+                if (heroItemsPool.length > 0) {
+                    renderHeroMiniDock();
+                    activateHeroSlide(0);
+                    if (heroInterval) clearInterval(heroInterval);
+                    heroInterval = setInterval(() => {
+                        activateHeroSlide((activeHeroIndex + 1) % heroItemsPool.length);
+                    }, 9000);
+                }
+
+                renderTop10Podium((trendData.results || []).slice(0, 10));
+                renderExpandingRow((animeData.results || []).map(x => ({ ...x, media_type: 'tv' })), 'animeExpandingTrack');
+                renderExpandingRow((moviesData.results || []).map(x => ({ ...x, media_type: 'movie' })), 'moviesExpandingTrack');
+                renderExpandingRow((tvData.results || []).map(x => ({ ...x, media_type: 'tv' })), 'seriesExpandingTrack');
+                renderContinueWatchingRow();
+            } catch (err) {
+                console.error('ORBIT startup failed:', err);
+                const status = document.getElementById('studioStatusMsg');
+                if (status) status.textContent = 'تعذر تحميل بيانات الموقع. تحقق من رابط API وإعدادات الخادم ثم أعد المحاولة.';
+            }
+        }
+
+        function renderHeroMiniDock() {
+            const dock = document.getElementById('imaxMiniDock');
+            dock.innerHTML = '';
+            heroItemsPool.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = `hero-mini-poster ${idx === activeHeroIndex ? 'active' : ''}`;
+                card.innerHTML = `<img src="${API_BASE_URL}/api/image?path=${encodeURIComponent(item.poster_path)}&size=w342" alt="poster">`;
+                card.onclick = () => activateHeroSlide(idx);
+                dock.appendChild(card);
+            });
+        }
+
+        function activateHeroSlide(idx) {
+            activeHeroIndex = idx;
+            const item = heroItemsPool[idx];
+            if (!item) return;
+
+            const isTv = item.media_type === 'tv' || (!item.title && item.name);
+            const title = item.title || item.name;
+            const year = (item.release_date || item.first_air_date || '2026').split('-')[0];
+
+            document.getElementById('imaxBackdrop').style.backgroundImage = `url('${API_BASE_URL}/api/image?path=${encodeURIComponent(item.backdrop_path)}&size=original')`;
+            document.getElementById('imaxTitle').innerText = title;
+            document.getElementById('imaxDesc').innerText = item.overview || '';
+            document.getElementById('imaxRate').innerText = `★ ${(item.vote_average || 8.8).toFixed(1)}`;
+            document.getElementById('imaxYear').innerText = year;
+            document.getElementById('imaxType').innerText = isTv ? 'مسلسل' : 'فيلم سينمائي';
+
+            document.getElementById('imaxPlayBtn').onclick = () => {
+                if (isTv) openSpatialHub(item.id, 'tv', true);
+                else openImperialStudio(item.id, false, 1, 1, title, 'فيلم كامل 4K', item.backdrop_path, item);
+            };
+            document.getElementById('imaxInfoBtn').onclick = () => openSpatialHub(item.id, isTv ? 'tv' : 'movie', false);
+
+            document.querySelectorAll('.hero-mini-poster').forEach((el, i) => {
+                el.classList.toggle('active', i === idx);
+            });
+        }
+
+        function renderTop10Podium(items) {
+            const track = document.getElementById('top10PodiumTrack');
+            track.innerHTML = '';
+            items.filter(x => x.poster_path).slice(0, 10).forEach((item, idx) => {
+                const isTv = item.media_type === 'tv' || (!item.title && item.name);
+                const card = document.createElement('div');
+                card.className = 'podium-card';
+                card.innerHTML = `
+                    <span class="podium-Outline-num">${idx + 1}</span>
+                    <div class="podium-poster-frame">
+                        <img src="${API_BASE_URL}/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" loading="lazy">
+                    </div>
+                `;
+                card.onclick = () => openSpatialHub(item.id, isTv ? 'tv' : 'movie', false);
+                track.appendChild(card);
+            });
+        }
+
+        function renderExpandingRow(items, containerId) {
+            const track = document.getElementById(containerId);
+            if (!track) return;
+            track.innerHTML = '';
+
+            items.filter(x => x.poster_path).forEach(item => {
+                const isTv = item.media_type === 'tv' || (!item.title && item.name);
+                const title = item.title || item.name;
+                const year = (item.release_date || item.first_air_date || '2026').split('-')[0];
+                const backdrop = item.backdrop_path || item.poster_path;
+
+                const card = document.createElement('div');
+                card.className = 'accordion-media-card';
+                card.innerHTML = `
+                    <img class="card-img-poster" src="${API_BASE_URL}/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" loading="lazy">
+                    <img class="card-img-backdrop" src="${API_BASE_URL}/api/image?path=${encodeURIComponent(backdrop)}&size=w780" loading="lazy">
+                    <span class="card-floating-rating">★ ${(item.vote_average || 8.2).toFixed(1)}</span>
+                    <span class="card-floating-quality">4K HDR</span>
+                    <div class="card-Bottom-shade">
+                        <div class="card-title-text">${title}</div>
+                        <div style="font-size:0.75rem; color:var(--gold); font-weight:800;">${isTv ? 'مسلسل' : 'فيلم'} • ${year}</div>
+                        <div class="card-hover-extra">
+                            <p class="card-mini-desc">${item.overview || 'انقر لاستعراض الحلقات والمشاهدة بجودة 4K فائقة.'}</p>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => openSpatialHub(item.id, isTv ? 'tv' : 'movie', false);
+                track.appendChild(card);
+            });
+        }
+
+        function renderGridPosters(items, containerId, append = false) {
+            const grid = document.getElementById(containerId);
+            if (!grid) return;
+            if (!append) grid.innerHTML = '';
+
+            items.filter(x => x.poster_path).forEach(item => {
+                const isTv = item.media_type === 'tv' || (!item.title && item.name);
+                const title = item.title || item.name;
+                const year = (item.release_date || item.first_air_date || '2026').split('-')[0];
+
+                const box = document.createElement('div');
+                box.className = 'grid-poster-item';
+                box.innerHTML = `
+                    <img src="${API_BASE_URL}/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500" loading="lazy">
+                    <span class="card-floating-rating">★ ${(item.vote_average || 8.0).toFixed(1)}</span>
+                    <span class="card-floating-quality">4K</span>
+                    <div class="card-Bottom-shade">
+                        <div class="card-title-text">${title}</div>
+                        <div style="font-size:0.74rem; color:var(--text-muted);">${isTv ? 'مسلسل' : 'فيلم'} • ${year}</div>
+                    </div>
+                `;
+                box.onclick = () => openSpatialHub(item.id, isTv ? 'tv' : 'movie', false);
+                grid.appendChild(box);
+            });
+        }
+
+        /* ==========================================
+           الأرشيف والكتالوج الكامل
+           ========================================== */
+        const catalogPresets = {
+            anime: {
+                title: "⚡ كوكب الأنمي الياباني الكامل (4K Anime Universe)",
+                media: "tv",
+                origin: "JP",
+                filters: [
+                    { name: "كل الأنميات", genres: "16", media: "tv" },
+                    { name: "أنمي أكشن وقتال", genres: "16,10759", media: "tv" },
+                    { name: "أنمي خيال وسحر", genres: "16,10765", media: "tv" },
+                    { name: "أنمي غموض وتحقيق", genres: "16,9648", media: "tv" },
+                    { name: "أفلام أنمي سينمائية", genres: "16", media: "movie" }
+                ]
+            },
+            movies: {
+                title: "🎬 صالة الأفلام السينمائية (IMAX 4K Movies)",
+                media: "movie",
+                origin: "",
+                filters: [
+                    { name: "كل الأفلام", genres: "", media: "movie" },
+                    { name: "أفلام أكشن وإثارة", genres: "28", media: "movie" },
+                    { name: "خيال علمي وفضاء", genres: "878", media: "movie" },
+                    { name: "رعب وغموض", genres: "27,9648", media: "movie" },
+                    { name: "جريمة", genres: "80", media: "movie" }
+                ]
+            },
+            series: {
+                title: "📺 عالم المسلسلات العالمية (Global Series Hub)",
+                media: "tv",
+                origin: "",
+                filters: [
+                    { name: "كل المسلسلات", genres: "", media: "tv" },
+                    { name: "أكشن ومغامرات", genres: "10759", media: "tv" },
+                    { name: "خيال علمي وفانتازيا", genres: "10765", media: "tv" },
+                    { name: "جريمة وتحقيق", genres: "80,9648", media: "tv" },
+                    { name: "دراما", genres: "18", media: "tv" }
+                ]
+            }
+        };
+
+        function openImperialCatalog(key) {
+            const preset = catalogPresets[key];
+            if (!preset) return;
+
+            setActiveNavTab(`tab-${key}`);
+            document.getElementById('homeViewWrapper').style.display = 'none';
+            document.getElementById('catalogViewWrapper').style.display = 'block';
+            document.getElementById('loadMoreWrap').style.display = 'flex';
+            document.getElementById('catalogHeaderTitle').innerText = preset.title;
+
+            const pillsBar = document.getElementById('catalogFilterPills');
+            pillsBar.innerHTML = '';
+
+            preset.filters.forEach((f, i) => {
+                const btn = document.createElement('button');
+                btn.className = `nav-tab ${i === 0 ? 'active' : ''}`;
+                btn.style.border = '1px solid var(--border-gold)';
+                btn.innerText = f.name;
+                btn.onclick = () => {
+                    pillsBar.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    catalogState = { category: key, media: f.media, genres: f.genres, origin: preset.origin, page: 1 };
+                    fetchCatalogGrid(false);
+                };
+                pillsBar.appendChild(btn);
+            });
+
+            catalogState = { category: key, media: preset.filters[0].media, genres: preset.filters[0].genres, origin: preset.origin, page: 1 };
+            fetchCatalogGrid(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function fetchCatalogGrid(append) {
+            try {
+                const url = `${API_BASE_URL}/api/discover?media=${catalogState.media}&genres=${catalogState.genres}&origin=${catalogState.origin}&page=${catalogState.page}&lang=${getLangCode()}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const list = (data.results || []).map(x => ({ ...x, media_type: catalogState.media }));
+                renderGridPosters(list, 'catalogMasterGrid', append);
+            } catch (e) {}
+        }
+
+        function loadMoreCatalogItems() {
+            catalogState.page++;
+            fetchCatalogGrid(true);
+        }
+
+        /* ==========================================
+           5. النافذة السينمائية الوسطية للتفاصيل (Spatial Hub)
+           ========================================== */
+        async function openSpatialHub(id, mediaType, autoLaunchFirst = false) {
+            document.getElementById('spatialDetailsModal').style.display = 'flex';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/item/full-details?id=${id}&media=${mediaType}&lang=${getLangCode()}`);
+                const data = await res.json();
+                activeHubItem = { ...data, mediaType };
+                const isTv = mediaType === 'tv';
+                const title = data.title || data.name;
+
+                document.getElementById('hubBannerImg').style.backgroundImage = `url('${API_BASE_URL}/api/image?path=${encodeURIComponent(data.backdrop_path || data.poster_path)}&size=original')`;
+                document.getElementById('hubTitle').innerText = title;
+                document.getElementById('hubRateBadge').innerText = `★ ${(data.vote_average || 8.6).toFixed(1)}`;
+                document.getElementById('hubYearBadge').innerText = (data.release_date || data.first_air_date || '2026').split('-')[0];
+                document.getElementById('hubOverview').innerText = data.overview || '';
+
+                document.getElementById('hubPlayBtn').onclick = () => {
+                    closeSpatialHub();
+                    if (isTv) loadHubSeason(data.id, 1, true);
+                    else openImperialStudio(data.id, false, 1, 1, title, 'فيلم كامل 4K', data.backdrop_path || data.poster_path, activeHubItem);
+                };
+
+                const inVault = savedVault.some(x => x.id === data.id);
+                document.getElementById('hubFavBtn').innerText = inVault ? '✓ محفوظ في خزنتي' : '+ إضافة إلى خزنتي';
+                document.getElementById('hubFavBtn').onclick = () => {
+                    const exists = savedVault.some(x => x.id === data.id);
+                    if (exists) savedVault = savedVault.filter(x => x.id !== data.id);
+                    else savedVault.push(data);
+                    localStorage.setItem('orbit_royal_favs', JSON.stringify(savedVault));
+                    document.getElementById('hubFavBtn').innerText = !exists ? '✓ محفوظ في خزنتي' : '+ إضافة إلى خزنتي';
+                };
+
+                const similar = (data.similar?.results || []).slice(0, 6).map(x => ({ ...x, media_type: mediaType }));
+                renderGridPosters(similar, 'hubSimilarGrid', false);
+
+                const seasonsWrap = document.getElementById('hubSeasonsContainer');
+                if (isTv) {
+                    seasonsWrap.style.display = 'block';
+                    const pills = document.getElementById('hubSeasonPills');
+                    pills.innerHTML = '';
+                    (data.seasons || []).filter(s => s.season_number > 0).forEach((s, idx) => {
+                        const b = document.createElement('button');
+                        b.className = `btn-gold-outline ${idx === 0 ? 'active' : ''}`;
+                        b.innerText = s.name || `الموسم ${s.season_number}`;
+                        b.onclick = () => loadHubSeason(data.id, s.season_number, false);
+                        pills.appendChild(b);
+                    });
+                    loadHubSeason(data.id, 1, autoLaunchFirst);
+                } else {
+                    seasonsWrap.style.display = 'none';
+                }
+            } catch (e) {}
+        }
+
+        async function loadHubSeason(tvId, seasonNum, autoLaunch) {
+            const grid = document.getElementById('hubEpisodesGrid');
+            grid.innerHTML = `<p style="color:var(--text-muted)">جاري استدعاء الحلقات...</p>`;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/tv/season?id=${tvId}&season=${seasonNum}&lang=${getLangCode()}`);
+                const data = await res.json();
+                grid.innerHTML = '';
+                const eps = data.episodes || [];
+
+                if (autoLaunch && eps.length > 0) {
+                    closeSpatialHub();
+                    openImperialStudio(tvId, true, seasonNum, eps[0].episode_number, activeHubItem.name, `الموسم ${seasonNum} • الحلقة 1`, activeHubItem.backdrop_path, activeHubItem);
+                    return;
+                }
+
+                eps.forEach(ep => {
+                    const card = document.createElement('div');
+                    card.className = 'hub-ep-card';
+                    const img = ep.still_path ? `${API_BASE_URL}/api/image?path=${encodeURIComponent(ep.still_path)}&size=w500` : `${API_BASE_URL}/api/image?path=${encodeURIComponent(activeHubItem.backdrop_path || activeHubItem.poster_path)}&size=w500`;
+                    card.innerHTML = `
+                        <img class="hub-ep-thumb" src="${img}">
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-weight:900; font-size:0.9rem; color:#FFF;">الحلقة ${ep.episode_number}: ${ep.name || ''}</div>
+                            <div style="font-size:0.75rem; color:var(--gold); margin-top:3px;">معلومات الحلقة</div>
+                        </div>
+                        <span style="color:var(--gold); font-size:1.1rem;">▶</span>
+                    `;
+                    card.onclick = () => {
+                        closeSpatialHub();
+                        openImperialStudio(tvId, true, seasonNum, ep.episode_number, activeHubItem.name, `الموسم ${seasonNum} • الحلقة ${ep.episode_number}`, ep.still_path || activeHubItem.backdrop_path, activeHubItem);
+                    };
+                    grid.appendChild(card);
+                });
+            } catch (e) {}
+        }
+
+        function closeSpatialHub() {
+            document.getElementById('spatialDetailsModal').style.display = 'none';
+        }
+
+        /* ==========================================
+           6. استوديو المشاهدة واختيار مزود التضمين
+           ========================================== */
+        function buildServerEmbedUrl(srvIdx, id, isTv, s, e) {
+            if (srvIdx === 0) {
+                return isTv
+                    ? `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=FF2948&secondaryColor=050507&iconColor=FF2948&autoplay=true&nextbutton=true`
+                    : `https://vidlink.pro/movie/${id}?primaryColor=FF2948&secondaryColor=050507&iconColor=FF2948&autoplay=true`;
+            } else if (srvIdx === 1) {
+                return isTv ? `https://embed.su/embed/tv/${id}/${s}/${e}` : `https://embed.su/embed/movie/${id}`;
+            } else if (srvIdx === 2) {
+                return isTv ? `https://vidsrc.icu/embed/tv/${id}/${s}/${e}` : `https://vidsrc.icu/embed/movie/${id}`;
+            } else if (srvIdx === 3) {
+                return isTv ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}` : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
+            } else {
+                return isTv ? `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}` : `https://player.autoembed.cc/embed/movie/${id}`;
+            }
+        }
+
+        async function openImperialStudio(id, isTv, season, episode, title, subTitle, backdropPath, fullItem) {
+            const itemObj = fullItem || activeHubItem;
+            activeStudioState = { id, isTv, season: Number(season), episode: Number(episode), title, subTitle, backdropPath, itemObj };
+
+            document.getElementById('studioShowTitle').innerText = title;
+            document.getElementById('studioEpSub').innerText = subTitle;
+            document.getElementById('studioNextEpBtn').style.display = isTv ? 'flex' : 'none';
+            document.getElementById('btnTogglePlaylist').style.display = isTv ? 'flex' : 'none';
+
+            const sidebar = document.getElementById('studioPlaylistSidebar');
+            if (isTv) {
+                sidebar.classList.remove('collapsed');
+                populateStudioPlaylist(id, Number(season), Number(episode), itemObj);
+            } else {
+                sidebar.classList.add('collapsed');
+            }
+
+            if (backdropPath) recordWatchHistory(id, isTv, season, episode, title, backdropPath, itemObj);
+
+            document.getElementById('imperialStudioModal').style.display = 'flex';
+            selectStudioServer(0);
+        }
+
+        async function selectStudioServer(idx) {
+            if (!activeStudioState || idx < 0 || idx > 4) return;
+            activeServerIdx = idx;
+            document.querySelectorAll('.studio-srv-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+
+            const iframe = document.getElementById('studioEmbedIframe');
+            const artBox = document.getElementById('artplayerBox');
+            const msg = document.getElementById('studioStatusMsg');
+            artBox.style.display = 'none';
+            iframe.style.display = 'block';
+            iframe.src = 'about:blank';
+            msg.textContent = 'جارٍ فتح المشغل المحدد… قد يختلف التوفر والجودة حسب مزود الخدمة.';
+
+            const state = activeStudioState;
+            const url = buildServerEmbedUrl(idx, state.id, state.isTv, state.season, state.episode);
+            // Avoid leaving the previous provider running in the background.
+            requestAnimationFrame(() => {
+                if (activeStudioState !== state) return;
+                iframe.src = url;
+                msg.textContent = 'تم اختيار المشغل. عناصر التحكم والترجمة تعتمد على مزود المشغل الخارجي.';
+            });
+        }
+
+        async function populateStudioPlaylist(tvId, activeSeason, activeEp, itemObj) {
+            const sel = document.getElementById('studioSeasonSelect');
+            sel.innerHTML = '';
+            let seasons = itemObj?.seasons || [];
+            if (!seasons.length) {
+                try {
+                    const r = await fetch(`${API_BASE_URL}/api/item/full-details?id=${tvId}&media=tv&lang=${getLangCode()}`);
+                    const d = await r.json();
+                    seasons = d.seasons || [];
+                } catch (e) {}
+            }
+            seasons.filter(s => s.season_number > 0).forEach(s => {
+                const o = document.createElement('option');
+                o.value = s.season_number;
+                o.innerText = s.name || `الموسم ${s.season_number}`;
+                if (Number(s.season_number) === Number(activeSeason)) o.selected = true;
+                sel.appendChild(o);
+            });
+            await loadStudioPlaylistSeason(activeSeason);
+        }
+
+        async function loadStudioPlaylistSeason(seasonNum) {
+            const box = document.getElementById('studioPlaylistItems');
+            box.innerHTML = '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/tv/season?id=${activeStudioState.id}&season=${seasonNum}&lang=${getLangCode()}`);
+                const data = await res.json();
+                (data.episodes || []).forEach(ep => {
+                    const isCur = Number(seasonNum) === Number(activeStudioState.season) && Number(ep.episode_number) === Number(activeStudioState.episode);
+                    const row = document.createElement('div');
+                    row.className = `playlist-ep-item ${isCur ? 'active' : ''}`;
+                    row.innerHTML = `
+                        <span style="color:var(--gold); font-weight:900;">#${ep.episode_number}</span>
+                        <div style="flex:1; font-size:0.84rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            ${ep.name || `الحلقة ${ep.episode_number}`}
+                        </div>
+                    `;
+                    row.onclick = () => {
+                        activeStudioState.season = Number(seasonNum);
+                        activeStudioState.episode = Number(ep.episode_number);
+                        document.getElementById('studioEpSub').innerText = `الموسم ${seasonNum} • الحلقة ${ep.episode_number}`;
+                        loadStudioPlaylistSeason(seasonNum);
+                        selectStudioServer(activeServerIdx);
+                    };
+                    box.appendChild(row);
+                });
+            } catch (e) {}
+        }
+
+        function toggleStudioPlaylist() {
+            document.getElementById('studioPlaylistSidebar').classList.toggle('collapsed');
+        }
+
+        function playNextStudioEpisode() {
+            if (!activeStudioState || !activeStudioState.isTv) return;
+            const nextEp = Number(activeStudioState.episode) + 1;
+            openImperialStudio(
+                activeStudioState.id,
+                true,
+                activeStudioState.season,
+                nextEp,
+                activeStudioState.title,
+                `الموسم ${activeStudioState.season} • الحلقة ${nextEp}`,
+                activeStudioState.backdropPath,
+                activeStudioState.itemObj
+            );
+        }
+
+        function closeImperialStudio() {
+            document.getElementById('studioEmbedIframe').src = '';
+            document.getElementById('imperialStudioModal').style.display = 'none';
+        }
+
+        /* ==========================================
+           سجل المشاهدة والبحث الفوري
+           ========================================== */
+        function recordWatchHistory(id, isTv, season, episode, title, backdropPath, itemObj) {
+            savedHistory = savedHistory.filter(x => Number(x.id) !== Number(id));
+            savedHistory.unshift({ id: Number(id), isTv, season, episode, title, backdropPath, poster_path: itemObj?.poster_path || backdropPath, vote_average: itemObj?.vote_average || 8.5, overview: `الموسم ${season} • الحلقة ${episode}` });
+            if (savedHistory.length > 10) savedHistory.pop();
+            localStorage.setItem('orbit_royal_cw', JSON.stringify(savedHistory));
+            renderContinueWatchingRow();
+        }
+
+        function renderContinueWatchingRow() {
+            const block = document.getElementById('continueWatchBlock');
+            if (savedHistory.length === 0) {
+                block.style.display = 'none';
+                return;
+            }
+            block.style.display = 'block';
+            renderExpandingRow(savedHistory, 'continueCardsTrack');
+        }
+
+        function clearContinueHistory() {
+            savedHistory = [];
+            localStorage.removeItem('orbit_royal_cw');
+            renderContinueWatchingRow();
+        }
+
+        let searchTimer = null;
+        let searchController = null;
+        let searchRequestId = 0;
+
+        async function triggerInstantSearch(q) {
+            const sec = document.getElementById('searchSectionBlock');
+            const query = q.trim();
+            const requestId = ++searchRequestId;
+            clearTimeout(searchTimer);
+
+            if (!query) {
+                if (searchController) searchController.abort();
+                sec.style.display = 'none';
+                document.getElementById('searchResultsGrid').replaceChildren();
+                return;
+            }
+
+            SwitchToHomeIfNeeded();
+            sec.style.display = 'block';
+            searchTimer = setTimeout(async () => {
+                if (searchController) searchController.abort();
+                searchController = new AbortController();
+                try {
+                    const url = `${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}&lang=${getLangCode()}`;
+                    const res = await fetch(url, { signal: searchController.signal });
+                    if (!res.ok) throw new Error(`Search failed (${res.status})`);
+                    const data = await res.json();
+                    if (requestId !== searchRequestId) return;
+                    renderGridPosters(data.results || [], 'searchResultsGrid', false);
+                } catch (error) {
+                    if (error.name !== 'AbortError' && requestId === searchRequestId) {
+                        console.error('Search error:', error);
+                    }
+                }
+            }, 280);
+        }
+
+        function SwitchToHomeIfNeeded() {
+            document.getElementById('homeViewWrapper').style.display = 'block';
+            document.getElementById('catalogViewWrapper').style.display = 'none';
+        }
+
+        function closeSearchSection() {
+            document.getElementById('globalSearchInput').value = '';
+            document.getElementById('searchSectionBlock').style.display = 'none';
+        }
+
+        bootImperialPlatform();
+    </script>
+</body>
+</html>
