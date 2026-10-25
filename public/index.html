@@ -148,7 +148,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
 
-        /* البنر الرئيسي المتحرك (Hero Banner Slider) */
+        /* البنر الرئيسي المتحرك (Hero Slider) */
         .hero-banner {
             position: relative;
             width: 100%;
@@ -258,7 +258,6 @@
             background: rgba(255, 255, 255, 0.25);
         }
 
-        /* نقاط التحكم بالسلايدر (Slider Dots) */
         .slider-dots {
             position: absolute;
             bottom: 30px;
@@ -283,7 +282,7 @@
             background: #FFFFFF;
         }
 
-        /* قسم متابعة المشاهدة (Continue Watching) */
+        /* متابعة المشاهدة (Continue Watching) */
         #continue-watching-sec {
             display: none;
             padding: 24px 48px 0 48px;
@@ -360,7 +359,7 @@
             gap: 6px;
         }
 
-        /* تصفح حسب المنصة (Browse by Provider) */
+        /* تصفح حسب المنصة */
         .providers-wrap {
             padding: 24px 48px 24px 48px;
         }
@@ -369,7 +368,6 @@
             font-size: 1.15rem;
             font-weight: 800;
             margin-bottom: 16px;
-            color: var(--text-main);
         }
 
         .providers-scroll {
@@ -527,7 +525,7 @@
             color: var(--text-muted);
         }
 
-        /* صفحة تفاصيل المسلسل وقائمة الحلقات */
+        /* صفحة تفاصيل المسلسل والمواسم مع زر الإضافة لقائمتي */
         #details-view {
             display: none;
             position: fixed;
@@ -565,6 +563,32 @@
 
         .details-back-btn:hover {
             background: var(--primary);
+        }
+
+        .details-actions-bar {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .btn-details-add {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: #FFF;
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-details-add:hover {
+            background: rgba(255, 255, 255, 0.25);
         }
 
         .seasons-bar {
@@ -700,7 +724,7 @@
             line-height: 1.4;
         }
 
-        /* مشغل السينما المدمج داخل الموقع نفسه (In-Page Cinema Modal) */
+        /* مشغل السينما المدمج مع 4 سيرفرات VIP */
         #cinema-player-modal {
             display: none;
             position: fixed;
@@ -721,12 +745,15 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .player-work-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
+            flex-wrap: wrap;
         }
 
         .player-title-text {
@@ -738,6 +765,7 @@
         .server-pills {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .server-btn {
@@ -794,7 +822,7 @@
 </head>
 <body>
 
-    <!-- 1. شريط التنقل الكبسولي -->
+    <!-- 1. شريط التنقل -->
     <header>
         <div class="brand-logo" onclick="switchTab('home')">
             Orbit <span>Cinema</span>
@@ -802,8 +830,9 @@
 
         <nav class="nav-pill">
             <button class="nav-btn active" id="tab-home" onclick="switchTab('home')">الرئيسية</button>
-            <button class="nav-btn" id="tab-movies" onclick="switchTab('movies')">الأفلام</button>
+            <button class="nav-btn" id="tab-anime" onclick="switchTab('anime')">الأنمي</button>
             <button class="nav-btn" id="tab-series" onclick="switchTab('series')">المسلسلات</button>
+            <button class="nav-btn" id="tab-movies" onclick="switchTab('movies')">الأفلام</button>
             <button class="nav-btn" id="tab-mylist" onclick="switchTab('mylist')">قائمتي</button>
         </nav>
 
@@ -814,7 +843,7 @@
 
     <!-- شريط البحث -->
     <div id="search-bar-wrap">
-        <input type="text" id="searchInput" placeholder="ابحث عن أي فيلم أو مسلسل...">
+        <input type="text" id="searchInput" placeholder="ابحث عن فيلم، مسلسل، أو أنمي...">
     </div>
 
     <!-- الصفحة الرئيسية -->
@@ -835,7 +864,6 @@
                     <button class="btn-hero-add" id="heroAddBtn">+ إضافة لقائمتي</button>
                 </div>
             </div>
-            <!-- نقاط السلايدر -->
             <div class="slider-dots" id="sliderDots"></div>
         </div>
 
@@ -847,7 +875,7 @@
             <div class="cw-grid" id="continueWatchingGrid"></div>
         </div>
 
-        <!-- 4. تصفح حسب المنصة (Browse by Provider) -->
+        <!-- 4. تصفح حسب المنصة -->
         <div class="providers-wrap">
             <h3 class="providers-title">تصفح حسب المنصة</h3>
             <div class="providers-scroll">
@@ -874,8 +902,9 @@
             </div>
         </div>
 
-        <!-- صفوف المحتوى -->
+        <!-- صفوف وتصنيفات المحتوى الموسعة -->
         <div class="main-container">
+            <!-- الأفلام الرائجة -->
             <section id="trending-movies-sec">
                 <div class="row-header">
                     <h2 class="row-title">الأفلام الأكثر رواجاً هذا الأسبوع</h2>
@@ -883,13 +912,47 @@
                 <div class="cards-row" id="moviesWeekGrid"></div>
             </section>
 
+            <!-- المسلسلات الرائجة -->
             <section id="trending-series-sec">
                 <div class="row-header">
-                    <h2 class="row-title">المسلسلات الأكثر رواجاً هذا الأسبوع</h2>
+                    <h2 class="row-title">المسلسلات الأكثر انتشاراً هذا الأسبوع</h2>
                 </div>
                 <div class="cards-row" id="seriesWeekGrid"></div>
             </section>
 
+            <!-- أنمي القتال والأكشن -->
+            <section id="anime-action-sec">
+                <div class="row-header">
+                    <h2 class="row-title">أنمي القتال والأكشن (Action Anime)</h2>
+                </div>
+                <div class="cards-row" id="animeActionGrid"></div>
+            </section>
+
+            <!-- أنمي الفضاء والخيال العلمي -->
+            <section id="anime-space-sec">
+                <div class="row-header">
+                    <h2 class="row-title">أنمي الفضاء والخيال العلمي (Space & Sci-Fi)</h2>
+                </div>
+                <div class="cards-row" id="animeSpaceGrid"></div>
+            </section>
+
+            <!-- مسلسلات الفضاء والخيال العلمي -->
+            <section id="series-space-sec">
+                <div class="row-header">
+                    <h2 class="row-title">مسلسلات الفضاء والخيال العلمي</h2>
+                </div>
+                <div class="cards-row" id="seriesSpaceGrid"></div>
+            </section>
+
+            <!-- مسلسلات الجريمة والغموض -->
+            <section id="series-crime-sec">
+                <div class="row-header">
+                    <h2 class="row-title">مسلسلات الجريمة والغموض</h2>
+                </div>
+                <div class="cards-row" id="seriesCrimeGrid"></div>
+            </section>
+
+            <!-- المنصة المختارة -->
             <section id="netflix-sec">
                 <div class="row-header">
                     <h2 class="row-title" id="providerSectionTitle">أعمال Netflix الرائجة</h2>
@@ -899,7 +962,7 @@
         </div>
     </div>
 
-    <!-- صفحة "قائمتي" -->
+    <!-- صفحة قائمتي -->
     <div id="my-list-view">
         <div class="list-header">
             <h2>قائمتي المفضلة</h2>
@@ -912,7 +975,7 @@
         </div>
     </div>
 
-    <!-- صفحة تفاصيل المسلسل والمواسم -->
+    <!-- صفحة تفاصيل المسلسل مع زر الإضافة لقائمتي -->
     <div id="details-view">
         <div class="details-hero" id="detailsHero">
             <div class="hero-overlay"></div>
@@ -925,6 +988,9 @@
                     <span id="detailsSeasonsCount">8 مواسم</span>
                 </div>
                 <p class="hero-overview" id="detailsOverview">قصة المسلسل...</p>
+                <div class="details-actions-bar">
+                    <button class="btn-details-add" id="detailsAddBtn" onclick="toggleDetailsMyList()">+ إضافة إلى قائمتي</button>
+                </div>
             </div>
         </div>
 
@@ -932,15 +998,16 @@
         <div class="episodes-grid" id="episodesGrid"></div>
     </div>
 
-    <!-- 5. مشغل السينما المدمج داخل الموقع نفسه -->
+    <!-- مشغل السينما المدمج مع 4 سيرفرات متطورة -->
     <div id="cinema-player-modal">
         <div class="player-toolbar">
             <div class="player-work-info">
                 <span class="player-title-text" id="playerTitle">اسم العمل</span>
                 <div class="server-pills">
-                    <button class="server-btn active" id="srv-vidlink" onclick="switchPlayerServer('vidlink')">سيرفر 1 (VidLink Pro 1080p + CC)</button>
-                    <button class="server-btn" id="srv-embedsu" onclick="switchPlayerServer('embedsu')">سيرفر 2 (EmbedSu)</button>
-                    <button class="server-btn" id="srv-vidsrc" onclick="switchPlayerServer('vidsrc')">سيرفر 3 (VidSrc VIP)</button>
+                    <button class="server-btn active" id="srv-vidlink" onclick="switchPlayerServer('vidlink')">⚡ سيرفر 1 (VidLink VIP + ترجمة)</button>
+                    <button class="server-btn" id="srv-vidsrcpro" onclick="switchPlayerServer('vidsrcpro')">🎬 سيرفر 2 (VidSrc Pro)</button>
+                    <button class="server-btn" id="srv-superembed" onclick="switchPlayerServer('superembed')">🌍 سيرفر 3 (SuperEmbed)</button>
+                    <button class="server-btn" id="srv-embedsu" onclick="switchPlayerServer('embedsu')">🚀 سيرفر 4 (EmbedSu)</button>
                 </div>
             </div>
             <button class="close-player-btn" onclick="closeCinemaPlayer()">✕ إغلاق المشغل</button>
@@ -961,10 +1028,11 @@
         let myList = JSON.parse(localStorage.getItem('orbit_mylist') || '[]');
         let continueWatching = JSON.parse(localStorage.getItem('orbit_continue_watching') || '[]');
 
-        // 1. التنقل بين التبويبات
+        // التنقل بين التبويبات
         function switchTab(tab) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${tab}`).classList.add('active');
+            const tabBtn = document.getElementById(`tab-${tab}`);
+            if (tabBtn) tabBtn.classList.add('active');
 
             const homeView = document.getElementById('home-view');
             const myListView = document.getElementById('my-list-view');
@@ -977,7 +1045,9 @@
             } else {
                 homeView.style.display = 'block';
                 myListView.style.display = 'none';
-                if (tab === 'movies') {
+                if (tab === 'anime') {
+                    document.getElementById('anime-action-sec').scrollIntoView({ behavior: 'smooth' });
+                } else if (tab === 'movies') {
                     document.getElementById('trending-movies-sec').scrollIntoView({ behavior: 'smooth' });
                 } else if (tab === 'series') {
                     document.getElementById('trending-series-sec').scrollIntoView({ behavior: 'smooth' });
@@ -987,25 +1057,42 @@
             }
         }
 
-        // 2. تحميل المحتوى الرئيسي
+        // تحميل جميع التصنيفات
         async function loadAllContent() {
             try {
+                // الرائج
                 const [moviesRes, seriesRes] = await Promise.all([
                     fetch('/api/trending?type=movie&time=week'),
                     fetch('/api/trending?type=tv&time=week')
                 ]);
-
                 const moviesData = await moviesRes.json();
                 const seriesData = await seriesRes.json();
-
                 renderCards(moviesData.results, 'moviesWeekGrid');
                 renderCards(seriesData.results, 'seriesWeekGrid');
 
-                // دمج أقوى العروض لتشغيل السلايدر المتحرك في البنر
+                // السلايدر
                 heroItems = [...(seriesData.results || []).slice(0, 3), ...(moviesData.results || []).slice(0, 3)];
-                if (heroItems.length > 0) {
-                    initHeroSlider();
-                }
+                if (heroItems.length > 0) initHeroSlider();
+
+                // أنمي قتال وأكشن (Genre: 16 الأنمي + 10759 أكشن ومغامرة، Origin: JP)
+                const animeActionRes = await fetch('/api/discover?media=tv&genres=16,10759&origin=JP');
+                const animeActionData = await animeActionRes.json();
+                renderCards(animeActionData.results, 'animeActionGrid');
+
+                // أنمي فضاء وخيال علمي (Genre: 16 الأنمي + 10765 خيال علمي وفانتازيا، Origin: JP)
+                const animeSpaceRes = await fetch('/api/discover?media=tv&genres=16,10765&origin=JP');
+                const animeSpaceData = await animeSpaceRes.json();
+                renderCards(animeSpaceData.results, 'animeSpaceGrid');
+
+                // مسلسلات الفضاء والخيال العلمي (Genre: 10765)
+                const seriesSpaceRes = await fetch('/api/discover?media=tv&genres=10765');
+                const seriesSpaceData = await seriesSpaceRes.json();
+                renderCards(seriesSpaceData.results, 'seriesSpaceGrid');
+
+                // مسلسلات الجريمة والغموض (Genre: 80,9648)
+                const seriesCrimeRes = await fetch('/api/discover?media=tv&genres=80,9648');
+                const seriesCrimeData = await seriesCrimeRes.json();
+                renderCards(seriesCrimeData.results, 'seriesCrimeGrid');
 
                 renderContinueWatching();
                 loadByProvider(8, 'Netflix');
@@ -1014,7 +1101,7 @@
             }
         }
 
-        // 3. السلايدر المتحرك التلقائي للبنر
+        // السلايدر التلقائي للبنر
         function initHeroSlider() {
             renderHero(heroItems[0]);
             renderSliderDots();
@@ -1075,7 +1162,7 @@
             btn.onclick = () => toggleMyList(item);
         }
 
-        // 4. متابعة المشاهدة (Continue Watching)
+        // متابعة المشاهدة
         function renderContinueWatching() {
             const sec = document.getElementById('continue-watching-sec');
             const grid = document.getElementById('continueWatchingGrid');
@@ -1098,7 +1185,7 @@
                     <div class="cw-info">
                         <div class="cw-title">${item.title}</div>
                         <div class="cw-sub">
-                            <span>⏱ تمت المشاهدة مؤخراً</span>
+                            <span>⏱ شوهد مؤخراً</span>
                             ${item.isTv ? `• <span>م${item.season} ح${item.episode}</span>` : ''}
                         </div>
                     </div>
@@ -1118,9 +1205,10 @@
             renderContinueWatching();
         }
 
-        // 5. رسم الكروت
+        // رسم كروت المحتوى
         function renderCards(items, gridId) {
             const grid = document.getElementById(gridId);
+            if (!grid) return;
             grid.innerHTML = '';
 
             (items || []).filter(i => i.poster_path).forEach(item => {
@@ -1146,7 +1234,6 @@
             });
         }
 
-        // 6. الفلترة حسب المنصات
         async function loadByProvider(providerId, providerName) {
             document.getElementById('providerSectionTitle').innerText = `أعمال ${providerName} الرائجة`;
             const res = await fetch(`/api/provider?id=${providerId}`);
@@ -1156,7 +1243,7 @@
             }
         }
 
-        // 7. إدارة قائمتي
+        // إدارة قائمتي
         function toggleMyList(item) {
             const index = myList.findIndex(x => x.id === item.id);
             if (index > -1) {
@@ -1166,8 +1253,24 @@
             }
             localStorage.setItem('orbit_mylist', JSON.stringify(myList));
             updateHeroAddButton(item);
+            updateDetailsAddButton();
             if (document.getElementById('my-list-view').style.display === 'block') {
                 renderMyList();
+            }
+        }
+
+        function toggleDetailsMyList() {
+            if (!currentDetailSeries) return;
+            toggleMyList(currentDetailSeries);
+        }
+
+        function updateDetailsAddButton() {
+            if (!currentDetailSeries) return;
+            const exists = myList.some(x => x.id === currentDetailSeries.id);
+            const btn = document.getElementById('detailsAddBtn');
+            if (btn) {
+                btn.innerText = exists ? '✓ في قائمتي' : '+ إضافة إلى قائمتي';
+                btn.style.background = exists ? 'var(--primary)' : 'rgba(255, 255, 255, 0.15)';
             }
         }
 
@@ -1184,7 +1287,7 @@
             }
         }
 
-        // 8. فتح المسلسل أو الفيلم
+        // فتح العمل وتفاصيل المسلسل
         async function openItem(item) {
             const isTv = item.media_type === 'tv' || (!item.title && item.name);
             const title = item.title || item.name;
@@ -1214,6 +1317,8 @@
                 document.getElementById('detailsYear').innerText = (data.first_air_date || '').split('-')[0];
                 document.getElementById('detailsSeasonsCount').innerText = `${data.number_of_seasons || 1} مواسم`;
                 document.getElementById('detailsOverview').innerText = data.overview || 'قصة المسلسل...';
+
+                updateDetailsAddButton();
 
                 const seasonsBar = document.getElementById('seasonsBar');
                 seasonsBar.innerHTML = '';
@@ -1282,7 +1387,7 @@
             }
         }
 
-        // 9. تشغيل السينما المدمج داخل الموقع مباشرة (مع أفضل سيرفر وترجمة عربية)
+        // تشغيل المشغل الداخلي مع 4 سيرفرات
         function launchCinemaPlayer(id, isTv, season, episode, title, poster) {
             currentPlaybackInfo = { id, isTv, season, episode, title };
             document.getElementById('playerTitle').innerText = title;
@@ -1297,18 +1402,25 @@
             let streamUrl = '';
 
             if (currentServer === 'vidlink') {
-                // VidLink Pro: دقة 1080p تلقائية، ترجمة عربية مدمجة واختيارية، تحكم متقدم
+                // سيرفر 1: ترجمة عربية تلقائية ودقة 1080p
                 streamUrl = isTv 
                     ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=FF2228&autoplay=true`
                     : `https://vidlink.pro/movie/${id}?primaryColor=FF2228&autoplay=true`;
-            } else if (currentServer === 'embedsu') {
+            } else if (currentServer === 'vidsrcpro') {
+                // سيرفر 2: مشغل سريع للمسلسلات الحديثة والأنمي
+                streamUrl = isTv 
+                    ? `https://vidsrc.pro/embed/tv/${id}/${season}/${episode}`
+                    : `https://vidsrc.pro/embed/movie/${id}`;
+            } else if (currentServer === 'superembed') {
+                // سيرفر 3: سيرفر متعدد المصادر مع فك حظر مباشر
+                streamUrl = isTv 
+                    ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
+                    : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
+            } else {
+                // سيرفر 4: بديل عالي الاستقرار
                 streamUrl = isTv 
                     ? `https://embed.su/embed/tv/${id}/${season}/${episode}`
                     : `https://embed.su/embed/movie/${id}`;
-            } else {
-                streamUrl = isTv 
-                    ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`
-                    : `https://vidsrc.me/embed/movie?tmdb=${id}`;
             }
 
             document.getElementById('cinemaIframe').src = streamUrl;
