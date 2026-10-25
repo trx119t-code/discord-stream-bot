@@ -8,6 +8,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
+    <!-- مكتبات المشغل الداخلي Hls.js و ArtPlayer -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
+
     <style>
         :root {
             --accent: #FF2A42;
@@ -59,7 +63,7 @@
             transition: transform 0.3s ease;
         }
 
-        /* 1. الدوك الجانبي العائم */
+        /* 1. الدوك الجانبي */
         .vision-dock {
             position: fixed;
             top: 50%;
@@ -989,7 +993,7 @@
             background: #180D12;
         }
 
-        /* المشغل */
+        /* 5. مشغل المسرح المدمج ArtPlayer */
         #theaterModal {
             display: none;
             position: fixed;
@@ -1063,11 +1067,22 @@
             position: relative;
         }
 
+        #artplayerContainer {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+        }
+
         #theaterIframe {
             width: 100%;
             height: 100%;
             border: none;
-            display: block;
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            display: none;
         }
 
         @media (max-width: 1024px) {
@@ -1298,7 +1313,7 @@
         </div>
     </div>
 
-    <!-- المشغل المطور والموثوق 100% -->
+    <!-- 5. مشغل المسرح المدمج ArtPlayer -->
     <div id="theaterModal">
         <div class="theater-top-bar">
             <div style="display:flex; align-items:center; gap:14px;">
@@ -1309,22 +1324,22 @@
                 </div>
             </div>
 
-            <!-- سيرفرات موثوقة تعمل بدون شاشات سوداء وبدون إعلانات مشبوهة -->
             <div class="server-pills-bar">
-                <button class="srv-pill active" id="srv-btn-0" onclick="selectStreamServer(0)">👑 VidLink 4K (الأساسي والنظيف)</button>
-                <button class="srv-pill" id="srv-btn-1" onclick="selectStreamServer(1)">💎 MultiEmbed VIP</button>
-                <button class="srv-pill" id="srv-btn-2" onclick="selectStreamServer(2)">⚡ VidSrc CC v2 (المحدث)</button>
-                <button class="srv-pill" id="srv-btn-3" onclick="selectStreamServer(3)">🚀 AutoEmbed PRO</button>
+                <button class="srv-pill active" id="srv-btn-0" onclick="switchPlayerMode(0)">⚡ مشغل أوربت الداخلي (ArtPlayer)</button>
+                <button class="srv-pill" id="srv-btn-1" onclick="switchPlayerMode(1)">👑 VidLink 4K (سريع)</button>
+                <button class="srv-pill" id="srv-btn-2" onclick="switchPlayerMode(2)">💎 MultiEmbed VIP</button>
             </div>
 
             <button class="btn-gold-play" style="padding:8px 20px;" id="theaterNextEpBtn" onclick="playNextEpInTheater()" data-i18n="nextEpisode">الحلقة التالية ⏭️</button>
         </div>
 
         <div class="sub-status-bar" id="subStatusBar">
-            <span id="subStatusText">💡 تم اعتماد السيرفرات المباشرة والنظيفة. للترجمة العربية اضغط على أيقونة الترجمة داخل المشغل.</span>
+            <span id="subStatusText">⏳ جاري الاتصال بمحرك الترجمة العربية وسحب مسار البث المباشر...</span>
+            <span style="font-size:0.75rem; color:#FFD1D6;">(أوربت ستور)</span>
         </div>
 
         <div class="theater-screen-frame">
+            <div id="artplayerContainer"></div>
             <iframe id="theaterIframe" src="" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
         </div>
     </div>
@@ -1334,7 +1349,8 @@
         let activeQueueIdx = 0;
         let currentDrawerItem = null;
         let activePlayback = null;
-        let serverIdx = 0;
+        let art = null;
+        let currentMode = 0;
 
         let currentCatalogCategory = 'anime';
         let currentCatalogMedia = 'tv';
@@ -1436,10 +1452,10 @@
         };
 
         const themes = [
-            { hex: '#FF2A42', rgb: '255, 42, 66' },  // Orbit Crimson (الأساسي)
-            { hex: '#F59E0B', rgb: '245, 158, 11' }, // Royal Gold
-            { hex: '#06B6D4', rgb: '6, 182, 212' },  // Cyber Cyan
-            { hex: '#10B981', rgb: '16, 185, 129' }  // Emerald Neon
+            { hex: '#FF2A42', rgb: '255, 42, 66' },
+            { hex: '#F59E0B', rgb: '245, 158, 11' },
+            { hex: '#06B6D4', rgb: '6, 182, 212' },
+            { hex: '#10B981', rgb: '16, 185, 129' }
         ];
         let themeIdx = 0;
 
@@ -1925,28 +1941,125 @@
             });
         }
 
-        // روابط سيرفرات البث النظيفة المعتمدة
-        function buildStreamUrl(id, isTv, season, episode, srv) {
-            if (srv === 0) {
-                // 1. VidLink PRO (النظيف وسريع التقديم والتأخير)
-                return isTv
-                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=FF2A42&autoplay=true`
-                    : `https://vidlink.pro/movie/${id}?primaryColor=FF2A42&autoplay=true`;
-            } else if (srv === 1) {
-                // 2. MultiEmbed VIP (السريع والشغال دائماً)
-                return isTv
-                    ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
-                    : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
-            } else if (srv === 2) {
-                // 3. VidSrc CC v2 (النسخة الحديثة والرسمية)
-                return isTv
-                    ? `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}`
-                    : `https://vidsrc.cc/v2/embed/movie/${id}`;
+        // تشغيل مشغل ArtPlayer المخصص وحقن الترجمة العربية
+        async function launchCustomArtPlayer(id, isTv, season, episode) {
+            const container = document.getElementById('artplayerContainer');
+            const iframe = document.getElementById('theaterIframe');
+            container.style.display = 'block';
+            iframe.style.display = 'none';
+
+            if (art) {
+                art.destroy(false);
+                art = null;
+            }
+
+            const subText = document.getElementById('subStatusText');
+            subText.innerText = "⏳ جاري استخراج مسار التدفق وفحص ملفات الترجمة العربية...";
+
+            let subTrackUrl = '';
+            try {
+                const detailsRes = await fetch(`/api/item/full-details?id=${id}&media=${isTv ? 'tv' : 'movie'}`);
+                const detailsData = await detailsRes.json();
+                const imdbId = detailsData.external_ids?.imdb_id;
+
+                if (imdbId) {
+                    const subRes = await fetch(`/api/subtitles/find?imdb=${imdbId}&is_tv=${isTv}&season=${season}&episode=${episode}`);
+                    const subData = await subRes.json();
+                    if (subData.subtitles && subData.subtitles.length > 0) {
+                        subTrackUrl = subData.subtitles[0].url;
+                        subText.innerText = `✅ تم ربط الترجمة العربية المعتمدة بنجاح (${subData.subtitles.length} ملف متوفر)`;
+                    } else {
+                        subText.innerText = `💡 جاري التشغيل عبر مسار البث المباشر`;
+                    }
+                }
+            } catch (e) {}
+
+            let videoSource = '';
+            try {
+                const extRes = await fetch(`/api/stream/extract?id=${id}&is_tv=${isTv}&season=${season}&episode=${episode}`);
+                const extData = await extRes.json();
+                videoSource = extData.streamUrl;
+            } catch (e) {}
+
+            if (!videoSource) {
+                switchPlayerMode(1);
+                return;
+            }
+
+            art = new Artplayer({
+                container: '#artplayerContainer',
+                url: videoSource,
+                type: 'm3u8',
+                customType: {
+                    m3u8: function (video, url, artInstance) {
+                        if (Hls.isSupported()) {
+                            if (artInstance.hls) artInstance.hls.destroy();
+                            const hls = new Hls({ xhrSetup: function(xhr) { xhr.withCredentials = false; } });
+                            hls.loadSource(url);
+                            hls.attachMedia(video);
+                            artInstance.hls = hls;
+                        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                            video.src = url;
+                        } else {
+                            switchPlayerMode(1);
+                        }
+                    },
+                },
+                subtitle: {
+                    url: subTrackUrl,
+                    type: 'vtt',
+                    style: {
+                        color: '#FFF',
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        textShadow: '0 2px 8px rgba(0,0,0,0.95)',
+                        marginBottom: '32px'
+                    },
+                    encoding: 'utf-8',
+                },
+                setting: true,
+                playbackRate: true,
+                aspectRatio: true,
+                fullscreen: true,
+                fullscreenWeb: true,
+                miniProgressBar: true,
+                autoPlayback: true,
+                theme: '#FF2A42',
+            });
+
+            art.on('error', () => {
+                switchPlayerMode(1);
+            });
+        }
+
+        function switchPlayerMode(modeIdx) {
+            currentMode = modeIdx;
+            document.querySelectorAll('.srv-pill').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === modeIdx);
+            });
+
+            const artContainer = document.getElementById('artplayerContainer');
+            const iframe = document.getElementById('theaterIframe');
+            const subText = document.getElementById('subStatusText');
+
+            if (modeIdx === 0) {
+                launchCustomArtPlayer(activePlayback.id, activePlayback.isTv, activePlayback.season, activePlayback.episode);
+            } else if (modeIdx === 1) {
+                if (art) { art.destroy(false); art = null; }
+                artContainer.style.display = 'none';
+                iframe.style.display = 'block';
+                subText.innerText = "👑 تم تفعيل سيرفر VidLink 4K السريع";
+                iframe.src = activePlayback.isTv
+                    ? `https://vidlink.pro/tv/${activePlayback.id}/${activePlayback.season}/${activePlayback.episode}?primaryColor=FF2A42&autoplay=true`
+                    : `https://vidlink.pro/movie/${activePlayback.id}?primaryColor=FF2A42&autoplay=true`;
             } else {
-                // 4. AutoEmbed PRO
-                return isTv
-                    ? `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}`
-                    : `https://player.autoembed.cc/embed/movie/${id}`;
+                if (art) { art.destroy(false); art = null; }
+                artContainer.style.display = 'none';
+                iframe.style.display = 'block';
+                subText.innerText = "💎 سيرفر MultiEmbed VIP الاحتياطي المباشر";
+                iframe.src = activePlayback.isTv
+                    ? `https://multiembed.mov/?video_id=${activePlayback.id}&tmdb=1&s=${activePlayback.season}&e=${activePlayback.episode}`
+                    : `https://multiembed.mov/?video_id=${activePlayback.id}&tmdb=1`;
             }
         }
 
@@ -1958,19 +2071,8 @@
 
             if (backdropPath) saveContinueRecord(id, isTv, season, episode, title, backdropPath);
 
-            selectStreamServer(0);
             document.getElementById('theaterModal').style.display = 'flex';
-        }
-
-        function selectStreamServer(idx) {
-            if (!activePlayback) return;
-            serverIdx = idx;
-            document.querySelectorAll('.srv-pill').forEach((btn, i) => {
-                btn.classList.toggle('active', i === idx);
-            });
-            document.getElementById('theaterIframe').src = buildStreamUrl(
-                activePlayback.id, activePlayback.isTv, activePlayback.season, activePlayback.episode, serverIdx
-            );
+            switchPlayerMode(0);
         }
 
         function playNextEpInTheater() {
@@ -1980,6 +2082,10 @@
         }
 
         function closeTheaterModal() {
+            if (art) {
+                art.destroy(false);
+                art = null;
+            }
             document.getElementById('theaterIframe').src = '';
             document.getElementById('theaterModal').style.display = 'none';
         }
