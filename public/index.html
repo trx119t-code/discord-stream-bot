@@ -38,7 +38,7 @@
             min-height: 100vh;
         }
 
-        /* 1. الشريط العلوي في المنتصف تماماً */
+        /* 1. الشريط العلوي في المنتصف */
         header {
             position: fixed;
             top: 20px;
@@ -138,35 +138,215 @@
             letter-spacing: 0.5px;
         }
 
-        .btn-signin-pill:hover {
-            background: var(--primary);
-        }
-
-        #search-bar-wrap {
+        /* 2. واجهة البحث الاحترافية الكاملة (مطابقة لـ CineLite) */
+        #search-view {
             display: none;
-            position: fixed;
-            top: 85px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 550px;
-            z-index: 99;
+            padding: 95px 48px 60px 48px;
+            min-height: 90vh;
         }
 
-        #search-bar-wrap input {
+        .search-hero-box {
+            max-width: 850px;
+            margin: 0 auto 24px auto;
+            position: relative;
+        }
+
+        .search-input-wrap {
+            position: relative;
             width: 100%;
-            background: rgba(14, 12, 16, 0.95);
-            border: 1px solid var(--primary);
-            border-radius: 25px;
-            padding: 12px 24px;
-            color: #FFF;
-            font-size: 1rem;
-            outline: none;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
 
-        /* 2. البنر الرئيسي */
+        .search-icon-red {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #FF2228;
+            font-size: 1.25rem;
+            pointer-events: none;
+        }
+
+        body[dir="ltr"] .search-icon-red {
+            right: auto;
+            left: 20px;
+        }
+
+        .search-field-large {
+            width: 100%;
+            background: #141217;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 16px 54px 16px 54px;
+            font-size: 1.15rem;
+            color: #FFF;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .search-field-large:focus {
+            border-color: #FF2228;
+            box-shadow: 0 0 25px rgba(255, 34, 40, 0.25);
+        }
+
+        .search-clear-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-muted);
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        body[dir="ltr"] .search-clear-btn {
+            left: auto;
+            right: 20px;
+        }
+
+        /* كبسولات الفلاتر مع العداد */
+        .filter-pills-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .filter-pill {
+            background: #161419;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .filter-pill.active, .filter-pill:hover {
+            background: #FFF;
+            color: #060507;
+            border-color: #FFF;
+        }
+
+        .pill-badge {
+            background: rgba(255, 255, 255, 0.15);
+            color: inherit;
+            padding: 1px 7px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+
+        .filter-pill.active .pill-badge {
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        /* شبكة نتائج البحث */
+        .search-section {
+            margin-top: 36px;
+        }
+
+        .search-sec-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .search-sec-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #FFF;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .view-all-link {
+            color: #FF2228;
+            font-size: 0.85rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .view-all-link:hover {
+            text-decoration: underline;
+        }
+
+        .search-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 18px;
+        }
+
+        .search-result-card {
+            background: #141217;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+
+        .search-result-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .search-card-thumb {
+            width: 100%;
+            height: 245px;
+            object-fit: cover;
+            display: block;
+            background: #100e12;
+        }
+
+        .search-card-body {
+            padding: 10px 12px;
+        }
+
+        .search-card-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #FFF;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-card-meta {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meta-star {
+            color: var(--accent-yellow);
+            font-weight: 800;
+        }
+
+        /* 3. البنر الرئيسي */
         .hero-banner {
             position: relative;
             width: 100%;
@@ -275,10 +455,6 @@
             gap: 6px;
         }
 
-        .btn-hero-info:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
         .slider-dots {
             position: absolute;
             bottom: 30px;
@@ -308,7 +484,7 @@
             background: #FFFFFF;
         }
 
-        /* 3. شريط السلاسل (Collections) */
+        /* 4. التقسيم العام للسينما والصفوف الأفقية */
         .collections-wrap {
             padding: 24px 48px 10px 48px;
         }
@@ -376,7 +552,6 @@
             color: var(--text-muted);
         }
 
-        /* 4. التقسيم العام للسينما */
         .cinema-layout-grid {
             display: grid;
             grid-template-columns: 1fr 280px;
@@ -469,7 +644,6 @@
             font-weight: 800;
             padding: 2px 6px;
             border-radius: 4px;
-            letter-spacing: 0.5px;
         }
 
         .card-top-tag-rating {
@@ -783,7 +957,7 @@
             object-fit: cover;
         }
 
-        /* 8. مشغل السينما الكامل */
+        /* 8. مشغل السينما الفخم مع محول السيرفر السريع لمنع تعليق التقديم */
         #cinema-player-modal {
             display: none;
             position: fixed;
@@ -818,6 +992,25 @@
             justify-content: center;
             font-size: 1.2rem;
             cursor: pointer;
+        }
+
+        .player-server-pill {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid var(--border);
+            color: #FFF;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+
+        .player-server-pill:hover {
+            background: var(--primary);
         }
 
         .btn-next-ep {
@@ -863,7 +1056,7 @@
 
             <div class="pill-divider"></div>
 
-            <button class="pill-icon-btn" onclick="toggleSearch()" title="Search">🔍</button>
+            <button class="pill-icon-btn" onclick="openSearchTab()" title="Search">🔍</button>
             <button class="pill-icon-btn" onclick="switchTab('mylist')" title="Watchlist">🔖</button>
             <button class="pill-icon-btn" onclick="switchTab('settings')" title="Settings">⚙️</button>
 
@@ -873,9 +1066,64 @@
         </nav>
     </header>
 
-    <!-- شريط البحث -->
-    <div id="search-bar-wrap">
-        <input type="text" id="searchInput" placeholder="ابحث عن أي فيلم، مسلسل، أو أنمي...">
+    <!-- 2. واجهة البحث الاحترافية (CineLite Search View) -->
+    <div id="search-view">
+        <div class="search-hero-box">
+            <div class="search-input-wrap">
+                <span class="search-icon-red">🔍</span>
+                <input type="text" id="mainSearchInput" class="search-field-large" placeholder="ابحث عن فيلم، مسلسل، أنمي..." oninput="onSearchInput(this.value)">
+                <button id="searchClearBtn" class="search-clear-btn" onclick="clearSearch()">✕</button>
+            </div>
+
+            <!-- كبسولات الفلاتر مع العداد -->
+            <div class="filter-pills-row" id="filterPillsRow" style="display:none;">
+                <button class="filter-pill active" onclick="setSearchFilter('all', this)">
+                    <span data-i18n="allResults">كل النتائج</span>
+                    <span class="pill-badge" id="countAll">0</span>
+                </button>
+                <button class="filter-pill" onclick="setSearchFilter('movie', this)">
+                    <span data-i18n="movies">الأفلام</span>
+                    <span class="pill-badge" id="countMovies">0</span>
+                </button>
+                <button class="filter-pill" onclick="setSearchFilter('tv', this)">
+                    <span data-i18n="series">المسلسلات</span>
+                    <span class="pill-badge" id="countTv">0</span>
+                </button>
+                <button class="filter-pill" onclick="setSearchFilter('person', this)">
+                    <span data-i18n="actors">الممثلين</span>
+                    <span class="pill-badge" id="countActors">0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- نتائج البحث المصنفة -->
+        <div id="searchResultsWrap">
+            <!-- قسم الأفلام -->
+            <div class="search-section" id="searchMoviesSec" style="display:none;">
+                <div class="search-sec-header">
+                    <h2 class="search-sec-title">🎞️ <span data-i18n="movies">الأفلام</span> (<span id="titleCountMovies">0</span>)</h2>
+                    <a class="view-all-link" onclick="setSearchFilter('movie')"><span data-i18n="viewAll">عرض الكل</span> ➔</a>
+                </div>
+                <div class="search-cards-grid" id="searchMoviesGrid"></div>
+            </div>
+
+            <!-- قسم المسلسلات -->
+            <div class="search-section" id="searchTvSec" style="display:none;">
+                <div class="search-sec-header">
+                    <h2 class="search-sec-title">📺 <span data-i18n="series">المسلسلات</span> (<span id="titleCountTv">0</span>)</h2>
+                    <a class="view-all-link" onclick="setSearchFilter('tv')"><span data-i18n="viewAll">عرض الكل</span> ➔</a>
+                </div>
+                <div class="search-cards-grid" id="searchTvGrid"></div>
+            </div>
+
+            <!-- قسم الممثلين -->
+            <div class="search-section" id="searchActorsSec" style="display:none;">
+                <div class="search-sec-header">
+                    <h2 class="search-sec-title">🎭 <span data-i18n="actors">طاقم التمثيل والممثلين</span> (<span id="titleCountActors">0</span>)</h2>
+                </div>
+                <div class="search-cards-grid" id="searchActorsGrid"></div>
+            </div>
+        </div>
     </div>
 
     <!-- الصفحة الرئيسية -->
@@ -903,25 +1151,25 @@
         <div class="collections-wrap">
             <h2 class="sec-title" data-i18n="collections">السلاسل السينمائية (Collections)</h2>
             <div class="collections-grid">
-                <div class="collection-card" style="background-image: url('https://image.tmdb.org/t/p/w500/zqkmTXzjkAgMfHbZQw5epfUtUtO.jpg');" onclick="searchByKeyword('Star Wars')">
+                <div class="collection-card" style="background-image: url('https://image.tmdb.org/t/p/w500/zqkmTXzjkAgMfHbZQw5epfUtUtO.jpg');" onclick="quickSearchTag('Star Wars')">
                     <div class="collection-overlay">
                         <div class="collection-name">Star Wars</div>
                         <div class="collection-count">9 Movies</div>
                     </div>
                 </div>
-                <div class="collection-card" style="background-image: url('https://image.tmdb.org/t/p/w500/wkW1A6k9Xk5Z1U5GkE1bL3yXwPq.jpg');" onclick="searchByKeyword('Harry Potter')">
+                <div class="collection-card" style="background-image: url('https://image.tmdb.org/t/p/w500/wkW1A6k9Xk5Z1U5GkE1bL3yXwPq.jpg');" onclick="quickSearchTag('Harry Potter')">
                     <div class="collection-overlay">
                         <div class="collection-name">Harry Potter</div>
                         <div class="collection-count">8 Movies</div>
                     </div>
                 </div>
-                <div class="collection-card" style="background-image: url('https://image.tmdb.org/t/p/w500/2uOaeiU8g1X4vVj4zUf8ZlKz9hC.jpg');" onclick="searchByKeyword('Lord of the Rings')">
+                <div class="collection-card" style="background-image: url('https://image.tmdb.org/t/p/w500/2uOaeiU8g1X4vVj4zUf8ZlKz9hC.jpg');" onclick="quickSearchTag('Lord of the Rings')">
                     <div class="collection-overlay">
                         <div class="collection-name">The Lord of the Rings</div>
                         <div class="collection-count">3 Movies</div>
                     </div>
                 </div>
-                <div class="collection-card" style="background-image: url('https://image.tmdb.org/t/p/w500/mDfBEq5M1H6R5r3L5oW8R9xR7G.jpg');" onclick="searchByKeyword('Spider-Man')">
+                <div class="collection-card" style="background-image: url('https://image.tmdb.org/t/p/w500/mDfBEq5M1H6R5r3L5oW8R9xR7G.jpg');" onclick="quickSearchTag('Spider-Man')">
                     <div class="collection-overlay">
                         <div class="collection-name">Spider-Man</div>
                         <div class="collection-count">Full Saga</div>
@@ -933,7 +1181,6 @@
         <!-- تقسيم الموقع: السلايدرات يسار + القائمة الجانبية يمين -->
         <div class="cinema-layout-grid">
             <div class="sliders-main-column">
-                <!-- 1. صف أفلام 4K Ultra HD -->
                 <section>
                     <div class="row-top-bar">
                         <h2 class="sec-title">4K Ultra HD</h2>
@@ -945,7 +1192,6 @@
                     <div class="horizontal-cards-row" id="ultraHdRow"></div>
                 </section>
 
-                <!-- 2. الأكثر رواجاً هذا الأسبوع -->
                 <section id="trending-sec">
                     <div class="row-top-bar">
                         <h2 class="sec-title" data-i18n="trendingThisWeek">Trending This Week</h2>
@@ -957,7 +1203,6 @@
                     <div class="horizontal-cards-row" id="trendingRow"></div>
                 </section>
 
-                <!-- 3. الأنمي والأكشن -->
                 <section id="anime-sec">
                     <div class="row-top-bar">
                         <h2 class="sec-title" data-i18n="actionAnime">أنمي القتال والأكشن (Action Anime)</h2>
@@ -985,12 +1230,11 @@
         </div>
     </div>
 
-    <!-- صفحة الإعدادات وتغيير اللغة والمظهر -->
+    <!-- صفحة الإعدادات -->
     <div id="settings-view">
         <h1 style="font-size:2rem; font-weight:900; margin-bottom:8px;" data-i18n="settingsTitle">الإعدادات (Settings)</h1>
         <p style="color:var(--text-muted); margin-bottom:24px;" data-i18n="settingsSub">تخصيص مظهر ولغة المنصة.</p>
         
-        <!-- اللغات -->
         <div class="settings-card">
             <h3 style="font-size:1rem; font-weight:800; margin-bottom:8px;" data-i18n="languageSection">اللغات (Languages)</h3>
             <div class="select-field">
@@ -1002,7 +1246,6 @@
             </div>
         </div>
 
-        <!-- الألوان والمظهر -->
         <div class="settings-card">
             <h3 style="font-size:1rem; font-weight:800; margin-bottom:12px;" data-i18n="accentColor">لون المنصة الرئيسي (Accent color)</h3>
             <div class="colors-palette">
@@ -1054,7 +1297,7 @@
         </div>
     </div>
 
-    <!-- مشغل السينما الكامل -->
+    <!-- مشغل السينما الفخم مع منع تعليق التقديم 10 ثوانٍ -->
     <div id="cinema-player-modal">
         <div class="player-top-header">
             <div style="display:flex; align-items:center; gap:14px;">
@@ -1064,7 +1307,13 @@
                     <div style="font-size:0.8rem; color:var(--text-muted);" id="playerEpTitle">S1:E1</div>
                 </div>
             </div>
-            <button class="btn-next-ep" id="btnNextEpisode" onclick="playNextEpisode()" data-i18n="nextEp">الحلقة التالية ⏭️</button>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <!-- محول السيرفر السريع في حال تعليق أي سيرفر -->
+                <button class="player-server-pill" onclick="cyclePlayerServer()" title="تبديل السيرفر لمنع التعليق">
+                    ⚡ <span id="currentServerLabel">سيرفر البرق (Fast Seek)</span>
+                </button>
+                <button class="btn-next-ep" id="btnNextEpisode" onclick="playNextEpisode()" data-i18n="nextEp">الحلقة التالية ⏭️</button>
+            </div>
         </div>
         <div class="player-iframe-wrapper">
             <iframe id="cinemaIframe" src="" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
@@ -1077,14 +1326,20 @@
         let heroInterval = null;
         let currentDetailItem = null;
         let currentPlayingInfo = null;
+        let activeServerIdx = 0; // 0 = VidLink Fast Seek, 1 = Auto VIP CDN, 2 = EmbedSu
         let myList = JSON.parse(localStorage.getItem('orbit_mylist') || '[]');
+        let searchDebounce = null;
+        let currentSearchResults = { movies: [], tv: [], actors: [] };
+        let activeFilter = 'all';
 
-        // قاموس الترجمة الفورية للعربية والإنجليزية
         const translations = {
             ar: {
                 home: "الرئيسية",
                 movies: "الأفلام",
                 series: "المسلسلات",
+                actors: "الممثلين",
+                allResults: "كل النتائج",
+                viewAll: "عرض الكل",
                 playNow: "تشغيل الآن",
                 workDetails: "تفاصيل العمل",
                 collections: "السلاسل السينمائية (Collections)",
@@ -1109,6 +1364,9 @@
                 home: "Home",
                 movies: "Movies",
                 series: "TV Shows",
+                actors: "Actors",
+                allResults: "All Results",
+                viewAll: "View All",
                 playNow: "Play Now",
                 workDetails: "Details",
                 collections: "Collections",
@@ -1147,7 +1405,7 @@
                 if (t[key]) el.innerText = t[key];
             });
 
-            const searchInput = document.getElementById('searchInput');
+            const searchInput = document.getElementById('mainSearchInput');
             if (searchInput) searchInput.placeholder = t.searchPlaceholder;
 
             const selectEl = document.getElementById('settingSiteLang');
@@ -1156,7 +1414,7 @@
 
         function changeLanguage(lang) {
             applyLanguage(lang);
-            loadAllContent(); // إعادة تحميل العناوين باللغة المختارة
+            loadAllContent();
         }
 
         function setThemeColor(hex, el) {
@@ -1172,25 +1430,37 @@
             document.getElementById(rowId).scrollBy({ left: offset * dirMultiplier, behavior: 'smooth' });
         }
 
+        function openSearchTab() {
+            switchTab('search');
+            document.getElementById('mainSearchInput').focus();
+        }
+
         function switchTab(tab) {
             document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
             const tabBtn = document.getElementById(`tab-${tab}`);
             if (tabBtn) tabBtn.classList.add('active');
 
             const homeView = document.getElementById('home-view');
+            const searchView = document.getElementById('search-view');
             const myListView = document.getElementById('my-list-view');
             const settingsView = document.getElementById('settings-view');
             closeDetails();
 
             homeView.style.display = 'none';
+            searchView.style.display = 'none';
             myListView.style.display = 'none';
             settingsView.style.display = 'none';
 
-            if (tab === 'settings') {
+            if (tab === 'search') {
+                searchView.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (tab === 'settings') {
                 settingsView.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } else if (tab === 'mylist') {
                 myListView.style.display = 'block';
                 renderCards(myList, 'myListGrid');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
                 homeView.style.display = 'block';
                 if (tab === 'movies') document.getElementById('trending-sec').scrollIntoView({ behavior: 'smooth' });
@@ -1199,9 +1469,143 @@
             }
         }
 
-        async function loadAllContent() {
+        /* 3. منطق واجهة البحث الكاملة المصنفة (نفس لقطة الشاشة) */
+        function onSearchInput(query) {
+            const clearBtn = document.getElementById('searchClearBtn');
+            clearBtn.style.display = query.trim() ? 'flex' : 'none';
+
+            if (searchDebounce) clearTimeout(searchDebounce);
+            if (!query.trim()) {
+                document.getElementById('filterPillsRow').style.display = 'none';
+                document.getElementById('searchMoviesSec').style.display = 'none';
+                document.getElementById('searchTvSec').style.display = 'none';
+                document.getElementById('searchActorsSec').style.display = 'none';
+                return;
+            }
+
+            searchDebounce = setTimeout(() => {
+                executeFullSearch(query.trim());
+            }, 300);
+        }
+
+        function clearSearch() {
+            document.getElementById('mainSearchInput').value = '';
+            onSearchInput('');
+        }
+
+        function quickSearchTag(tag) {
+            openSearchTab();
+            document.getElementById('mainSearchInput').value = tag;
+            onSearchInput(tag);
+        }
+
+        async function executeFullSearch(q) {
             try {
                 const langParam = currentLang === 'en' ? 'en-US' : 'ar-SA';
+                const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&lang=${langParam}`);
+                const data = await res.json();
+                const results = data.results || [];
+
+                currentSearchResults.movies = results.filter(i => i.media_type === 'movie');
+                currentSearchResults.tv = results.filter(i => i.media_type === 'tv');
+                currentSearchResults.actors = results.filter(i => i.media_type === 'person');
+
+                const total = currentSearchResults.movies.length + currentSearchResults.tv.length + currentSearchResults.actors.length;
+
+                // تحديث العدادات
+                document.getElementById('countAll').innerText = total;
+                document.getElementById('countMovies').innerText = currentSearchResults.movies.length;
+                document.getElementById('countTv').innerText = currentSearchResults.tv.length;
+                document.getElementById('countActors').innerText = currentSearchResults.actors.length;
+
+                document.getElementById('titleCountMovies').innerText = currentSearchResults.movies.length;
+                document.getElementById('titleCountTv').innerText = currentSearchResults.tv.length;
+                document.getElementById('titleCountActors').innerText = currentSearchResults.actors.length;
+
+                document.getElementById('filterPillsRow').style.display = 'flex';
+                applySearchFilters();
+            } catch (err) {
+                console.error("خطأ البحث:", err);
+            }
+        }
+
+        function setSearchFilter(filterType, btnEl) {
+            activeFilter = filterType;
+            if (btnEl) {
+                document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+                btnEl.classList.add('active');
+            }
+            applySearchFilters();
+        }
+
+        function applySearchFilters() {
+            const moviesSec = document.getElementById('searchMoviesSec');
+            const tvSec = document.getElementById('searchTvSec');
+            const actorsSec = document.getElementById('searchActorsSec');
+
+            const showMovies = (activeFilter === 'all' || activeFilter === 'movie') && currentSearchResults.movies.length > 0;
+            const showTv = (activeFilter === 'all' || activeFilter === 'tv') && currentSearchResults.tv.length > 0;
+            const showActors = (activeFilter === 'all' || activeFilter === 'person') && currentSearchResults.actors.length > 0;
+
+            moviesSec.style.display = showMovies ? 'block' : 'none';
+            tvSec.style.display = showTv ? 'block' : 'none';
+            actorsSec.style.display = showActors ? 'block' : 'none';
+
+            if (showMovies) renderSearchCards(currentSearchResults.movies, 'searchMoviesGrid', 'movie');
+            if (showTv) renderSearchCards(currentSearchResults.tv, 'searchTvGrid', 'tv');
+            if (showActors) renderActorSearchCards(currentSearchResults.actors, 'searchActorsGrid');
+        }
+
+        function renderSearchCards(items, gridId, mediaType) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+            items.forEach(item => {
+                const title = item.title || item.name;
+                const year = (item.release_date || item.first_air_date || '----').split('-')[0];
+                const rating = item.vote_average ? item.vote_average.toFixed(1) : '6.5';
+                const poster = item.poster_path ? `/api/image?path=${encodeURIComponent(item.poster_path)}&size=w500` : 'https://via.placeholder.com/300x450';
+
+                const card = document.createElement('div');
+                card.className = 'search-result-card';
+                card.innerHTML = `
+                    <img class="search-card-thumb" src="${poster}" alt="${title}" loading="lazy">
+                    <div class="search-card-body">
+                        <div class="search-card-name">${title}</div>
+                        <div class="search-card-meta">
+                            <span class="meta-star">★ ${rating}</span>
+                            <span>${year}</span>
+                            <span>${mediaType === 'movie' ? 'Movie' : 'TV'}</span>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => openDetailsPage(item.id, mediaType);
+                grid.appendChild(card);
+            });
+        }
+
+        function renderActorSearchCards(actors, gridId) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+            actors.forEach(actor => {
+                const avatar = actor.profile_path ? `/api/image?path=${encodeURIComponent(actor.profile_path)}&size=w185` : 'https://via.placeholder.com/150';
+                const card = document.createElement('div');
+                card.className = 'search-result-card';
+                card.innerHTML = `
+                    <img class="search-card-thumb" src="${avatar}" alt="${actor.name}" loading="lazy">
+                    <div class="search-card-body">
+                        <div class="search-card-name">${actor.name}</div>
+                        <div class="search-card-meta">
+                            <span>طاقم التمثيل / Actor</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        /* 4. تحميل المحتوى العام */
+        async function loadAllContent() {
+            try {
                 const [trendRes, nowPlayRes, upRes, animeRes] = await Promise.all([
                     fetch(`/api/trending?type=all&time=week`),
                     fetch(`/api/now-playing`),
@@ -1435,18 +1839,50 @@
             }
         }
 
+        /* 5. مشغل السينما الفخم مع تحسين سرعة التقديم والتأخير (Instant Seek) */
+        function getOptimalStreamUrl(id, isTv, season, episode, serverType = 0) {
+            const primaryHex = encodeURIComponent(savedTheme.replace('#',''));
+            if (serverType === 0) {
+                // سيرفر البرق الفوري مع تفعيل التخزين المسبق السريع
+                return isTv 
+                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=${primaryHex}&autoplay=true`
+                    : `https://vidlink.pro/movie/${id}?primaryColor=${primaryHex}&autoplay=true`;
+            } else if (serverType === 1) {
+                // سيرفر CDN بديل فائق السرعة
+                return isTv
+                    ? `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}`
+                    : `https://vidsrc.cc/v2/embed/movie/${id}`;
+            } else {
+                return isTv
+                    ? `https://embed.su/embed/tv/${id}/${season}/${episode}`
+                    : `https://embed.su/embed/movie/${id}`;
+            }
+        }
+
         function launchCinemaDirect(id, isTv, season, episode, workTitle, epTitle, totalEpisodes = 1) {
             currentPlayingInfo = { id, isTv, season, episode, workTitle, epTitle, totalEpisodes };
+            activeServerIdx = 0;
             document.getElementById('playerWorkTitle').innerText = workTitle;
             document.getElementById('playerEpTitle').innerText = epTitle;
             document.getElementById('btnNextEpisode').style.display = isTv ? 'block' : 'none';
+            document.getElementById('currentServerLabel').innerText = "سيرفر البرق (Fast Seek)";
 
-            const streamUrl = isTv 
-                ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=6366F1&autoplay=true`
-                : `https://vidlink.pro/movie/${id}?primaryColor=6366F1&autoplay=true`;
-
-            document.getElementById('cinemaIframe').src = streamUrl;
+            document.getElementById('cinemaIframe').src = getOptimalStreamUrl(id, isTv, season, episode, 0);
             document.getElementById('cinema-player-modal').style.display = 'flex';
+        }
+
+        function cyclePlayerServer() {
+            if (!currentPlayingInfo) return;
+            activeServerIdx = (activeServerIdx + 1) % 3;
+            const labels = ["سيرفر البرق (Fast Seek)", "سيرفر CDN مباشر", "سيرفر البديل السريع"];
+            document.getElementById('currentServerLabel').innerText = labels[activeServerIdx];
+            document.getElementById('cinemaIframe').src = getOptimalStreamUrl(
+                currentPlayingInfo.id,
+                currentPlayingInfo.isTv,
+                currentPlayingInfo.season,
+                currentPlayingInfo.episode,
+                activeServerIdx
+            );
         }
 
         function playNextEpisode() {
@@ -1473,36 +1909,8 @@
             document.getElementById('details-view').style.display = 'none';
         }
 
-        function toggleSearch() {
-            const wrap = document.getElementById('search-bar-wrap');
-            wrap.style.display = wrap.style.display === 'block' ? 'none' : 'block';
-            if (wrap.style.display === 'block') document.getElementById('searchInput').focus();
-        }
-
-        function searchByKeyword(keyword) {
-            document.getElementById('searchInput').value = keyword;
-            triggerSearch(keyword);
-        }
-
-        async function triggerSearch(q) {
-            const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-            const data = await res.json();
-            if (data.results) {
-                renderCards(data.results, 'trendingRow');
-                document.getElementById('trending-sec').scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const q = e.target.value.trim();
-                if (q) triggerSearch(q);
-            }
-        });
-
-        // تشغيل اللغة واللون المحفوظين مسبقاً
-        const savedColor = localStorage.getItem('orbit_theme_color') || '#6366F1';
-        setThemeColor(savedColor, null);
+        const savedTheme = localStorage.getItem('orbit_theme_color') || '#6366F1';
+        setThemeColor(savedTheme, null);
         applyLanguage(currentLang);
         loadAllContent();
     </script>
