@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const TMDB_TOKEN = process.env.TMDB_READ_ACCESS_TOKEN;
+const TORBOX_API_KEY = process.env.TORBOX_API_KEY || 'fbb21907-7aef-4e48-b6e8-d87970df407f';
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || '')
   .split(',').map(x => x.trim()).filter(Boolean);
 
@@ -14,7 +15,6 @@ app.set('trust proxy', 1);
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
   origin(origin, callback) {
-    // Requests without Origin include local health checks; browser origins must be explicitly allowed.
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error('Origin is not allowed by CORS'));
   },
@@ -94,14 +94,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.get('/api/trending', asyncRoute(async (req, res) => {
-  const type = validTrendTypes.has(req.query.type)
-    ? req.query.type
-    : 'all';
-
-  const time = validTime.has(req.query.time)
-    ? req.query.time
-    : 'week';
-
+  const type = validTrendTypes.has(req.query.type) ? req.query.type : 'all';
+  const time = validTime.has(req.query.time) ? req.query.time : 'week';
   const page = parsePositiveInt(req.query.page, 1, 500);
 
   res.json(
@@ -113,52 +107,17 @@ app.get('/api/trending', asyncRoute(async (req, res) => {
 }));
 
 app.get('/api/discover', asyncRoute(async (req, res) => {
-  const media = validMedia.has(req.query.media)
-    ? req.query.media
-    : 'movie';
-
-  const genres =
-    typeof req.query.genres === 'string' &&
-    /^[0-9,]{0,80}$/.test(req.query.genres)
-      ? req.query.genres
-      : '';
-
-  const origin =
-    typeof req.query.origin === 'string' &&
-    /^[A-Z]{2}$/.test(req.query.origin)
-      ? req.query.origin
-      : '';
-
+  const media = validMedia.has(req.query.media) ? req.query.media : 'movie';
+  const genres = typeof req.query.genres === 'string' && /^[0-9,]{0,80}$/.test(req.query.genres) ? req.query.genres : '';
+  const origin = typeof req.query.origin === 'string' && /^[A-Z]{2}$/.test(req.query.origin) ? req.query.origin : '';
   const page = parsePositiveInt(req.query.page, 1, 500);
-
-  const year =
-    typeof req.query.year === 'string' &&
-    /^(19|20)\d{2}$/.test(req.query.year)
-      ? req.query.year
-      : '';
-
+  const year = typeof req.query.year === 'string' && /^(19|20)\d{2}$/.test(req.query.year) ? req.query.year : '';
   const rating = Number(req.query.rating);
-
-  const originalLanguage =
-    typeof req.query.language === 'string' &&
-    /^[a-z]{2}$/.test(req.query.language)
-      ? req.query.language
-      : '';
-
+  const originalLanguage = typeof req.query.language === 'string' && /^[a-z]{2}$/.test(req.query.language) ? req.query.language : '';
   const runtimeMax = parsePositiveInt(req.query.runtime_max, 0, 1000);
   const runtimeMin = parsePositiveInt(req.query.runtime_min, 0, 1000);
-
-  const region =
-    typeof req.query.region === 'string' &&
-    /^[A-Z]{2}$/.test(req.query.region)
-      ? req.query.region
-      : '';
-
-  const status =
-    typeof req.query.status === 'string' &&
-    /^[0-5]$/.test(req.query.status)
-      ? req.query.status
-      : '';
+  const region = typeof req.query.region === 'string' && /^[A-Z]{2}$/.test(req.query.region) ? req.query.region : '';
+  const status = typeof req.query.status === 'string' && /^[0-5]$/.test(req.query.status) ? req.query.status : '';
 
   const allowedSort = new Set([
     'popularity.desc',
@@ -167,9 +126,7 @@ app.get('/api/discover', asyncRoute(async (req, res) => {
     'first_air_date.desc'
   ]);
 
-  const sort = allowedSort.has(req.query.sort)
-    ? req.query.sort
-    : 'popularity.desc';
+  const sort = allowedSort.has(req.query.sort) ? req.query.sort : 'popularity.desc';
 
   const params = {
     language: language(req.query.lang),
@@ -181,10 +138,7 @@ app.get('/api/discover', asyncRoute(async (req, res) => {
     with_original_language: originalLanguage,
     region,
     with_status: status,
-    'vote_average.gte':
-      Number.isFinite(rating) && rating >= 0 && rating <= 10
-        ? rating
-        : '',
+    'vote_average.gte': Number.isFinite(rating) && rating >= 0 && rating <= 10 ? rating : '',
     'with_runtime.lte': runtimeMax || '',
     'with_runtime.gte': runtimeMin || ''
   };
@@ -210,11 +164,7 @@ app.get('/api/now-playing', asyncRoute(async (req, res) => {
 }));
 
 app.get('/api/search', asyncRoute(async (req, res) => {
-  const q =
-    typeof req.query.q === 'string'
-      ? req.query.q.trim().slice(0, 120)
-      : '';
-
+  const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 120) : '';
   if (!q) {
     return res.json({ results: [] });
   }
@@ -231,32 +181,21 @@ app.get('/api/search', asyncRoute(async (req, res) => {
 
 app.get('/api/item/full-details', asyncRoute(async (req, res) => {
   const id = parsePositiveInt(req.query.id, 0);
-
-  const media = validMedia.has(req.query.media)
-    ? req.query.media
-    : '';
+  const media = validMedia.has(req.query.media) ? req.query.media : '';
 
   if (!id || !media) {
-    return sendError(
-      res,
-      400,
-      'A valid id and media=movie|tv are required.'
-    );
+    return sendError(res, 400, 'A valid id and media=movie|tv are required.');
   }
 
   const lang = language(req.query.lang);
-  const needsEnglishFallback =
-    !String(lang).toLowerCase().startsWith('en');
+  const needsEnglishFallback = !String(lang).toLowerCase().startsWith('en');
 
   const [details, providers, english] = await Promise.all([
     tmdb(`/${media}/${id}`, {
       language: lang,
-      append_to_response:
-        'external_ids,similar,credits,videos,images'
+      append_to_response: 'external_ids,similar,credits,videos,images'
     }),
-
     tmdb(`/${media}/${id}/watch/providers`),
-
     needsEnglishFallback
       ? tmdb(`/${media}/${id}`, {
           language: 'en-US',
@@ -267,39 +206,20 @@ app.get('/api/item/full-details', asyncRoute(async (req, res) => {
 
   const merged = { ...details };
 
-  if (
-    (!merged.overview || !String(merged.overview).trim()) &&
-    english?.overview
-  ) {
+  if ((!merged.overview || !String(merged.overview).trim()) && english?.overview) {
     merged.overview = english.overview;
   }
-
-  if (
-    (!merged.tagline || !String(merged.tagline).trim()) &&
-    english?.tagline
-  ) {
+  if ((!merged.tagline || !String(merged.tagline).trim()) && english?.tagline) {
     merged.tagline = english.tagline;
   }
-
-  if (
-    (!merged.homepage || !String(merged.homepage).trim()) &&
-    english?.homepage
-  ) {
+  if ((!merged.homepage || !String(merged.homepage).trim()) && english?.homepage) {
     merged.homepage = english.homepage;
   }
-
-  if (
-    (!merged.videos?.results?.length) &&
-    english?.videos?.results?.length
-  ) {
+  if ((!merged.videos?.results?.length) && english?.videos?.results?.length) {
     merged.videos = english.videos;
   }
 
-  res.set(
-    'Cache-Control',
-    'public, max-age=300, stale-while-revalidate=1800'
-  );
-
+  res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=1800');
   res.json({
     ...merged,
     watch_providers: providers?.results || {}
@@ -310,86 +230,42 @@ app.get('/api/tv/season', asyncRoute(async (req, res) => {
   const id = parsePositiveInt(req.query.id, 0);
   const season = Number.parseInt(req.query.season, 10);
 
-  if (
-    !id ||
-    !Number.isInteger(season) ||
-    season < 0 ||
-    season > 100
-  ) {
-    return sendError(
-      res,
-      400,
-      'A valid TV id and season are required.'
-    );
+  if (!id || !Number.isInteger(season) || season < 0 || season > 100) {
+    return sendError(res, 400, 'A valid TV id and season are required.');
   }
 
   const lang = language(req.query.lang);
-  const needsEnglishFallback =
-    !String(lang).toLowerCase().startsWith('en');
+  const needsEnglishFallback = !String(lang).toLowerCase().startsWith('en');
 
   const [primary, english] = await Promise.all([
-    tmdb(`/tv/${id}/season/${season}`, {
-      language: lang
-    }),
-
+    tmdb(`/tv/${id}/season/${season}`, { language: lang }),
     needsEnglishFallback
-      ? tmdb(`/tv/${id}/season/${season}`, {
-          language: 'en-US'
-        }).catch(() => null)
+      ? tmdb(`/tv/${id}/season/${season}`, { language: 'en-US' }).catch(() => null)
       : Promise.resolve(null)
   ]);
 
-  if (
-    english?.episodes?.length &&
-    primary?.episodes?.length
-  ) {
-    const byNumber = new Map(
-      english.episodes.map(ep => [
-        Number(ep.episode_number),
-        ep
-      ])
-    );
+  if (english?.episodes?.length && primary?.episodes?.length) {
+    const byNumber = new Map(english.episodes.map(ep => [Number(ep.episode_number), ep]));
 
     primary.episodes = primary.episodes.map(ep => {
       const en = byNumber.get(Number(ep.episode_number));
-
       if (!en) return ep;
-
       return {
         ...ep,
-
-        name:
-          ep.name && String(ep.name).trim()
-            ? ep.name
-            : en.name,
-
-        overview:
-          ep.overview && String(ep.overview).trim()
-            ? ep.overview
-            : en.overview
+        name: ep.name && String(ep.name).trim() ? ep.name : en.name,
+        overview: ep.overview && String(ep.overview).trim() ? ep.overview : en.overview
       };
     });
   }
 
-  if (
-    (!primary.overview || !String(primary.overview).trim()) &&
-    english?.overview
-  ) {
+  if ((!primary.overview || !String(primary.overview).trim()) && english?.overview) {
     primary.overview = english.overview;
   }
-
-  if (
-    (!primary.name || !String(primary.name).trim()) &&
-    english?.name
-  ) {
+  if ((!primary.name || !String(primary.name).trim()) && english?.name) {
     primary.name = english.name;
   }
 
-  res.set(
-    'Cache-Control',
-    'public, max-age=300, stale-while-revalidate=1800'
-  );
-
+  res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=1800');
   res.json(primary);
 }));
 
@@ -397,10 +273,7 @@ app.get('/api/upcoming', asyncRoute(async (req, res) => {
   res.json(
     await tmdb('/movie/upcoming', {
       language: language(req.query.lang),
-      region:
-        typeof req.query.region === 'string'
-          ? req.query.region
-          : '',
+      region: typeof req.query.region === 'string' ? req.query.region : '',
       page: parsePositiveInt(req.query.page, 1, 500)
     })
   );
@@ -417,17 +290,10 @@ app.get('/api/airing-today', asyncRoute(async (req, res) => {
 
 app.get('/api/recommendations', asyncRoute(async (req, res) => {
   const id = parsePositiveInt(req.query.id, 0);
-
-  const media = validMedia.has(req.query.media)
-    ? req.query.media
-    : '';
+  const media = validMedia.has(req.query.media) ? req.query.media : '';
 
   if (!id || !media) {
-    return sendError(
-      res,
-      400,
-      'A valid id and media are required.'
-    );
+    return sendError(res, 400, 'A valid id and media are required.');
   }
 
   res.json(
@@ -440,139 +306,169 @@ app.get('/api/recommendations', asyncRoute(async (req, res) => {
 
 app.get('/api/person', asyncRoute(async (req, res) => {
   const id = parsePositiveInt(req.query.id, 0);
-
   if (!id) {
-    return sendError(
-      res,
-      400,
-      'A valid person id is required.'
-    );
+    return sendError(res, 400, 'A valid person id is required.');
   }
 
   const lang = language(req.query.lang);
-
   const primary = await tmdb(`/person/${id}`, {
     language: lang,
-    append_to_response:
-      'combined_credits,images,external_ids'
+    append_to_response: 'combined_credits,images,external_ids'
   });
 
-  if (
-    (!primary.biography ||
-      !String(primary.biography).trim()) &&
-    !String(lang).toLowerCase().startsWith('en')
-  ) {
-    const en = await tmdb(`/person/${id}`, {
-      language: 'en-US'
-    }).catch(() => null);
-
+  if ((!primary.biography || !String(primary.biography).trim()) && !String(lang).toLowerCase().startsWith('en')) {
+    const en = await tmdb(`/person/${id}`, { language: 'en-US' }).catch(() => null);
     if (en?.biography) {
       primary.biography = en.biography;
     }
   }
 
-  res.set(
-    'Cache-Control',
-    'public, max-age=600, stale-while-revalidate=3600'
-  );
-
+  res.set('Cache-Control', 'public, max-age=600, stale-while-revalidate=3600');
   res.json(primary);
 }));
 
 app.get('/api/image', asyncRoute(async (req, res) => {
-  const imagePath =
-    typeof req.query.path === 'string'
-      ? req.query.path
-      : '';
+  const imagePath = typeof req.query.path === 'string' ? req.query.path : '';
+  const size = validImageSizes.has(req.query.size) ? req.query.size : 'w500';
 
-  const size =
-    validImageSizes.has(req.query.size)
-      ? req.query.size
-      : 'w500';
-
-  if (
-    !/^\/(?:[A-Za-z0-9_./-]+)$/.test(imagePath) ||
-    imagePath.includes('..')
-  ) {
-    return sendError(
-      res,
-      400,
-      'Invalid image path.'
-    );
+  if (!/^\/(?:[A-Za-z0-9_./-]+)$/.test(imagePath) || imagePath.includes('..')) {
+    return sendError(res, 400, 'Invalid image path.');
   }
 
-  const upstream = await fetch(
-    `${IMAGE_HOST}/${size}${imagePath}`,
-    {
-      signal: AbortSignal.timeout(12_000)
-    }
-  );
+  const upstream = await fetch(`${IMAGE_HOST}/${size}${imagePath}`, {
+    signal: AbortSignal.timeout(12_000)
+  });
 
   if (!upstream.ok) {
-    return sendError(
-      res,
-      upstream.status === 404 ? 404 : 502,
-      'Image is unavailable.'
-    );
+    return sendError(res, upstream.status === 404 ? 404 : 502, 'Image is unavailable.');
   }
 
-  res.set(
-    'Cache-Control',
-    'public, max-age=86400, stale-while-revalidate=604800'
-  );
+  res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+  res.set('Content-Type', upstream.headers.get('content-type') || 'image/jpeg');
+  res.set('X-Content-Type-Options', 'nosniff');
 
-  res.set(
-    'Content-Type',
-    upstream.headers.get('content-type') || 'image/jpeg'
-  );
-
-  res.set(
-    'X-Content-Type-Options',
-    'nosniff'
-  );
-
-  const body = Buffer.from(
-    await upstream.arrayBuffer()
-  );
-
+  const body = Buffer.from(await upstream.arrayBuffer());
   res.end(body);
 }));
 
+// =================== محرك Stremio / Torrentio السحابي المطور ===================
+app.get('/api/streams', asyncRoute(async (req, res) => {
+  const id = parsePositiveInt(req.query.id, 0);
+  const media = validMedia.has(req.query.media) ? req.query.media : 'movie';
+  const season = parsePositiveInt(req.query.season, 1);
+  const episode = parsePositiveInt(req.query.episode, 1);
+
+  if (!id) {
+    return sendError(res, 400, 'Valid TMDB ID is required.');
+  }
+
+  let imdbId = '';
+  try {
+    const ext = await tmdb(`/${media}/${id}/external_ids`);
+    imdbId = ext.imdb_id || '';
+  } catch (err) {
+    console.error('Failed to get external IDs:', err.message);
+  }
+
+  const streams = [];
+
+  if (imdbId) {
+    const target = media === 'tv' ? `${imdbId}:${season}:${episode}` : `${imdbId}`;
+    const torrentioUrl = `https://torrentio.strem.fun/torbox=${TORBOX_API_KEY}/stream/${media === 'tv' ? 'series' : 'movie'}/${target}.json`;
+
+    let arabicSubs = [];
+    try {
+      const subQuery = media === 'tv' ? `series/${imdbId}:${season}:${episode}.json` : `movie/${imdbId}.json`;
+      const subRes = await fetch(`https://opensubtitles-v3.strem.io/subtitles/${subQuery}`, {
+        signal: AbortSignal.timeout(5000)
+      });
+      if (subRes.ok) {
+        const subData = await subRes.json();
+        arabicSubs = (subData.subtitles || [])
+          .filter(s => s.lang === 'ara' || s.lang === 'ar' || (s.id && s.id.toLowerCase().includes('arabic')))
+          .map((s, idx) => ({
+            label: `العربية ${idx + 1}`,
+            srclang: 'ar',
+            src: s.url,
+            default: idx === 0
+          }));
+      }
+    } catch (e) {}
+
+    try {
+      const tbRes = await fetch(torrentioUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        signal: AbortSignal.timeout(8000)
+      });
+
+      if (tbRes.ok) {
+        const tbData = await tbRes.json();
+        (tbData.streams || []).forEach((s, idx) => {
+          if (s.url) {
+            const rawTitle = (s.title || '').split('\n')[0] || `خادم ${idx + 1}`;
+            streams.push({
+              label: `Stremio • ${rawTitle.slice(0, 32)}`,
+              type: s.url.includes('.m3u8') ? 'hls' : 'video',
+              url: s.url,
+              subtitles: arabicSubs
+            });
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Torrentio query timed out or failed:', e.message);
+    }
+  }
+
+  if (media === 'tv') {
+    streams.push({
+      label: 'خادم سريع (VidLink Pro)',
+      type: 'embed',
+      url: `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=ff2d4d&autoplay=true`
+    });
+    streams.push({
+      label: 'خادم احتياطي (EmbedSU)',
+      type: 'embed',
+      url: `https://embed.su/embed/tv/${id}/${season}/${episode}`
+    });
+  } else {
+    streams.push({
+      label: 'خادم سريع (VidLink Pro)',
+      type: 'embed',
+      url: `https://vidlink.pro/movie/${id}?primaryColor=ff2d4d&autoplay=true`
+    });
+    streams.push({
+      label: 'خادم احتياطي (EmbedSU)',
+      type: 'embed',
+      url: `https://embed.su/embed/movie/${id}`
+    });
+  }
+
+  res.json({ streams });
+}));
+
 app.use((_req, res) => {
-  sendError(
-    res,
-    404,
-    'Route not found.'
-  );
+  sendError(res, 404, 'Route not found.');
 });
 
 app.use((err, _req, res, _next) => {
-  console.error(
-    '[ORBIT API]',
-    err.message
-  );
+  console.error('[ORBIT API]', err.message);
 
   if (res.headersSent) {
     return res.end();
   }
 
-  const status =
-    Number.isInteger(err.status)
-      ? err.status
-      : err.name === 'TimeoutError'
-        ? 504
-        : 502;
+  const status = Number.isInteger(err.status)
+    ? err.status
+    : err.name === 'TimeoutError'
+      ? 504
+      : 502;
 
   res.status(status).json({
-    error:
-      status === 503
-        ? err.message
-        : 'The metadata service is temporarily unavailable.'
+    error: status === 503 ? err.message : 'The metadata service is temporarily unavailable.'
   });
 });
 
 app.listen(PORT, () => {
-  console.log(
-    `ORBIT API listening on ${PORT}`
-  );
+  console.log(`ORBIT API listening on ${PORT}`);
 });
