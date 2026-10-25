@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORBIT ROYAL | المسرح السينمائي</title>
+    <title>أوربت ستور | ORBIT ROYAL</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --accent: #F59E0B;
-            --accent-rgb: 245, 158, 11;
-            --bg-deep: #07070A;
-            --bg-panel: rgba(18, 18, 24, 0.78);
-            --bg-card: rgba(26, 26, 36, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-highlight: rgba(245, 158, 11, 0.45);
+            /* الثيم الأساسي المطابق لصور أوربت */
+            --accent: #FF2A42;
+            --accent-rgb: 255, 42, 66;
+            --bg-deep: #080608;
+            --bg-panel: rgba(18, 12, 16, 0.85);
+            --bg-card: rgba(24, 15, 20, 0.75);
+            --glass-border: rgba(255, 42, 66, 0.18);
+            --glass-highlight: rgba(255, 42, 66, 0.55);
             --text-primary: #FFFFFF;
-            --text-secondary: #9CA3AF;
+            --text-secondary: #A3969C;
         }
 
         * {
@@ -34,23 +35,40 @@
             color: var(--text-primary);
             overflow-x: hidden;
             min-height: 100vh;
+            /* خلفية الخطوط الطولية وأمواج النيون المطابقة للصور */
             background-image: 
-                radial-gradient(circle at 85% 10%, rgba(var(--accent-rgb), 0.12) 0%, transparent 40%),
-                radial-gradient(circle at 10% 80%, rgba(236, 72, 153, 0.08) 0%, transparent 40%);
+                radial-gradient(circle at 80% 8%, rgba(var(--accent-rgb), 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 15% 85%, rgba(var(--accent-rgb), 0.12) 0%, transparent 50%),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 60px,
+                    rgba(255, 255, 255, 0.015) 60px,
+                    rgba(255, 255, 255, 0.015) 61px
+                );
         }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #07070A; }
-        ::-webkit-scrollbar-thumb { background: #262630; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: #080608; }
+        ::-webkit-scrollbar-thumb { background: #2A151C; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-        /* الدوك الجانبي */
+        /* شعار أوربت الناري بالـ SVG */
+        .orbit-wing-icon {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            filter: drop-shadow(0 0 10px rgba(var(--accent-rgb), 0.7));
+            transition: transform 0.3s ease;
+        }
+
+        /* 1. الدوك الجانبي العائم بنمط أوربت */
         .vision-dock {
             position: fixed;
             top: 50%;
             right: 22px;
             transform: translateY(-50%);
-            background: rgba(15, 15, 22, 0.85);
+            background: rgba(16, 10, 14, 0.88);
             backdrop-filter: blur(28px);
             -webkit-backdrop-filter: blur(28px);
             border: 1px solid var(--glass-border);
@@ -61,7 +79,7 @@
             align-items: center;
             gap: 14px;
             z-index: 1000;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 25px rgba(var(--accent-rgb), 0.15);
         }
 
         body[dir="ltr"] .vision-dock {
@@ -70,19 +88,23 @@
         }
 
         .dock-brand {
-            width: 44px;
-            height: 44px;
+            width: 46px;
+            height: 46px;
             border-radius: 16px;
-            background: linear-gradient(135deg, var(--accent) 0%, #D97706 100%);
+            background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.25) 0%, rgba(20, 10, 14, 0.9) 100%);
+            border: 1px solid var(--glass-highlight);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 900;
-            font-size: 1.3rem;
-            color: #000;
-            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.5);
-            margin-bottom: 6px;
             cursor: pointer;
+            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.4);
+            margin-bottom: 6px;
+            transition: all 0.3s;
+        }
+
+        .dock-brand:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.7);
         }
 
         .dock-item {
@@ -103,20 +125,21 @@
 
         .dock-item:hover {
             color: #FFF;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 42, 66, 0.12);
             transform: scale(1.1);
         }
 
         .dock-item.active {
             background: rgba(var(--accent-rgb), 0.18);
             color: var(--accent);
-            border-color: rgba(var(--accent-rgb), 0.4);
+            border-color: var(--accent);
+            box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.35);
         }
 
         .dock-tooltip {
             position: absolute;
             right: 60px;
-            background: #14141D;
+            background: #140C10;
             border: 1px solid var(--glass-border);
             color: #FFF;
             padding: 5px 12px;
@@ -127,6 +150,7 @@
             opacity: 0;
             pointer-events: none;
             transition: all 0.2s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.8);
         }
 
         body[dir="ltr"] .dock-tooltip {
@@ -145,7 +169,7 @@
             margin: 4px 0;
         }
 
-        /* مساحة العمل */
+        /* 2. المساحة الرئيسية */
         .workspace-wrapper {
             padding: 28px 105px 80px 44px;
             max-width: 1800px;
@@ -182,13 +206,14 @@
         }
 
         .vip-tag {
-            background: rgba(var(--accent-rgb), 0.15);
-            border: 1px solid rgba(var(--accent-rgb), 0.4);
+            background: rgba(var(--accent-rgb), 0.12);
+            border: 1px solid var(--accent);
             color: var(--accent);
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             font-weight: 900;
-            padding: 3px 10px;
+            padding: 3px 12px;
             border-radius: 20px;
+            box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.3);
         }
 
         .top-search-capsule {
@@ -199,7 +224,7 @@
 
         .top-search-capsule input {
             width: 100%;
-            background: rgba(20, 20, 28, 0.8);
+            background: rgba(20, 12, 16, 0.85);
             border: 1px solid var(--glass-border);
             border-radius: 18px;
             padding: 13px 46px 13px 20px;
@@ -216,7 +241,7 @@
 
         .top-search-capsule input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 25px rgba(var(--accent-rgb), 0.2);
+            box-shadow: 0 0 25px rgba(var(--accent-rgb), 0.3);
         }
 
         .top-search-icon {
@@ -253,12 +278,13 @@
 
         .genre-chip:hover, .genre-chip.active {
             background: var(--accent);
-            color: #000;
+            color: #FFF;
             border-color: var(--accent);
             font-weight: 800;
+            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.4);
         }
 
-        /* البنر الرئيسي */
+        /* 3. مسرح العرض المزدوج بهوية أوربت */
         .bento-hero-grid {
             display: grid;
             grid-template-columns: 1fr 350px;
@@ -271,13 +297,13 @@
             height: 520px;
             border-radius: 28px;
             overflow: hidden;
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--glass-highlight);
             background-size: cover;
             background-position: center 20%;
             display: flex;
             align-items: flex-end;
             padding: 44px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(var(--accent-rgb), 0.15);
             transition: background-image 0.6s ease;
         }
 
@@ -285,14 +311,14 @@
             position: absolute;
             inset: 0;
             background: 
-                linear-gradient(0deg, rgba(7, 7, 10, 0.96) 5%, rgba(7, 7, 10, 0.55) 50%, rgba(7, 7, 10, 0.1) 100%),
-                linear-gradient(270deg, rgba(7, 7, 10, 0.85) 0%, transparent 65%);
+                linear-gradient(0deg, rgba(8, 6, 8, 0.98) 5%, rgba(18, 10, 15, 0.6) 50%, rgba(8, 6, 8, 0.2) 100%),
+                linear-gradient(270deg, rgba(8, 6, 8, 0.88) 0%, transparent 65%);
         }
 
         body[dir="ltr"] .showcase-gradient {
             background: 
-                linear-gradient(0deg, rgba(7, 7, 10, 0.96) 5%, rgba(7, 7, 10, 0.55) 50%, rgba(7, 7, 10, 0.1) 100%),
-                linear-gradient(90deg, rgba(7, 7, 10, 0.85) 0%, transparent 65%);
+                linear-gradient(0deg, rgba(8, 6, 8, 0.98) 5%, rgba(18, 10, 15, 0.6) 50%, rgba(8, 6, 8, 0.2) 100%),
+                linear-gradient(90deg, rgba(8, 6, 8, 0.88) 0%, transparent 65%);
         }
 
         .showcase-content {
@@ -313,17 +339,18 @@
 
         .badge-royal {
             background: var(--accent);
-            color: #000;
+            color: #FFF;
             font-weight: 900;
             font-size: 0.75rem;
             padding: 4px 12px;
             border-radius: 8px;
+            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.5);
         }
 
         .badge-glass-meta {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid var(--glass-border);
             padding: 4px 12px;
             border-radius: 8px;
             font-size: 0.8rem;
@@ -354,8 +381,8 @@
         }
 
         .btn-gold-play {
-            background: linear-gradient(135deg, var(--accent) 0%, #D97706 100%);
-            color: #000;
+            background: linear-gradient(135deg, var(--accent) 0%, #B91C1C 100%);
+            color: #FFF;
             border: none;
             padding: 13px 32px;
             border-radius: 16px;
@@ -365,16 +392,17 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 10px 25px rgba(var(--accent-rgb), 0.35);
+            box-shadow: 0 10px 25px rgba(var(--accent-rgb), 0.45);
             transition: all 0.25s;
         }
 
         .btn-gold-play:hover {
             transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(var(--accent-rgb), 0.65);
         }
 
         .btn-frosted {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(16px);
             color: #FFF;
             border: 1px solid var(--glass-border);
@@ -387,7 +415,8 @@
         }
 
         .btn-frosted:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 42, 66, 0.15);
+            border-color: var(--accent);
         }
 
         .hero-queue-stack {
@@ -422,8 +451,9 @@
         }
 
         .queue-card:hover, .queue-card.active {
-            background: rgba(var(--accent-rgb), 0.12);
-            border-color: var(--glass-highlight);
+            background: rgba(var(--accent-rgb), 0.14);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.25);
         }
 
         .queue-thumb {
@@ -457,7 +487,7 @@
             gap: 8px;
         }
 
-        /* أقسام العرض */
+        /* 4. الأقسام والمتابعة */
         .section-block {
             margin-bottom: 52px;
         }
@@ -483,13 +513,13 @@
             width: 10px;
             height: 26px;
             border-radius: 6px;
-            background: linear-gradient(180deg, var(--accent) 0%, #D97706 100%);
-            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.5);
+            background: linear-gradient(180deg, var(--accent) 0%, #991B1B 100%);
+            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.6);
         }
 
         .btn-explore-all {
             background: rgba(var(--accent-rgb), 0.12);
-            border: 1px solid rgba(var(--accent-rgb), 0.35);
+            border: 1px solid var(--accent);
             color: var(--accent);
             padding: 7px 18px;
             border-radius: 12px;
@@ -504,7 +534,8 @@
 
         .btn-explore-all:hover {
             background: var(--accent);
-            color: #000;
+            color: #FFF;
+            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.5);
         }
 
         .btn-clear-history {
@@ -535,9 +566,9 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: rgba(10, 10, 14, 0.85);
+            background: rgba(14, 8, 12, 0.85);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 42, 66, 0.3);
             color: #FFF;
             font-size: 0.9rem;
             font-weight: 900;
@@ -582,11 +613,12 @@
 
         .ctrl-btn:hover {
             background: var(--accent);
-            color: #000;
+            color: #FFF;
             border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.4);
         }
 
-        /* TOP 10 */
+        /* TOP 10 بالأرقام المفرغة النيون */
         .top10-track {
             display: flex;
             gap: 28px;
@@ -610,7 +642,7 @@
             font-weight: 900;
             line-height: 0.8;
             color: transparent;
-            -webkit-text-stroke: 3px rgba(var(--accent-rgb), 0.55);
+            -webkit-text-stroke: 3px rgba(var(--accent-rgb), 0.6);
             position: absolute;
             right: -10px;
             bottom: 0;
@@ -625,6 +657,7 @@
 
         .top10-unit:hover .giant-rank-num {
             -webkit-text-stroke: 3px var(--accent);
+            filter: drop-shadow(0 0 20px rgba(var(--accent-rgb), 0.6));
             transform: scale(1.06);
         }
 
@@ -637,7 +670,7 @@
             z-index: 2;
             margin-right: auto;
             border: 1px solid var(--glass-border);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.9);
             transition: all 0.3s;
         }
 
@@ -649,6 +682,7 @@
         .top10-unit:hover .top10-poster-box {
             transform: translateY(-8px);
             border-color: var(--accent);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.9), 0 0 20px rgba(var(--accent-rgb), 0.3);
         }
 
         .top10-poster-box img {
@@ -679,8 +713,8 @@
 
         .wide-scene-card:hover {
             transform: translateY(-8px);
-            border-color: var(--glass-highlight);
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.8);
+            border-color: var(--accent);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(var(--accent-rgb), 0.2);
         }
 
         .wide-thumb-box {
@@ -688,7 +722,7 @@
             width: 100%;
             height: 180px;
             overflow: hidden;
-            background: #111118;
+            background: #110A0E;
         }
 
         .wide-thumb-box img {
@@ -717,7 +751,7 @@
             height: 50px;
             border-radius: 50%;
             background: var(--accent);
-            color: #000;
+            color: #FFF;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -765,14 +799,14 @@
             overflow: hidden;
             border: 1px solid var(--glass-border);
             cursor: pointer;
-            background: #12121A;
+            background: #140C10;
             transition: all 0.3s;
         }
 
         .royal-poster-card:hover {
             transform: translateY(-8px);
             border-color: var(--accent);
-            box-shadow: 0 16px 35px rgba(0,0,0,0.85);
+            box-shadow: 0 16px 35px rgba(0,0,0,0.9), 0 0 20px rgba(var(--accent-rgb), 0.3);
         }
 
         .royal-poster-card img {
@@ -784,7 +818,7 @@
         .royal-card-glass-footer {
             position: absolute;
             inset: auto 0 0 0;
-            background: linear-gradient(0deg, rgba(7,7,10,0.96) 0%, rgba(7,7,10,0.75) 65%, transparent 100%);
+            background: linear-gradient(0deg, rgba(8,6,8,0.98) 0%, rgba(18,10,15,0.75) 65%, transparent 100%);
             padding: 28px 14px 12px 14px;
             display: flex;
             flex-direction: column;
@@ -795,9 +829,9 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            background: rgba(7, 7, 10, 0.78);
+            background: rgba(8, 6, 8, 0.82);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.12);
+            border: 1px solid var(--accent);
             color: var(--accent);
             padding: 3px 8px;
             border-radius: 8px;
@@ -811,14 +845,15 @@
         }
 
         .catalog-header-banner {
-            background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.16) 0%, rgba(18, 18, 26, 0.9) 100%);
-            border: 1px solid var(--glass-border);
+            background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.16) 0%, rgba(18, 10, 15, 0.9) 100%);
+            border: 1px solid var(--glass-highlight);
             border-radius: 24px;
             padding: 28px 32px;
             margin-bottom: 28px;
             display: flex;
             flex-direction: column;
             gap: 18px;
+            box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.15);
         }
 
         .catalog-top-row {
@@ -835,13 +870,13 @@
             margin-top: 36px;
         }
 
-        /* الدرج المنزلق */
+        /* الدرج المنزلق للتفاصيل */
         #slideOverBackdrop {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
             z-index: 1500;
             justify-content: flex-end;
         }
@@ -850,8 +885,8 @@
             width: 100%;
             max-width: 860px;
             height: 100vh;
-            background: #0B0B10;
-            border-right: 1px solid var(--glass-border);
+            background: #0B070A;
+            border-right: 1px solid var(--glass-highlight);
             overflow-y: auto;
             position: relative;
             box-shadow: 0 0 80px rgba(0, 0, 0, 0.95);
@@ -872,7 +907,7 @@
             top: 22px;
             left: 22px;
             z-index: 10;
-            background: rgba(15, 15, 22, 0.85);
+            background: rgba(18, 10, 14, 0.85);
             border: 1px solid var(--glass-border);
             color: #FFF;
             padding: 8px 18px;
@@ -883,7 +918,7 @@
 
         .drawer-close-fab:hover {
             background: var(--accent);
-            color: #000;
+            color: #FFF;
         }
 
         .drawer-body {
@@ -944,7 +979,7 @@
 
         .drawer-ep-row:hover {
             border-color: var(--accent);
-            background: rgba(var(--accent-rgb), 0.08);
+            background: rgba(var(--accent-rgb), 0.1);
             transform: scale(1.01);
         }
 
@@ -954,7 +989,7 @@
             border-radius: 10px;
             object-fit: cover;
             flex-shrink: 0;
-            background: #161622;
+            background: #180D12;
         }
 
         /* المشغل */
@@ -962,7 +997,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(4, 4, 7, 0.98);
+            background: rgba(6, 4, 6, 0.98);
             backdrop-filter: blur(24px);
             z-index: 2000;
             flex-direction: column;
@@ -999,15 +1034,15 @@
 
         .srv-pill:hover, .srv-pill.active {
             background: var(--accent);
-            color: #000;
+            color: #FFF;
             border-color: var(--accent);
-            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.4);
+            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.5);
         }
 
         .sub-status-bar {
-            background: rgba(245, 158, 11, 0.12);
-            border: 1px solid rgba(245, 158, 11, 0.35);
-            color: #FBBF24;
+            background: rgba(var(--accent-rgb), 0.12);
+            border: 1px solid var(--glass-highlight);
+            color: #FFB3BA;
             padding: 8px 16px;
             border-radius: 12px;
             font-size: 0.85rem;
@@ -1025,8 +1060,8 @@
             width: 100%;
             border-radius: 20px;
             overflow: hidden;
-            border: 1px solid rgba(var(--accent-rgb), 0.35);
-            box-shadow: 0 0 70px rgba(var(--accent-rgb), 0.18);
+            border: 1px solid var(--glass-highlight);
+            box-shadow: 0 0 70px rgba(var(--accent-rgb), 0.25);
             background: #000;
             position: relative;
         }
@@ -1048,9 +1083,21 @@
 </head>
 <body>
 
-    <!-- الدوك الجانبي -->
+    <!-- 1. الدوك الجانبي العائم بشعار أوربت -->
     <aside class="vision-dock">
-        <div class="dock-brand" onclick="activateSection('home')">O</div>
+        <div class="dock-brand" onclick="activateSection('home')" title="أوربت ستور">
+            <!-- الشعار المجنح الناري لأوربت -->
+            <svg class="orbit-wing-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 82L15 28L34 38L50 62L66 38L85 28L50 82Z" fill="url(#wingGradient)" />
+                <path d="M50 72L28 36L38 42L50 58L62 42L72 36L50 72Z" fill="#FFF" opacity="0.3" />
+                <defs>
+                    <linearGradient id="wingGradient" x1="50" y1="28" x2="50" y2="82" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#FF5A6E" />
+                        <stop offset="1" stop-color="#E50914" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
 
         <button class="dock-item active" id="dock-home" onclick="activateSection('home')">
             🏠 <span class="dock-tooltip" data-i18n="home">الرئيسية</span>
@@ -1078,13 +1125,16 @@
         </button>
     </aside>
 
-    <!-- المساحة الرئيسية -->
+    <!-- 2. المساحة الرئيسية -->
     <div class="workspace-wrapper">
         
         <div class="top-luxury-bar">
             <div class="brand-lockup" onclick="activateSection('home')">
-                <span class="brand-title">ORBIT ROYAL</span>
-                <span class="vip-tag">VISION EDITION</span>
+                <svg class="orbit-wing-icon" viewBox="0 0 100 100" fill="none" style="width:34px; height:34px;">
+                    <path d="M50 82L15 28L34 38L50 62L66 38L85 28L50 82Z" fill="var(--accent)" />
+                </svg>
+                <span class="brand-title">أوربت ستور</span>
+                <span class="vip-tag">ORBIT VIP</span>
             </div>
 
             <div class="top-search-capsule">
@@ -1136,7 +1186,7 @@
                     <div class="showcase-gradient"></div>
                     <div class="showcase-content">
                         <div class="showcase-badges">
-                            <span class="badge-royal">EXCLUSIVE 4K</span>
+                            <span class="badge-royal">ORBIT EXCLUSIVE</span>
                             <span class="badge-glass-meta" id="heroRateBadge">★ 8.8</span>
                             <span class="badge-glass-meta" id="heroYearBadge">2026</span>
                             <span class="badge-glass-meta" id="heroTypeBadge">مسلسل</span>
@@ -1152,7 +1202,7 @@
 
                 <div class="hero-queue-stack">
                     <div class="queue-header-label">
-                        <span data-i18n="royalPicks">🔥 مختارات المسرح الملكي</span>
+                        <span data-i18n="royalPicks">🔥 مختارات أوربت</span>
                         <span style="color:var(--accent)" data-i18n="clickToSwitch">اختر للتبديل</span>
                     </div>
                     <div id="heroQueueList" style="display:flex; flex-direction:column; gap:10px; flex:1;"></div>
@@ -1219,7 +1269,7 @@
 
     </div>
 
-    <!-- الدرج المنزلق -->
+    <!-- 5. الدرج المنزلق للتفاصيل والحلقات -->
     <div id="slideOverBackdrop" onclick="if(event.target===this) closeSlideDrawer()">
         <div class="slide-over-drawer">
             <div class="drawer-cover" id="drawerBannerImg">
@@ -1253,7 +1303,7 @@
         </div>
     </div>
 
-    <!-- مشغل المسرح المضيء -->
+    <!-- 6. مشغل المسرح المضيء بسيرفرات الأنمي والترجمة الرسمية -->
     <div id="theaterModal">
         <div class="theater-top-bar">
             <div style="display:flex; align-items:center; gap:14px;">
@@ -1264,19 +1314,19 @@
                 </div>
             </div>
 
-            <!-- سيرفرات تعمل 100% وتدعم الترجمة العربية والأنمي -->
+            <!-- سيرفرات متوافقة مع الأنمي والترجمات العربية -->
             <div class="server-pills-bar">
-                <button class="srv-pill active" id="srv-btn-0" onclick="selectStreamServer(0)">⚡ VidLink PRO (ترجمة + سرعة)</button>
-                <button class="srv-pill" id="srv-btn-1" onclick="selectStreamServer(1)">👑 MultiEmbed VIP (احتياطي سريع)</button>
-                <button class="srv-pill" id="srv-btn-2" onclick="selectStreamServer(2)">🔥 SuperEmbed (عربي مدمج)</button>
-                <button class="srv-pill" id="srv-btn-3" onclick="selectStreamServer(3)">⚡ SmashyStream (مخصص أنمي)</button>
+                <button class="srv-pill active" id="srv-btn-0" onclick="selectStreamServer(0)">👑 AnimeVibe VIP (ترجمة احترافية)</button>
+                <button class="srv-pill" id="srv-btn-1" onclick="selectStreamServer(1)">⚡ VidSrc TO v2</button>
+                <button class="srv-pill" id="srv-btn-2" onclick="selectStreamServer(2)">💎 2Embed Stream</button>
+                <button class="srv-pill" id="srv-btn-3" onclick="selectStreamServer(3)">🚀 MultiEmbed Pro</button>
             </div>
 
             <button class="btn-gold-play" style="padding:8px 20px;" id="theaterNextEpBtn" onclick="playNextEpInTheater()" data-i18n="nextEpisode">الحلقة التالية ⏭️</button>
         </div>
 
         <div class="sub-status-bar" id="subStatusBar">
-            <span id="subStatusText">💡 السيرفر الأول (VidLink) والترجمة العربية مفعلة افتراضياً، وإذا أردت يمكنك الضغط على أيقونة الترجمة داخل الفيديو أو التبديل للسيرفرات بالأعلى</span>
+            <span id="subStatusText">💡 تم تفعيل سيرفر AnimeVibe للأنمي ومسلسلات الأكشن مع الترجمة العربية المعتمدة. يمكنك التبديل بضغطة زر بين السيرفرات بالأعلى.</span>
         </div>
 
         <div class="theater-screen-frame">
@@ -1318,7 +1368,7 @@
                 loadMore: "عرض المزيد من العروض",
                 playShowNow: "تشغيل العرض الآن",
                 episodesAndDetails: "الحلقات والتفاصيل",
-                royalPicks: "🔥 مختارات المسرح الملكي",
+                royalPicks: "🔥 مختارات أوربت",
                 clickToSwitch: "اختر للتبديل",
                 continueWatching: "متابعة المشاهدة (أكمل من حيث توقفت)",
                 clearAllHistory: "مسح السجل بالكامل",
@@ -1361,7 +1411,7 @@
                 loadMore: "Load More Titles",
                 playShowNow: "Watch Now",
                 episodesAndDetails: "Episodes & Info",
-                royalPicks: "🔥 Royal Stage Picks",
+                royalPicks: "🔥 Orbit Picks",
                 clickToSwitch: "Click to Switch",
                 continueWatching: "Continue Watching",
                 clearAllHistory: "Clear History",
@@ -1390,11 +1440,12 @@
             }
         };
 
+        // الثيمات الملكية مع جعل ثيم أوربت القرمزي هو الثيم رقم 0 الافتراضي
         const themes = [
-            { hex: '#F59E0B', rgb: '245, 158, 11' },
-            { hex: '#06B6D4', rgb: '6, 182, 212' },
-            { hex: '#10B981', rgb: '16, 185, 129' },
-            { hex: '#F43F5E', rgb: '244, 63, 94' }
+            { hex: '#FF2A42', rgb: '255, 42, 66' },  // Orbit Crimson (الأساسي)
+            { hex: '#F59E0B', rgb: '245, 158, 11' }, // Royal Gold
+            { hex: '#06B6D4', rgb: '6, 182, 212' },  // Cyber Cyan
+            { hex: '#10B981', rgb: '16, 185, 129' }  // Emerald Neon
         ];
         let themeIdx = 0;
 
@@ -1880,28 +1931,28 @@
             });
         }
 
-        // روابط سيرفرات البث الفعالة والمجربة
+        // روابط سيرفرات البث المختصة بالأنمي والمترجمة
         function buildStreamUrl(id, isTv, season, episode, srv) {
             if (srv === 0) {
-                // 1. VidLink PRO (أحدث معايير التضمين مع تفعيل الترجمة العربية الافتراضية)
+                // 1. سيرفر AnimeVibe VIP: يدمج كرانشي رول وترجمات الفانسب العربية المعتمدة
                 return isTv
-                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=F59E0B&autoplay=true&sub=ar`
-                    : `https://vidlink.pro/movie/${id}?primaryColor=F59E0B&autoplay=true&sub=ar`;
+                    ? `https://animevibe.se/embed/tv/${id}/${season}/${episode}`
+                    : `https://animevibe.se/embed/movie/${id}`;
             } else if (srv === 1) {
-                // 2. MultiEmbed VIP (السريع والبديل المباشر)
+                // 2. سيرفر VidSrc TO v2
+                return isTv
+                    ? `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`
+                    : `https://vidsrc.to/embed/movie/${id}`;
+            } else if (srv === 2) {
+                // 3. سيرفر 2Embed Stream
+                return isTv
+                    ? `https://www.2embed.cc/embedtv/${id}&s=${season}&e=${episode}`
+                    : `https://www.2embed.cc/embed/${id}`;
+            } else {
+                // 4. سيرفر MultiEmbed Pro المضمون
                 return isTv
                     ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
                     : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
-            } else if (srv === 2) {
-                // 3. SuperEmbed (يدمج الترجمة العربية تلقائياً)
-                return isTv
-                    ? `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
-                    : `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`;
-            } else {
-                // 4. SmashyStream (المتخصص في تشغيل الأنمي)
-                return isTv
-                    ? `https://player.smashy.stream/tv/${id}?s=${season}&e=${episode}`
-                    : `https://player.smashy.stream/movie/${id}`;
             }
         }
 
@@ -1957,6 +2008,10 @@
             document.getElementById('instantSearchInput').value = '';
             document.getElementById('instantSearchBox').style.display = 'none';
         }
+
+        // تطبيق الثيم الافتراضي القرمزي
+        document.documentElement.style.setProperty('--accent', themes[0].hex);
+        document.documentElement.style.setProperty('--accent-rgb', themes[0].rgb);
 
         applyLanguageUI();
         initRoyalPlatform();
