@@ -472,7 +472,7 @@
             gap: 8px;
         }
 
-        /* 4. الأقسام وأزرار "عرض الكل" */
+        /* 4. الأقسام وأزرار "عرض الكل" والحذف */
         .section-block {
             margin-bottom: 52px;
         }
@@ -520,6 +520,60 @@
         .btn-explore-all:hover {
             background: var(--accent);
             color: #000;
+        }
+
+        .btn-clear-history {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #F87171;
+            padding: 7px 16px;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-clear-history:hover {
+            background: #EF4444;
+            color: #FFF;
+        }
+
+        /* زر الحذف الفردي على بطاقة متابعة المشاهدة */
+        .cw-remove-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 15;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(10, 10, 14, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #FFF;
+            font-size: 0.9rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        }
+
+        body[dir="ltr"] .cw-remove-btn {
+            left: auto;
+            right: 10px;
+        }
+
+        .cw-remove-btn:hover {
+            background: #EF4444;
+            border-color: #EF4444;
+            transform: scale(1.12);
         }
 
         .scroll-controls {
@@ -778,7 +832,7 @@
             font-weight: 900;
         }
 
-        /* 8. مكتبة القسم الشاملة (Full Category Explorer View) */
+        /* 8. مكتبة القسم الشاملة */
         #catalogExplorerView {
             display: none;
             animation: fadeIn 0.3s ease;
@@ -814,7 +868,7 @@
             margin-top: 36px;
         }
 
-        /* 9. الدرج الزجاجي المنزلق (Slide-Over Drawer) */
+        /* 9. الدرج الزجاجي المنزلق */
         #slideOverBackdrop {
             display: none;
             position: fixed;
@@ -936,7 +990,7 @@
             background: #161622;
         }
 
-        /* 10. مشغل المسرح المضيء مع شريط السيرفرات المترجمة */
+        /* 10. مشغل المسرح المضيء مع سيرفرات VIP المضمونة */
         #theaterModal {
             display: none;
             position: fixed;
@@ -968,9 +1022,9 @@
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid var(--glass-border);
             color: var(--text-secondary);
-            padding: 7px 14px;
+            padding: 8px 16px;
             border-radius: 12px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 800;
             cursor: pointer;
             transition: all 0.2s;
@@ -984,12 +1038,12 @@
         }
 
         .sub-helper-notice {
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid rgba(16, 185, 129, 0.35);
-            color: #34D399;
-            padding: 6px 14px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #FBBF24;
+            padding: 7px 14px;
             border-radius: 10px;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             font-weight: 700;
             margin-bottom: 10px;
             display: flex;
@@ -1087,7 +1141,7 @@
             <div class="luxury-posters-grid" id="searchGridContainer"></div>
         </div>
 
-        <!-- 3. شاشة مكتبة القسم الكاملة (تظهر عند اختيار كل الأنمي / كل المسلسلات / كل الأفلام) -->
+        <!-- 3. شاشة مكتبة القسم الكاملة -->
         <div id="catalogExplorerView">
             <div class="catalog-header-banner">
                 <div class="catalog-top-row">
@@ -1097,7 +1151,6 @@
                     </div>
                     <button class="btn-frosted" onclick="activateSection('home')" data-i18n="backHome">🏠 العودة للرئيسية</button>
                 </div>
-                <!-- فلاتر التصنيفات الفرعية داخل المكتبة -->
                 <div class="quick-genre-pills" id="catalogSubFilters"></div>
             </div>
 
@@ -1142,10 +1195,13 @@
                 </div>
             </section>
 
-            <!-- شريط متابعة المشاهدة -->
+            <!-- شريط متابعة المشاهدة (مزود بزر مسح فردي وزر مسح الكل) -->
             <section class="section-block" id="continueWatchSection" style="display:none;">
                 <div class="section-bar">
                     <h2 class="section-heading"><span class="heading-pill-dot"></span> <span data-i18n="continueWatching">متابعة المشاهدة (أكمل من حيث توقفت)</span></h2>
+                    <button class="btn-clear-history" onclick="clearAllContinueWatching()">
+                        🗑️ <span data-i18n="clearAllHistory">مسح السجل بالكامل</span>
+                    </button>
                 </div>
                 <div class="wide-cinema-track" id="continueWatchTrack"></div>
             </section>
@@ -1239,7 +1295,7 @@
         </div>
     </div>
 
-    <!-- 6. مشغل المسرح السينمائي المضيء مع 6 سيرفرات تدعم الترجمة العربية -->
+    <!-- 6. مشغل المسرح المضيء (يركز على سيرفرات الـ VIP الشغالة 100%) -->
     <div id="theaterModal">
         <div class="theater-top-bar">
             <div style="display:flex; align-items:center; gap:14px;">
@@ -1250,22 +1306,19 @@
                 </div>
             </div>
 
-            <!-- شريط السيرفرات الـ 6 المباشرة الداعمة للترجمة العربية -->
+            <!-- شريط سيرفرات الـ VIP المضمونة -->
             <div class="server-pills-bar">
-                <button class="srv-pill active" id="srv-btn-0" onclick="selectStreamServer(0)">🇪🇬 VidSrc (ترجمة عربية تلقائية)</button>
-                <button class="srv-pill" id="srv-btn-1" onclick="selectStreamServer(1)">⚡ AutoEmbed (متعدد الترجمات)</button>
-                <button class="srv-pill" id="srv-btn-2" onclick="selectStreamServer(2)">🔥 Smashy (ترجمة + أنمي)</button>
-                <button class="srv-pill" id="srv-btn-3" onclick="selectStreamServer(3)">💎 VidLink 4K</button>
-                <button class="srv-pill" id="srv-btn-4" onclick="selectStreamServer(4)">🌍 MultiEmbed VIP</button>
-                <button class="srv-pill" id="srv-btn-5" onclick="selectStreamServer(5)">🚀 VidSrc Pro</button>
+                <button class="srv-pill active" id="srv-btn-0" onclick="selectStreamServer(0)">👑 سيرفر MultiEmbed VIP (الأساسي)</button>
+                <button class="srv-pill" id="srv-btn-1" onclick="selectStreamServer(1)">💎 سيرفر VIP Plus المباشر</button>
+                <button class="srv-pill" id="srv-btn-2" onclick="selectStreamServer(2)">🚀 سيرفر VidLink 4K</button>
+                <button class="srv-pill" id="srv-btn-3" onclick="selectStreamServer(3)">🎬 سيرفر EmbedSu VIP</button>
             </div>
 
             <button class="btn-gold-play" style="padding:8px 20px;" id="theaterNextEpBtn" onclick="playNextEpInTheater()" data-i18n="nextEpisode">الحلقة التالية ⏭️</button>
         </div>
 
-        <!-- شريط إرشادي ذكي للترجمة -->
         <div class="sub-helper-notice">
-            <span data-i18n="subNotice">💡 ملاحظة: السيرفر الأول يفعل الترجمة العربية تلقائياً. في حال عدم ظهورها لعمل نادر، اضغط على أيقونة (CC) أسفل المشغل واختر Arabic أو جرب السيرفر الثاني والثالث.</span>
+            <span data-i18n="subNotice">👑 تم تفعيل سيرفر (MultiEmbed VIP) كسيرفر أساسي افتراضي. لتشغيل الترجمة العربية اضغط على علامة الترجمة (CC) داخل المشغل واختر Arabic.</span>
         </div>
 
         <div class="theater-screen-frame">
@@ -1280,7 +1333,6 @@
         let activePlayback = null;
         let serverIdx = 0;
 
-        // متغيرات مكتبة "عرض الكل" (Catalog Explorer)
         let currentCatalogCategory = 'anime';
         let currentCatalogMedia = 'tv';
         let currentCatalogGenres = '16';
@@ -1291,7 +1343,6 @@
         let savedContinue = JSON.parse(localStorage.getItem('orbit_royal_cw') || '[]');
         let siteLang = localStorage.getItem('orbit_royal_lang') || 'ar';
 
-        // قاموس الترجمة الكامل للواجهة (عربي / إنجليزي)
         const i18nDict = {
             ar: {
                 home: "الرئيسية",
@@ -1312,6 +1363,7 @@
                 royalPicks: "🔥 مختارات المسرح الملكي",
                 clickToSwitch: "اختر للتبديل",
                 continueWatching: "متابعة المشاهدة (أكمل من حيث توقفت)",
+                clearAllHistory: "مسح السجل بالكامل",
                 top10Today: "أفضل 10 أعمال متصدرة اليوم (TOP 10)",
                 widescreenMovies: "أحدث الأفلام السينمائية (Widescreen Movies)",
                 viewAllMovies: "عرض كل الأفلام",
@@ -1328,7 +1380,7 @@
                 seasonsHeader: "🎞️ المواسم والحلقات",
                 exitTheater: "✕ إنهاء العرض",
                 nextEpisode: "الحلقة التالية ⏭️",
-                subNotice: "💡 السيرفر الأول يُشغل الترجمة العربية تلقائياً. يمكنك أيضاً اختيار Arabic من زر (CC) داخل المشغل أو التبديل للسيرفر الثاني والثالث.",
+                subNotice: "👑 تم تفعيل سيرفر (MultiEmbed VIP) كسيرفر أساسي افتراضي. لتشغيل الترجمة العربية اضغط على علامة الترجمة (CC) داخل المشغل واختر Arabic.",
                 searchPlaceholder: "ابحث عن فيلم، مسلسل، أو أنمي...",
                 tvLabel: "مسلسل",
                 movieLabel: "فيلم",
@@ -1355,10 +1407,11 @@
                 royalPicks: "🔥 Royal Stage Picks",
                 clickToSwitch: "Click to Switch",
                 continueWatching: "Continue Watching",
+                clearAllHistory: "Clear History",
                 top10Today: "Top 10 Trending Today",
                 widescreenMovies: "Widescreen Movie Premieres",
                 viewAllMovies: "View All Movies",
-                globalSeries: "acclaimed Global TV Series",
+                globalSeries: "Acclaimed Global TV Series",
                 viewAllSeries: "View All Series",
                 animeMasterpieces: "Anime & Action Masterpieces",
                 viewAllAnime: "View All Anime",
@@ -1371,7 +1424,7 @@
                 seasonsHeader: "🎞️ Seasons & Episodes",
                 exitTheater: "✕ Exit Player",
                 nextEpisode: "Next Episode ⏭️",
-                subNotice: "💡 Server 1 loads Arabic subtitles automatically. You can also click (CC) inside the video player or switch between the 6 servers above.",
+                subNotice: "👑 MultiEmbed VIP is set as the default server. Click (CC) inside the video player to enable Arabic subtitles.",
                 searchPlaceholder: "Search movies, TV shows, or anime...",
                 tvLabel: "TV Show",
                 movieLabel: "Movie",
@@ -1397,7 +1450,6 @@
             return (i18nDict[siteLang] && i18nDict[siteLang][key]) || i18nDict.ar[key] || key;
         }
 
-        // 1. تبديل اللغة بالكامل (نصوص + اتجاه + بيانات السيرفر)
         function applyLanguageUI() {
             document.documentElement.lang = siteLang;
             document.documentElement.dir = siteLang === 'en' ? 'ltr' : 'rtl';
@@ -1453,7 +1505,7 @@
             }
         }
 
-        // 2. نظام مكتبة "تصفح الكل" (الأفلام / المسلسلات / الأنمي) مع الفلاتر وزر عرض المزيد
+        // إعدادات مكتبة "تصفح الكل"
         const catalogConfigs = {
             anime: {
                 titleAr: "⚡ مكتبة الأنمي الكاملة (All Anime)",
@@ -1569,7 +1621,7 @@
             fetchCatalogItems(true);
         }
 
-        // 3. تحميل بيانات الصفحة الرئيسية
+        // تحميل بيانات الصفحة الرئيسية
         async function initRoyalPlatform() {
             try {
                 const langParam = getApiLang();
@@ -1717,7 +1769,7 @@
             });
         }
 
-        // 4. الدرج الزجاجي المنزلق للتفاصيل والحلقات
+        // الدرج الزجاجي المنزلق للتفاصيل والحلقات
         async function openSlideDrawer(id, mediaType, autoPlayFirst = false) {
             document.getElementById('slideOverBackdrop').style.display = 'flex';
             try {
@@ -1822,12 +1874,25 @@
             document.getElementById('slideOverBackdrop').style.display = 'none';
         }
 
-        // 5. سجل المشاهدة ومشغل المسرح المزود بـ 6 سيرفرات تدعم الترجمة العربية
+        // إدارة سجل "متابعة المشاهدة" مع الحذف الفردي والحذف الكامل
         function saveContinueRecord(id, isTv, season, episode, title, backdropPath) {
-            savedContinue = savedContinue.filter(x => x.id !== id);
-            savedContinue.unshift({ id, isTv, season, episode, title, backdropPath });
-            if (savedContinue.length > 6) savedContinue.pop();
+            savedContinue = savedContinue.filter(x => Number(x.id) !== Number(id));
+            savedContinue.unshift({ id: Number(id), isTv, season, episode, title, backdropPath });
+            if (savedContinue.length > 8) savedContinue.pop();
             localStorage.setItem('orbit_royal_cw', JSON.stringify(savedContinue));
+            renderContinueWatching();
+        }
+
+        function removeContinueItem(event, id) {
+            event.stopPropagation(); // منع فتح المشغل عند الضغط على زر الحذف
+            savedContinue = savedContinue.filter(x => Number(x.id) !== Number(id));
+            localStorage.setItem('orbit_royal_cw', JSON.stringify(savedContinue));
+            renderContinueWatching();
+        }
+
+        function clearAllContinueWatching() {
+            savedContinue = [];
+            localStorage.removeItem('orbit_royal_cw');
             renderContinueWatching();
         }
 
@@ -1845,6 +1910,7 @@
                 const card = document.createElement('div');
                 card.className = 'wide-scene-card';
                 card.innerHTML = `
+                    <button class="cw-remove-btn" onclick="removeContinueItem(event, ${item.id})" title="حذف من السجل">✕</button>
                     <div class="wide-thumb-box">
                         <img src="${imgUrl}" alt="${item.title}">
                         <div class="wide-overlay-play"><div class="circle-play-gold">▶</div></div>
@@ -1862,38 +1928,28 @@
             });
         }
 
-        // توليد روابط السيرفرات الـ 6 مع إجبار تحميل الترجمة العربية (ds_lang=ar)
+        // توليد روابط السيرفرات المضمونة (مع جعل MultiEmbed VIP هو الأساسي رقم 0)
         function buildServerUrl(id, isTv, season, episode, srv) {
             if (srv === 0) {
-                // السيرفر 1: VidSrc XYZ مع بارامتر ds_lang=ar الرسمي لإجبار الترجمة العربية من OpenSubtitles
-                return isTv 
-                    ? `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${season}&episode=${episode}&ds_lang=ar`
-                    : `https://vidsrc.xyz/embed/movie?tmdb=${id}&ds_lang=ar`;
-            } else if (srv === 1) {
-                // السيرفر 2: AutoEmbed Pro (يحتوي على زر CC يدعم عشرات الترجمات العربية)
-                return isTv
-                    ? `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}?lang=ar`
-                    : `https://player.autoembed.cc/embed/movie/${id}?lang=ar`;
-            } else if (srv === 2) {
-                // السيرفر 3: SmashyStream (ممتاز للأنمي والمسلسلات مع مكتبة ترجمة عربية ضخمة)
-                return isTv
-                    ? `https://player.smashy.stream/tv/${id}?s=${season}&e=${episode}`
-                    : `https://player.smashy.stream/movie/${id}`;
-            } else if (srv === 3) {
-                // السيرفر 4: VidLink 4K
-                return isTv
-                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=F59E0B&autoplay=true`
-                    : `https://vidlink.pro/movie/${id}?primaryColor=F59E0B&autoplay=true`;
-            } else if (srv === 4) {
-                // السيرفر 5: MultiEmbed VIP
+                // السيرفر 1 (الأساسي): MultiEmbed VIP الذي يعمل بكفاءة عالية
                 return isTv
                     ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
                     : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
-            } else {
-                // السيرفر 6: VidSrc.me الاحتياطي مع ds_lang=ar
+            } else if (srv === 1) {
+                // السيرفر 2: MultiEmbed Direct VIP Plus
                 return isTv
-                    ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${season}&episode=${episode}&ds_lang=ar`
-                    : `https://vidsrc.me/embed/movie?tmdb=${id}&ds_lang=ar`;
+                    ? `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
+                    : `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`;
+            } else if (srv === 2) {
+                // السيرفر 3: VidLink 4K
+                return isTv
+                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=F59E0B&autoplay=true`
+                    : `https://vidlink.pro/movie/${id}?primaryColor=F59E0B&autoplay=true`;
+            } else {
+                // السيرفر 4: EmbedSu VIP
+                return isTv
+                    ? `https://embed.su/embed/tv/${id}/${season}/${episode}`
+                    : `https://embed.su/embed/movie/${id}`;
             }
         }
 
@@ -1905,6 +1961,7 @@
 
             if (backdropPath) saveContinueRecord(id, isTv, season, episode, title, backdropPath);
 
+            // يفتح مباشرة على السيرفر رقم 0 (MultiEmbed VIP)
             selectStreamServer(0);
             document.getElementById('theaterModal').style.display = 'flex';
         }
@@ -1931,7 +1988,7 @@
             document.getElementById('theaterModal').style.display = 'none';
         }
 
-        // 6. البحث الفوري
+        // البحث الفوري
         async function handleInstantSearch(q) {
             const box = document.getElementById('instantSearchBox');
             if (!q.trim()) {
