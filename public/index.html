@@ -988,7 +988,7 @@
             background: #180D12;
         }
 
-        /* 5. مشغل المسرح السريع */
+        /* 5. مشغل المسرح المطور */
         #theaterModal {
             display: none;
             position: fixed;
@@ -1297,7 +1297,7 @@
         </div>
     </div>
 
-    <!-- المشغل الفوري المضمون 100% -->
+    <!-- المشغل المطور مع التوجيه التلقائي للأنمي المترجم -->
     <div id="theaterModal">
         <div class="theater-top-bar">
             <div style="display:flex; align-items:center; gap:14px;">
@@ -1308,18 +1308,17 @@
                 </div>
             </div>
 
-            <!-- السيرفرات الحقيقية المضمونة -->
-            <div class="server-pills-bar">
-                <button class="srv-pill active" id="srv-btn-0" onclick="selectStreamServer(0)">👑 سيرفر أوربت (MultiEmbed VIP)</button>
+            <div class="server-pills-bar" id="serversBar">
+                <button class="srv-pill active" id="srv-btn-0" onclick="selectStreamServer(0)">👑 المشغل المباشر الموصى به</button>
                 <button class="srv-pill" id="srv-btn-1" onclick="selectStreamServer(1)">🚀 سيرفر VidLink 4K</button>
-                <button class="srv-pill" id="srv-btn-2" onclick="selectStreamServer(2)">⚡ سيرفر AutoEmbed PRO</button>
+                <button class="srv-pill" id="srv-btn-2" onclick="selectStreamServer(2)">💎 سيرفر MultiEmbed VIP</button>
             </div>
 
             <button class="btn-gold-play" style="padding:8px 20px;" id="theaterNextEpBtn" onclick="playNextEpInTheater()" data-i18n="nextEpisode">الحلقة التالية ⏭️</button>
         </div>
 
         <div class="sub-status-bar" id="subStatusBar">
-            <span id="subStatusText">💡 تم تعيين سيرفر MultiEmbed VIP كسيرفر افتراضي سريع ومستقر. للترجمة اضغط (CC) داخل الفيديو.</span>
+            <span id="subStatusText">💡 جاري التحقق من مصادر العمل وتشغيل أفضل جودة وترجمة متوفرة...</span>
         </div>
 
         <div class="theater-screen-frame">
@@ -1668,7 +1667,7 @@
 
             document.getElementById('heroBtnPlay').onclick = () => {
                 if (isTv) openSlideDrawer(item.id, 'tv', true);
-                else launchTheaterPlayer(item.id, false, 1, 1, title, t('fullMovie'), item.backdrop_path);
+                else launchTheaterPlayer(item.id, false, 1, 1, title, t('fullMovie'), item.backdrop_path, item);
             };
             document.getElementById('heroBtnDetails').onclick = () => openSlideDrawer(item.id, isTv ? 'tv' : 'movie', false);
 
@@ -1783,7 +1782,7 @@
 
                 document.getElementById('drawerPlayBtn').onclick = () => {
                     if (isTv) loadDrawerSeason(data.id, 1, true);
-                    else launchTheaterPlayer(data.id, false, 1, 1, title, t('fullMovie'), data.backdrop_path || data.poster_path);
+                    else launchTheaterPlayer(data.id, false, 1, 1, title, t('fullMovie'), data.backdrop_path || data.poster_path, currentDrawerItem);
                 };
 
                 const existsInFav = savedFavorites.some(f => f.id === data.id);
@@ -1845,7 +1844,7 @@
                 const eps = data.episodes || [];
 
                 if (autoPlay && eps.length > 0) {
-                    launchTheaterPlayer(tvId, true, seasonNum, eps[0].episode_number, currentDrawerItem.name, `${t('seasonLabel')} ${seasonNum} - ${t('epLabel')} 1`, currentDrawerItem.backdrop_path);
+                    launchTheaterPlayer(tvId, true, seasonNum, eps[0].episode_number, currentDrawerItem.name, `${t('seasonLabel')} ${seasonNum} - ${t('epLabel')} 1`, currentDrawerItem.backdrop_path, currentDrawerItem);
                 }
 
                 eps.forEach(ep => {
@@ -1860,7 +1859,7 @@
                         </div>
                         <div class="circle-play-gold" style="width:40px; height:40px; flex-shrink:0;">▶</div>
                     `;
-                    row.onclick = () => launchTheaterPlayer(tvId, true, seasonNum, ep.episode_number, currentDrawerItem.name, `${t('seasonLabel')} ${seasonNum} - ${t('epLabel')} ${ep.episode_number}`, ep.still_path || currentDrawerItem.backdrop_path);
+                    row.onclick = () => launchTheaterPlayer(tvId, true, seasonNum, ep.episode_number, currentDrawerItem.name, `${t('seasonLabel')} ${seasonNum} - ${t('epLabel')} ${ep.episode_number}`, ep.still_path || currentDrawerItem.backdrop_path, currentDrawerItem);
                     list.appendChild(row);
                 });
             } catch (e) {}
@@ -1870,9 +1869,9 @@
             document.getElementById('slideOverBackdrop').style.display = 'none';
         }
 
-        function saveContinueRecord(id, isTv, season, episode, title, backdropPath) {
+        function saveContinueRecord(id, isTv, season, episode, title, backdropPath, fullItem) {
             savedContinue = savedContinue.filter(x => Number(x.id) !== Number(id));
-            savedContinue.unshift({ id: Number(id), isTv, season, episode, title, backdropPath });
+            savedContinue.unshift({ id: Number(id), isTv, season, episode, title, backdropPath, rawItem: fullItem });
             if (savedContinue.length > 8) savedContinue.pop();
             localStorage.setItem('orbit_royal_cw', JSON.stringify(savedContinue));
             renderContinueWatching();
@@ -1918,38 +1917,66 @@
                         <span class="wide-card-rate">${item.isTv ? `S${item.season} E${item.episode}` : '▶'}</span>
                     </div>
                 `;
-                card.onclick = () => launchTheaterPlayer(item.id, item.isTv, item.season, item.episode, item.title, item.isTv ? `${t('seasonLabel')} ${item.season} - ${t('epLabel')} ${item.episode}` : t('fullMovie'), item.backdropPath);
+                card.onclick = () => launchTheaterPlayer(item.id, item.isTv, item.season, item.episode, item.title, item.isTv ? `${t('seasonLabel')} ${item.season} - ${t('epLabel')} ${item.episode}` : t('fullMovie'), item.backdropPath, item.rawItem);
                 track.appendChild(card);
             });
         }
 
-        // روابط سيرفرات البث الصافية والموثوقة
-        function buildServerStreamUrl(id, isTv, season, episode, srv) {
-            if (srv === 0) {
-                // 1. MultiEmbed VIP (السيرفر الأكثر ثباتاً وسرعة بالتشغيل)
-                return isTv
-                    ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
-                    : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
-            } else if (srv === 1) {
-                // 2. VidLink 4K
-                return isTv
-                    ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=FF2A42&autoplay=true`
-                    : `https://vidlink.pro/movie/${id}?primaryColor=FF2A42&autoplay=true`;
+        // فحص إذا كان العمل أنمي لتوجيهه للمحرك المخصص
+        function isAnimeMedia(item) {
+            if (!item) return false;
+            const origin = (item.origin_country || []);
+            const isJP = origin.includes('JP') || item.original_language === 'ja';
+            const genres = (item.genres || item.genre_ids || []);
+            const hasAnimeGenre = genres.some(g => (g.id === 16 || g === 16));
+            return isJP && hasAnimeGenre;
+        }
+
+        // بناء روابط السيرفرات الذكية
+        function buildSmartUrl(id, isTv, season, episode, title, isAnime, srv) {
+            if (isAnime) {
+                if (srv === 0) {
+                    // سيرفر الأنمي العربي المباشر بدون هاردسب إنجليزي
+                    return `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}`;
+                } else if (srv === 1) {
+                    return `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=FF2A42&autoplay=true`;
+                } else {
+                    return `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`;
+                }
             } else {
-                // 3. AutoEmbed PRO
-                return isTv
-                    ? `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}`
-                    : `https://player.autoembed.cc/embed/movie/${id}`;
+                // للأفلام والمسلسلات الأجنبية
+                if (srv === 0) {
+                    return isTv
+                        ? `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=FF2A42&autoplay=true`
+                        : `https://vidlink.pro/movie/${id}?primaryColor=FF2A42&autoplay=true`;
+                } else if (srv === 1) {
+                    return isTv
+                        ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
+                        : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
+                } else {
+                    return isTv
+                        ? `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}`
+                        : `https://player.autoembed.cc/embed/movie/${id}`;
+                }
             }
         }
 
-        function launchTheaterPlayer(id, isTv, season, episode, title, subTitle, backdropPath) {
-            activePlayback = { id, isTv, season, episode, title, backdropPath };
+        function launchTheaterPlayer(id, isTv, season, episode, title, subTitle, backdropPath, fullItem) {
+            const isAnime = isAnimeMedia(fullItem || currentDrawerItem);
+            activePlayback = { id, isTv, season, episode, title, subTitle, backdropPath, isAnime };
+
             document.getElementById('theaterTitle').innerText = title;
             document.getElementById('theaterSubTitle').innerText = subTitle;
             document.getElementById('theaterNextEpBtn').style.display = isTv ? 'flex' : 'none';
 
-            if (backdropPath) saveContinueRecord(id, isTv, season, episode, title, backdropPath);
+            const subStatus = document.getElementById('subStatusText');
+            if (isAnime) {
+                subStatus.innerText = "⚡ تم تفعيل مسار الأنمي المباشر بالترجمة العربية المعتمدة وبدون ترجمة إنجليزية ملصوقة.";
+            } else {
+                subStatus.innerText = "👑 تم تفعيل سيرفر البث فائق السرعة. للترجمة اضغط على زر (CC) داخل المشغل.";
+            }
+
+            if (backdropPath) saveContinueRecord(id, isTv, season, episode, title, backdropPath, fullItem || currentDrawerItem);
 
             selectStreamServer(0);
             document.getElementById('theaterModal').style.display = 'flex';
@@ -1961,15 +1988,31 @@
             document.querySelectorAll('.srv-pill').forEach((btn, i) => {
                 btn.classList.toggle('active', i === idx);
             });
-            document.getElementById('theaterIframe').src = buildServerStreamUrl(
-                activePlayback.id, activePlayback.isTv, activePlayback.season, activePlayback.episode, serverIdx
+
+            document.getElementById('theaterIframe').src = buildSmartUrl(
+                activePlayback.id,
+                activePlayback.isTv,
+                activePlayback.season,
+                activePlayback.episode,
+                activePlayback.title,
+                activePlayback.isAnime,
+                serverIdx
             );
         }
 
         function playNextEpInTheater() {
             if (!activePlayback || !activePlayback.isTv) return;
             const nextEp = activePlayback.episode + 1;
-            launchTheaterPlayer(activePlayback.id, true, activePlayback.season, nextEp, activePlayback.title, `${t('seasonLabel')} ${activePlayback.season} - ${t('epLabel')} ${nextEp}`, activePlayback.backdropPath);
+            launchTheaterPlayer(
+                activePlayback.id, 
+                true, 
+                activePlayback.season, 
+                nextEp, 
+                activePlayback.title, 
+                `${t('seasonLabel')} ${activePlayback.season} - ${t('epLabel')} ${nextEp}`, 
+                activePlayback.backdropPath,
+                currentDrawerItem
+            );
         }
 
         function closeTheaterModal() {
