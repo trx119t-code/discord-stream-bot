@@ -31,7 +31,6 @@ app.use('/api', rateLimit({
 
 const TMDB_API = 'https://api.themoviedb.org/3';
 const IMAGE_HOST = 'https://image.tmdb.org/t/p';
-
 const validMedia = new Set(['movie', 'tv']);
 const validTrendTypes = new Set(['all', 'movie', 'tv', 'person']);
 const validTime = new Set(['day', 'week']);
@@ -43,9 +42,7 @@ function parsePositiveInt(value, fallback, max = 10000000) {
 }
 
 function language(value) {
-  return ['ar-SA', 'en-US', 'ar', 'en'].includes(value)
-    ? value
-    : 'ar-SA';
+  return ['ar-SA', 'en-US', 'ar', 'en'].includes(value) ? value : 'ar-SA';
 }
 
 function sendError(res, status, message) {
@@ -54,9 +51,7 @@ function sendError(res, status, message) {
 
 async function tmdb(path, params = {}) {
   if (!TMDB_TOKEN) {
-    const error = new Error(
-      'TMDB_READ_ACCESS_TOKEN is not configured on the server.'
-    );
+    const error = new Error('TMDB_READ_ACCESS_TOKEN is not configured on the server.');
     error.status = 503;
     throw error;
   }
@@ -64,11 +59,7 @@ async function tmdb(path, params = {}) {
   const url = new URL(`${TMDB_API}${path}`);
 
   for (const [key, value] of Object.entries(params)) {
-    if (
-      value !== undefined &&
-      value !== null &&
-      value !== ''
-    ) {
+    if (value !== undefined && value !== null && value !== '') {
       url.searchParams.set(key, String(value));
     }
   }
@@ -82,10 +73,7 @@ async function tmdb(path, params = {}) {
   });
 
   if (!response.ok) {
-    const error = new Error(
-      `Metadata provider returned ${response.status}`
-    );
-
+    const error = new Error(`Metadata provider returned ${response.status}`);
     error.status = response.status === 404 ? 404 : 502;
     throw error;
   }
@@ -98,20 +86,12 @@ function asyncRoute(handler) {
     Promise.resolve(handler(req, res, next)).catch(next);
 }
 
-/* =========================
-   HEALTH
-========================= */
-
 app.get('/health', (_req, res) => {
   res.json({
     ok: true,
     service: 'orbit-imperial-api'
   });
 });
-
-/* =========================
-   TRENDING
-========================= */
 
 app.get('/api/trending', asyncRoute(async (req, res) => {
   const type = validTrendTypes.has(req.query.type)
@@ -132,10 +112,6 @@ app.get('/api/trending', asyncRoute(async (req, res) => {
   );
 }));
 
-/* =========================
-   DISCOVER
-========================= */
-
 app.get('/api/discover', asyncRoute(async (req, res) => {
   const media = validMedia.has(req.query.media)
     ? req.query.media
@@ -155,21 +131,74 @@ app.get('/api/discover', asyncRoute(async (req, res) => {
 
   const page = parsePositiveInt(req.query.page, 1, 500);
 
-  res.json(
-    await tmdb(`/discover/${media}`, {
-      language: language(req.query.lang),
-      page,
-      with_genres: genres,
-      with_origin_country: origin,
-      sort_by: 'popularity.desc',
-      include_adult: 'false'
-    })
-  );
-}));
+  const year =
+    typeof req.query.year === 'string' &&
+    /^(19|20)\d{2}$/.test(req.query.year)
+      ? req.query.year
+      : '';
 
-/* =========================
-   NOW PLAYING
-========================= */
+  const rating = Number(req.query.rating);
+
+  const originalLanguage =
+    typeof req.query.language === 'string' &&
+    /^[a-z]{2}$/.test(req.query.language)
+      ? req.query.language
+      : '';
+
+  const runtimeMax = parsePositiveInt(req.query.runtime_max, 0, 1000);
+  const runtimeMin = parsePositiveInt(req.query.runtime_min, 0, 1000);
+
+  const region =
+    typeof req.query.region === 'string' &&
+    /^[A-Z]{2}$/.test(req.query.region)
+      ? req.query.region
+      : '';
+
+  const status =
+    typeof req.query.status === 'string' &&
+    /^[0-5]$/.test(req.query.status)
+      ? req.query.status
+      : '';
+
+  const allowedSort = new Set([
+    'popularity.desc',
+    'vote_average.desc',
+    'primary_release_date.desc',
+    'first_air_date.desc'
+  ]);
+
+  const sort = allowedSort.has(req.query.sort)
+    ? req.query.sort
+    : 'popularity.desc';
+
+  const params = {
+    language: language(req.query.lang),
+    page,
+    with_genres: genres,
+    with_origin_country: origin,
+    sort_by: sort,
+    include_adult: 'false',
+    with_original_language: originalLanguage,
+    region,
+    with_status: status,
+    'vote_average.gte':
+      Number.isFinite(rating) && rating >= 0 && rating <= 10
+        ? rating
+        : '',
+    'with_runtime.lte': runtimeMax || '',
+    'with_runtime.gte': runtimeMin || ''
+  };
+
+  if (year) {
+    if (media === 'movie') {
+      params.primary_release_year = year;
+    } else {
+      params.first_air_date_year = year;
+    }
+  }
+
+  res.json(await tmdb(`/discover/${media}`, params));
+}));
 
 app.get('/api/now-playing', asyncRoute(async (req, res) => {
   res.json(
@@ -179,10 +208,6 @@ app.get('/api/now-playing', asyncRoute(async (req, res) => {
     })
   );
 }));
-
-/* =========================
-   SEARCH
-========================= */
 
 app.get('/api/search', asyncRoute(async (req, res) => {
   const q =
@@ -204,10 +229,6 @@ app.get('/api/search', asyncRoute(async (req, res) => {
   );
 }));
 
-/* =========================
-   FULL DETAILS
-========================= */
-
 app.get('/api/item/full-details', asyncRoute(async (req, res) => {
   const id = parsePositiveInt(req.query.id, 0);
 
@@ -224,49 +245,44 @@ app.get('/api/item/full-details', asyncRoute(async (req, res) => {
   }
 
   const lang = language(req.query.lang);
-
   const needsEnglishFallback =
     !String(lang).toLowerCase().startsWith('en');
 
-  const [details, providers, english] =
-    await Promise.all([
-      tmdb(`/${media}/${id}`, {
-        language: lang,
-        append_to_response:
-          'external_ids,similar,credits,videos'
-      }),
+  const [details, providers, english] = await Promise.all([
+    tmdb(`/${media}/${id}`, {
+      language: lang,
+      append_to_response:
+        'external_ids,similar,credits,videos,images'
+    }),
 
-      tmdb(`/${media}/${id}/watch/providers`),
+    tmdb(`/${media}/${id}/watch/providers`),
 
-      needsEnglishFallback
-        ? tmdb(`/${media}/${id}`, {
-            language: 'en-US',
-            append_to_response: 'videos'
-          }).catch(() => null)
-        : Promise.resolve(null)
-    ]);
+    needsEnglishFallback
+      ? tmdb(`/${media}/${id}`, {
+          language: 'en-US',
+          append_to_response: 'videos'
+        }).catch(() => null)
+      : Promise.resolve(null)
+  ]);
 
   const merged = { ...details };
 
   if (
-    (!merged.overview ||
-      !String(merged.overview).trim()) &&
+    (!merged.overview || !String(merged.overview).trim()) &&
     english?.overview
   ) {
     merged.overview = english.overview;
   }
 
   if (
-    (!merged.tagline ||
-      !String(merged.tagline).trim()) &&
+    (!merged.tagline || !String(merged.tagline).trim()) &&
     english?.tagline
   ) {
     merged.tagline = english.tagline;
   }
 
   if (
-    (!merged.homepage ||
-      !String(merged.homepage).trim()) &&
+    (!merged.homepage || !String(merged.homepage).trim()) &&
     english?.homepage
   ) {
     merged.homepage = english.homepage;
@@ -290,10 +306,6 @@ app.get('/api/item/full-details', asyncRoute(async (req, res) => {
   });
 }));
 
-/* =========================
-   TV SEASON
-========================= */
-
 app.get('/api/tv/season', asyncRoute(async (req, res) => {
   const id = parsePositiveInt(req.query.id, 0);
   const season = Number.parseInt(req.query.season, 10);
@@ -312,22 +324,20 @@ app.get('/api/tv/season', asyncRoute(async (req, res) => {
   }
 
   const lang = language(req.query.lang);
-
   const needsEnglishFallback =
     !String(lang).toLowerCase().startsWith('en');
 
-  const [primary, english] =
-    await Promise.all([
-      tmdb(`/tv/${id}/season/${season}`, {
-        language: lang
-      }),
+  const [primary, english] = await Promise.all([
+    tmdb(`/tv/${id}/season/${season}`, {
+      language: lang
+    }),
 
-      needsEnglishFallback
-        ? tmdb(`/tv/${id}/season/${season}`, {
-            language: 'en-US'
-          }).catch(() => null)
-        : Promise.resolve(null)
-    ]);
+    needsEnglishFallback
+      ? tmdb(`/tv/${id}/season/${season}`, {
+          language: 'en-US'
+        }).catch(() => null)
+      : Promise.resolve(null)
+  ]);
 
   if (
     english?.episodes?.length &&
@@ -340,42 +350,36 @@ app.get('/api/tv/season', asyncRoute(async (req, res) => {
       ])
     );
 
-    primary.episodes =
-      primary.episodes.map(ep => {
-        const en = byNumber.get(
-          Number(ep.episode_number)
-        );
+    primary.episodes = primary.episodes.map(ep => {
+      const en = byNumber.get(Number(ep.episode_number));
 
-        if (!en) return ep;
+      if (!en) return ep;
 
-        return {
-          ...ep,
-          name:
-            ep.name &&
-            String(ep.name).trim()
-              ? ep.name
-              : en.name,
+      return {
+        ...ep,
 
-          overview:
-            ep.overview &&
-            String(ep.overview).trim()
-              ? ep.overview
-              : en.overview
-        };
-      });
+        name:
+          ep.name && String(ep.name).trim()
+            ? ep.name
+            : en.name,
+
+        overview:
+          ep.overview && String(ep.overview).trim()
+            ? ep.overview
+            : en.overview
+      };
+    });
   }
 
   if (
-    (!primary.overview ||
-      !String(primary.overview).trim()) &&
+    (!primary.overview || !String(primary.overview).trim()) &&
     english?.overview
   ) {
     primary.overview = english.overview;
   }
 
   if (
-    (!primary.name ||
-      !String(primary.name).trim()) &&
+    (!primary.name || !String(primary.name).trim()) &&
     english?.name
   ) {
     primary.name = english.name;
@@ -389,9 +393,91 @@ app.get('/api/tv/season', asyncRoute(async (req, res) => {
   res.json(primary);
 }));
 
-/* =========================
-   IMAGE PROXY
-========================= */
+app.get('/api/upcoming', asyncRoute(async (req, res) => {
+  res.json(
+    await tmdb('/movie/upcoming', {
+      language: language(req.query.lang),
+      region:
+        typeof req.query.region === 'string'
+          ? req.query.region
+          : '',
+      page: parsePositiveInt(req.query.page, 1, 500)
+    })
+  );
+}));
+
+app.get('/api/airing-today', asyncRoute(async (req, res) => {
+  res.json(
+    await tmdb('/tv/airing_today', {
+      language: language(req.query.lang),
+      page: parsePositiveInt(req.query.page, 1, 500)
+    })
+  );
+}));
+
+app.get('/api/recommendations', asyncRoute(async (req, res) => {
+  const id = parsePositiveInt(req.query.id, 0);
+
+  const media = validMedia.has(req.query.media)
+    ? req.query.media
+    : '';
+
+  if (!id || !media) {
+    return sendError(
+      res,
+      400,
+      'A valid id and media are required.'
+    );
+  }
+
+  res.json(
+    await tmdb(`/${media}/${id}/recommendations`, {
+      language: language(req.query.lang),
+      page: parsePositiveInt(req.query.page, 1, 100)
+    })
+  );
+}));
+
+app.get('/api/person', asyncRoute(async (req, res) => {
+  const id = parsePositiveInt(req.query.id, 0);
+
+  if (!id) {
+    return sendError(
+      res,
+      400,
+      'A valid person id is required.'
+    );
+  }
+
+  const lang = language(req.query.lang);
+
+  const primary = await tmdb(`/person/${id}`, {
+    language: lang,
+    append_to_response:
+      'combined_credits,images,external_ids'
+  });
+
+  if (
+    (!primary.biography ||
+      !String(primary.biography).trim()) &&
+    !String(lang).toLowerCase().startsWith('en')
+  ) {
+    const en = await tmdb(`/person/${id}`, {
+      language: 'en-US'
+    }).catch(() => null);
+
+    if (en?.biography) {
+      primary.biography = en.biography;
+    }
+  }
+
+  res.set(
+    'Cache-Control',
+    'public, max-age=600, stale-while-revalidate=3600'
+  );
+
+  res.json(primary);
+}));
 
 app.get('/api/image', asyncRoute(async (req, res) => {
   const imagePath =
@@ -437,8 +523,7 @@ app.get('/api/image', asyncRoute(async (req, res) => {
 
   res.set(
     'Content-Type',
-    upstream.headers.get('content-type') ||
-      'image/jpeg'
+    upstream.headers.get('content-type') || 'image/jpeg'
   );
 
   res.set(
@@ -453,10 +538,6 @@ app.get('/api/image', asyncRoute(async (req, res) => {
   res.end(body);
 }));
 
-/* =========================
-   404
-========================= */
-
 app.use((_req, res) => {
   sendError(
     res,
@@ -464,10 +545,6 @@ app.use((_req, res) => {
     'Route not found.'
   );
 });
-
-/* =========================
-   ERROR HANDLER
-========================= */
 
 app.use((err, _req, res, _next) => {
   console.error(
@@ -493,10 +570,6 @@ app.use((err, _req, res, _next) => {
         : 'The metadata service is temporarily unavailable.'
   });
 });
-
-/* =========================
-   START SERVER
-========================= */
 
 app.listen(PORT, () => {
   console.log(
