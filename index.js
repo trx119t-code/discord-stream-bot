@@ -38,7 +38,6 @@ function getHtmlFile() {
 }
 
 const server = http.createServer(async (req, res) => {
-    // ترويسات الأمان وفك الحظر
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
@@ -121,7 +120,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 5. استكشاف التصنيفات والأنمي
+    // 5. استكشاف الأقسام والأنمي
     if (req.url.startsWith('/api/discover')) {
         const media = urlParams.searchParams.get('media') || 'tv';
         const genres = urlParams.searchParams.get('genres') || '';
@@ -143,7 +142,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 6. تفاصيل العمل الكاملة (مع معرّفات IMDb الخارجية)
+    // 6. تفاصيل العمل ومعرّف IMDb
     if (req.url.startsWith('/api/item/full-details')) {
         const id = urlParams.searchParams.get('id');
         const media = urlParams.searchParams.get('media') || 'tv';
@@ -159,7 +158,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 7. حلقات الموسم
+    // 7. حلقات المسلسل
     if (req.url.startsWith('/api/tv/season')) {
         const id = urlParams.searchParams.get('id');
         const seasonNum = urlParams.searchParams.get('season') || '1';
@@ -175,7 +174,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 8. محرك البحث عن الترجمة العربية التلقائي المباشر
+    // 8. محرك سحب الترجمة العربية المعتمدة من OpenSubtitles
     if (req.url.startsWith('/api/subtitles/find')) {
         const imdbId = urlParams.searchParams.get('imdb');
         const isTv = urlParams.searchParams.get('is_tv') === 'true';
@@ -183,7 +182,7 @@ const server = http.createServer(async (req, res) => {
         const episode = urlParams.searchParams.get('episode') || '1';
 
         if (!imdbId) {
-            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.writeHead(200, { 'Content-Type': 'application/json' });
             return res.end(JSON.stringify({ subtitles: [] }));
         }
 
@@ -192,13 +191,11 @@ const server = http.createServer(async (req, res) => {
             const subRes = await fetch(`https://opensubtitles-v3.strem.io/subtitles/${queryPath}`);
             const subData = await subRes.json();
             
-            // تصفية الترجمات العربية فقط
             const arabicSubs = (subData.subtitles || [])
                 .filter(s => s.lang === 'ara' || s.lang === 'ar' || (s.id && s.id.toLowerCase().includes('arabic')))
-                .map(s => ({
-                    id: s.id,
-                    lang: 'ar',
-                    label: 'العربية',
+                .map((s, idx) => ({
+                    id: s.id || `ar-${idx}`,
+                    name: `ترجمة عربية معتمدة ${idx + 1}`,
                     url: `/api/subtitles/proxy?url=${encodeURIComponent(s.url)}`
                 }));
 
@@ -211,7 +208,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 9. بروكسي فك حظر ملفات الترجمة (.vtt / .srt)
+    // 9. بروكسي تحويل وتمرير ملفات الترجمة (.vtt) للمشغل
     if (req.url.startsWith('/api/subtitles/proxy')) {
         const subUrl = urlParams.searchParams.get('url');
         if (!subUrl) {
@@ -222,7 +219,6 @@ const server = http.createServer(async (req, res) => {
             const fetchRes = await fetch(subUrl);
             let subText = await fetchRes.text();
 
-            // تحويل SRT إلى WebVTT إذا تطلب الأمر ليتعرف عليها المشغل فوراً
             if (!subText.trim().startsWith('WEBVTT')) {
                 subText = 'WEBVTT\n\n' + subText.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
             }
@@ -239,7 +235,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // تقديم الواجهة
+    // عرض الواجهة
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
