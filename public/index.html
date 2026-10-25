@@ -983,7 +983,7 @@
             background: #180D12;
         }
 
-        /* المشغل المدمج ArtPlayer */
+        /* المشغل الأصلي ArtPlayer المدمج */
         #theaterModal {
             display: none;
             position: fixed;
@@ -1063,6 +1063,7 @@
             position: absolute;
             inset: 0;
             z-index: 5;
+            display: block;
         }
 
         #theaterIframe {
@@ -1297,7 +1298,7 @@
         </div>
     </div>
 
-    <!-- المشغل الأصلي بدون إعلانات مع دعم الترجمة العربية المباشرة -->
+    <!-- المشغل الأصلي المستقر بدون أي قفز إجباري -->
     <div id="theaterModal">
         <div class="theater-top-bar">
             <div style="display:flex; align-items:center; gap:14px;">
@@ -1310,7 +1311,7 @@
 
             <div class="server-pills-bar">
                 <button class="srv-pill active" id="srv-btn-debrid" onclick="switchPlayerSource(0)">💎 مسار البث الصافي (Debrid 4K)</button>
-                <button class="srv-pill" id="srv-btn-embed" onclick="switchPlayerSource(1)">🚀 سيرفر احتياطي سريع</button>
+                <button class="srv-pill" id="srv-btn-embed" onclick="switchPlayerSource(1)">🚀 سيرفر VidLink 4K الاحتياطي</button>
             </div>
 
             <button class="btn-gold-play" style="padding:8px 20px;" id="theaterNextEpBtn" onclick="playNextEpInTheater()" data-i18n="nextEpisode">الحلقة التالية ⏭️</button>
@@ -1914,7 +1915,6 @@
             });
         }
 
-        // تشغيل البث السحابي النظيف بدون أي هاردسب إنجليزي وبمشغل ArtPlayer الداخلي
         async function launchTheaterPlayer(id, isTv, season, episode, title, subTitle, backdropPath, fullItem) {
             activePlayback = { id, isTv, season, episode, title, subTitle, backdropPath, fullItem };
             document.getElementById('theaterTitle').innerText = title;
@@ -1941,20 +1941,20 @@
             }
 
             if (sourceIdx === 1) {
-                // مشغل التضمين الاحتياطي
+                // مشغل التضمين المباشر
                 artContainer.style.display = 'none';
                 iframe.style.display = 'block';
-                subText.innerText = "🚀 تم تشغيل السيرفر الاحتياطي السريع (اضغط CC للترجمة).";
+                subText.innerText = "🚀 تم تشغيل سيرفر VidLink 4K الاحتياطي السريع (اضغط CC للترجمة).";
                 iframe.src = activePlayback.isTv
                     ? `https://vidlink.pro/tv/${activePlayback.id}/${activePlayback.season}/${activePlayback.episode}?primaryColor=FF2A42&autoplay=true`
                     : `https://vidlink.pro/movie/${activePlayback.id}?primaryColor=FF2A42&autoplay=true`;
                 return;
             }
 
-            // المسار السحابي النظيف (Debrid 4K)
+            // المسار السحابي النظيف بدون أي نقل إجباري
             artContainer.style.display = 'block';
             iframe.style.display = 'none';
-            subText.innerText = "⏳ جاري استخراج مسار التدفق السحابي وملفات الترجمة العربية...";
+            subText.innerText = "⏳ جاري استخراج مسار التدفق السحابي النظيف وفحص ملفات الترجمة العربية...";
 
             let imdbId = '';
             try {
@@ -1975,17 +1975,17 @@
             }
 
             let streamUrl = '';
-            let isDirectStream = false;
             try {
                 const streamRes = await fetch(`/api/debrid/stream?imdb=${imdbId}&is_tv=${activePlayback.isTv}&season=${activePlayback.season}&episode=${activePlayback.episode}&title=${encodeURIComponent(activePlayback.title)}&tmdb=${activePlayback.id}`);
                 const streamData = await streamRes.json();
-                streamUrl = streamData.streamUrl;
-                isDirectStream = streamData.isDirectStream;
+                if (streamData.success && streamData.streamUrl) {
+                    streamUrl = streamData.streamUrl;
+                }
             } catch (e) {}
 
-            if (!streamUrl || !isDirectStream) {
-                // إذا لم يتوفر ملف الكاش المباشر نتحول للوضع السريع تلقائياً
-                switchPlayerSource(1);
+            // إذا لم يتوفر ملف الكاش بعد نعرض للمستخدم رسالة واضحة في البار دون نقله إجبارياً
+            if (!streamUrl) {
+                subText.innerText = "⚠️ هذا العمل غير مخزن مسبقاً في السحابة حالياً، يمكنك التبديل للسيرفر الاحتياطي بالأعلى.";
                 return;
             }
 
@@ -2014,10 +2014,6 @@
                 miniProgressBar: true,
                 autoPlayback: true,
                 theme: '#FF2A42',
-            });
-
-            art.on('error', () => {
-                switchPlayerSource(1);
             });
         }
 
