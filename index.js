@@ -43,7 +43,7 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.removeHeader('X-Frame-Options');
 
-    // 1. بروكسي الصور لتخطي حجب ديسكورد للبوسترات
+    // 1. بروكسي الصور
     if (req.url.startsWith('/api/image')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const imgPath = urlParams.searchParams.get('path');
@@ -83,10 +83,13 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 3. المحتوى الرائج
+    // 3. المحتوى الرائج الشامل (أسبوعي / يومي)
     if (req.url.startsWith('/api/trending')) {
+        const urlParams = new URL(req.url, `http://${req.headers.host}`);
+        const type = urlParams.searchParams.get('type') || 'all'; // all, movie, tv
+        const time = urlParams.searchParams.get('time') || 'week'; // week, day
         try {
-            const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}&language=ar-SA`);
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/trending/${type}/${time}?api_key=${TMDB_API_KEY}&language=ar-SA`);
             const data = await tmdbRes.text();
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(data);
@@ -97,7 +100,23 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 4. تفاصيل المسلسل ومواسمه
+    // 4. المحتوى بحسب منصة البث (Netflix = 8, Disney+ = 337, Prime = 119, Apple = 350)
+    if (req.url.startsWith('/api/provider')) {
+        const urlParams = new URL(req.url, `http://${req.headers.host}`);
+        const providerId = urlParams.searchParams.get('id') || '8';
+        try {
+            const tmdbRes = await fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_watch_providers=${providerId}&watch_region=SA&language=ar-SA&sort_by=popularity.desc`);
+            const data = await tmdbRes.text();
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(data);
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ results: [] }));
+        }
+        return;
+    }
+
+    // 5. تفاصيل المسلسل
     if (req.url.startsWith('/api/tv/details')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
@@ -113,7 +132,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 5. حلقات الموسم
+    // 6. حلقات موسم محدد
     if (req.url.startsWith('/api/tv/season')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const id = urlParams.searchParams.get('id');
@@ -130,7 +149,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // تقديم الواجهة
+    // تقديم صفحة HTML
     const htmlData = getHtmlFile();
     if (htmlData) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
