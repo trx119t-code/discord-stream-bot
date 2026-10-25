@@ -4,7 +4,6 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const axios = require('axios');
-const cheerio = require('cheerio');
 const { 
     Client, 
     GatewayIntentBits, 
@@ -27,6 +26,7 @@ const client = new Client({
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const TMDB_API_KEY = '2da39b910e34eeb919f6f92b25637d43';
+const TORBOX_API_KEY = 'fbb21907-7aef-4e48-b6e8-d87970df407f';
 
 function getHtmlFile() {
     const paths = [
@@ -37,85 +37,6 @@ function getHtmlFile() {
         if (fs.existsSync(p)) return fs.readFileSync(p, 'utf-8');
     }
     return null;
-}
-
-// محرك كاشط الفانسب العربي الأصلي
-async function scrapeArabicAnimeServers(enTitle, arTitle, episodeNum) {
-    const servers = [];
-    const searchQueries = [enTitle, arTitle].filter(Boolean);
-
-    for (const q of searchQueries) {
-        try {
-            const cleanQuery = q.toLowerCase().replace(/season\s*\d+/gi, '').trim();
-            const searchUrl = `https://witanime.pics/?search_query=${encodeURIComponent(cleanQuery)}`;
-            
-            const searchRes = await axios.get(searchUrl, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-                    'Accept-Language': 'ar,en;q=0.9'
-                },
-                timeout: 5000
-            });
-
-            const $ = cheerio.load(searchRes.data);
-            let animeLink = $('.anime-card-title a, .entry-title a, a[href*="/anime/"]').first().attr('href');
-
-            if (animeLink) {
-                const animePageRes = await axios.get(animeLink, {
-                    headers: { 'User-Agent': 'Mozilla/5.0' },
-                    timeout: 5000
-                });
-                const $anime = cheerio.load(animePageRes.data);
-
-                let epUrl = null;
-                $anime('a[href*="-الحلقة-"], a[href*="/episode/"]').each((i, el) => {
-                    const text = $anime(el).text().trim();
-                    const href = $anime(el).attr('href');
-                    if (text === `${episodeNum}` || text.includes(` ${episodeNum} `) || href.includes(`-${episodeNum}/`)) {
-                        if (!epUrl) epUrl = href;
-                    }
-                });
-
-                if (!epUrl) {
-                    epUrl = $anime('a[href*="-الحلقة-"], a[href*="/episode/"]').first().attr('href');
-                }
-
-                if (epUrl) {
-                    const epRes = await axios.get(epUrl, {
-                        headers: { 'User-Agent': 'Mozilla/5.0' },
-                        timeout: 5000
-                    });
-                    const $ep = cheerio.load(epRes.data);
-
-                    $ep('#episode-servers li, ul.servers-list li, .server-item').each((i, el) => {
-                        let dataUrl = $ep(el).attr('data-url') || $ep(el).find('a').attr('data-url');
-                        let srvName = $ep(el).text().trim() || `سيرفر عربي ${i + 1}`;
-
-                        if (dataUrl) {
-                            let decoded = dataUrl;
-                            if (!dataUrl.startsWith('http')) {
-                                try {
-                                    decoded = Buffer.from(dataUrl, 'base64').toString('utf-8');
-                                } catch (e) {}
-                            }
-                            if (decoded && decoded.startsWith('http')) {
-                                servers.push({
-                                    name: `🇸🇦 ${srvName} (ترجمة عربية أصلية)`,
-                                    url: decoded
-                                });
-                            }
-                        }
-                    });
-
-                    if (servers.length > 0) break;
-                }
-            }
-        } catch (err) {
-            // الاستمرار للبحث التالي في حال تعثر أحد المصادر
-        }
-    }
-
-    return servers;
 }
 
 const server = http.createServer(async (req, res) => {
@@ -218,7 +139,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 6. تفاصيل العمل
+    // 6. تفاصيل العمل ومعرف IMDb
     if (req.url.startsWith('/api/item/full-details')) {
         const id = urlParams.searchParams.get('id');
         const media = urlParams.searchParams.get('media') || 'tv';
@@ -248,19 +169,112 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 8. مسار كاشط الأنمي العربي لجلب سيرفرات الفانسب المباشرة
-    if (req.url.startsWith('/api/anime/servers')) {
-        const enTitle = urlParams.searchParams.get('en_title') || '';
-        const arTitle = urlParams.searchParams.get('ar_title') || '';
-        const ep = urlParams.searchParams.get('ep') || '1';
+    // 8. محرك Torbox السحابي لاستخراج تدفق الفيديو الخام والنظيف (1080p/4K)
+    if (req.url.startsWith('/api/debrid/stream')) {
+        const imdbId = urlParams.searchParams.get('imdb');
+        const isTv = urlParams.searchParams.get('is_tv') === 'true';
+        const season = urlParams.searchParams.get('season') || '1';
+        const episode = urlParams.searchParams.get('episode') || '1';
+        const queryTitle = urlParams.searchParams.get('title') || '';
 
         try {
-            const scrapedServers = await scrapeArabicAnimeServers(enTitle, arTitle, ep);
+            // البحث التلقائي في الكاش السحابي السريع
+            const searchTarget = imdbId ? imdbId : queryTitle;
+            const tbRes = await axios.get(`https://api.torbox.app/v1/api/torrents/search?query=${encodeURIComponent(searchTarget)}`, {
+                headers: { 'Authorization': `Bearer ${TORBOX_API_KEY}` },
+                timeout: 6000
+            }).catch(() => null);
+
+            let directStreamUrl = null;
+            if (tbRes && tbRes.data && tbRes.data.data && tbRes.data.data.length > 0) {
+                const targetTorrent = tbRes.data.data[0];
+                directStreamUrl = targetTorrent.download_url || targetTorrent.stream_url;
+            }
+
+            // نظام تراجع ذكي في حال لم يكن الكاش متوفراً بعد
+            if (!directStreamUrl) {
+                directStreamUrl = isTv 
+                    ? `https://vidlink.pro/tv/${urlParams.searchParams.get('tmdb') || ''}/${season}/${episode}?primaryColor=FF2A42`
+                    : `https://vidlink.pro/movie/${urlParams.searchParams.get('tmdb') || ''}?primaryColor=FF2A42`;
+                
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                return res.end(JSON.stringify({ 
+                    success: true, 
+                    isDirectStream: false, 
+                    streamUrl: directStreamUrl 
+                }));
+            }
+
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(JSON.stringify({ servers: scrapedServers }));
+            res.end(JSON.stringify({ 
+                success: true, 
+                isDirectStream: true, 
+                streamUrl: directStreamUrl 
+            }));
         } catch (err) {
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ servers: [] }));
+            res.end(JSON.stringify({ success: false, isDirectStream: false, streamUrl: '' }));
+        }
+        return;
+    }
+
+    // 9. محرك جلب الترجمة العربية المعتمدة من OpenSubtitles
+    if (req.url.startsWith('/api/subtitles/find')) {
+        const imdbId = urlParams.searchParams.get('imdb');
+        const isTv = urlParams.searchParams.get('is_tv') === 'true';
+        const season = urlParams.searchParams.get('season') || '1';
+        const episode = urlParams.searchParams.get('episode') || '1';
+
+        if (!imdbId) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ subtitles: [] }));
+        }
+
+        try {
+            const queryPath = isTv ? `series/${imdbId}:${season}:${episode}.json` : `movie/${imdbId}.json`;
+            const subRes = await axios.get(`https://opensubtitles-v3.strem.io/subtitles/${queryPath}`, { timeout: 6000 });
+            
+            const arabicSubs = (subRes.data.subtitles || [])
+                .filter(s => s.lang === 'ara' || s.lang === 'ar' || (s.id && s.id.toLowerCase().includes('arabic')))
+                .map((s, idx) => ({
+                    id: s.id || `ar-${idx}`,
+                    name: `ترجمة عربية معتمدة ${idx + 1}`,
+                    url: `/api/subtitles/proxy?url=${encodeURIComponent(s.url)}`
+                }));
+
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ subtitles: arabicSubs }));
+        } catch (err) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ subtitles: [] }));
+        }
+        return;
+    }
+
+    // 10. بروكسي وتنسيق ملفات الترجمة (.vtt)
+    if (req.url.startsWith('/api/subtitles/proxy')) {
+        const subUrl = urlParams.searchParams.get('url');
+        if (!subUrl) {
+            res.writeHead(400);
+            return res.end();
+        }
+        try {
+            const fetchRes = await axios.get(subUrl, { responseType: 'text', timeout: 6000 });
+            let subText = fetchRes.data;
+
+            if (!subText.trim().startsWith('WEBVTT')) {
+                subText = 'WEBVTT\n\n' + subText.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
+            }
+
+            res.writeHead(200, {
+                'Content-Type': 'text/vtt; charset=utf-8',
+                'Cache-Control': 'public, max-age=86400',
+                'Access-Control-Allow-Origin': '*'
+            });
+            res.end(subText);
+        } catch (err) {
+            res.writeHead(404);
+            res.end();
         }
         return;
     }
