@@ -14,6 +14,7 @@ app.set('trust proxy', 1);
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
   origin(origin, callback) {
+    // Requests without Origin include local health checks; browser origins must be explicitly allowed.
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error('Origin is not allowed by CORS'));
   },
@@ -31,9 +32,12 @@ app.use('/api', rateLimit({
 const TMDB_API = 'https://api.themoviedb.org/3';
 const IMAGE_HOST = 'https://image.tmdb.org/t/p';
 const OPENSUBTITLES_STREMIO = 'https://opensubtitles-v3.strem.io';
+
 const STREMIO_ADDON_HOSTS = new Set(
   (process.env.STREMIO_ADDON_HOSTS || '')
-    .split(',').map(x => x.trim().toLowerCase()).filter(Boolean)
+    .split(',')
+    .map(x => x.trim().toLowerCase())
+    .filter(Boolean)
 );
 
 const validMedia = new Set(['movie', 'tv']);
@@ -47,7 +51,9 @@ function parsePositiveInt(value, fallback, max = 10000000) {
 }
 
 function language(value) {
-  return ['ar-SA', 'en-US', 'ar', 'en'].includes(value) ? value : 'ar-SA';
+  return ['ar-SA', 'en-US', 'ar', 'en'].includes(value)
+    ? value
+    : 'ar-SA';
 }
 
 function sendError(res, status, message) {
@@ -56,7 +62,9 @@ function sendError(res, status, message) {
 
 async function tmdb(path, params = {}) {
   if (!TMDB_TOKEN) {
-    const error = new Error('TMDB_READ_ACCESS_TOKEN is not configured on the server.');
+    const error = new Error(
+      'TMDB_READ_ACCESS_TOKEN is not configured on the server.'
+    );
     error.status = 503;
     throw error;
   }
@@ -64,7 +72,11 @@ async function tmdb(path, params = {}) {
   const url = new URL(`${TMDB_API}${path}`);
 
   for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null && value !== '') {
+    if (
+      value !== undefined &&
+      value !== null &&
+      value !== ''
+    ) {
       url.searchParams.set(key, String(value));
     }
   }
@@ -78,7 +90,9 @@ async function tmdb(path, params = {}) {
   });
 
   if (!response.ok) {
-    const error = new Error(`Metadata provider returned ${response.status}`);
+    const error = new Error(
+      `Metadata provider returned ${response.status}`
+    );
     error.status = response.status === 404 ? 404 : 502;
     throw error;
   }
@@ -91,39 +105,96 @@ function asyncRoute(handler) {
     Promise.resolve(handler(req, res, next)).catch(next);
 }
 
-app.get('/health', (_req, res) => {
-  res.json({ ok: true, service: 'orbit-imperial-api' });
-});
+app.get('/health', (_req, res) =>
+  res.json({
+    ok: true,
+    service: 'orbit-cinema-api'
+  })
+);
 
 app.get('/api/trending', asyncRoute(async (req, res) => {
-  const type = validTrendTypes.has(req.query.type) ? req.query.type : 'all';
-  const time = validTime.has(req.query.time) ? req.query.time : 'week';
-  const page = parsePositiveInt(req.query.page, 1, 500);
+  const type = validTrendTypes.has(req.query.type)
+    ? req.query.type
+    : 'all';
 
-  res.json(await tmdb(`/trending/${type}/${time}`, {
-    language: language(req.query.lang),
-    page
-  }));
+  const time = validTime.has(req.query.time)
+    ? req.query.time
+    : 'week';
+
+  const page = parsePositiveInt(
+    req.query.page,
+    1,
+    500
+  );
+
+  res.json(
+    await tmdb(`/trending/${type}/${time}`, {
+      language: language(req.query.lang),
+      page
+    })
+  );
 }));
 
 app.get('/api/discover', asyncRoute(async (req, res) => {
-  const media = validMedia.has(req.query.media) ? req.query.media : 'movie';
-  const genres = typeof req.query.genres === 'string' &&
-    /^[0-9,]{0,80}$/.test(req.query.genres) ? req.query.genres : '';
-  const origin = typeof req.query.origin === 'string' &&
-    /^[A-Z]{2}$/.test(req.query.origin) ? req.query.origin : '';
-  const page = parsePositiveInt(req.query.page, 1, 500);
-  const year = typeof req.query.year === 'string' &&
-    /^(19|20)\d{2}$/.test(req.query.year) ? req.query.year : '';
+  const media = validMedia.has(req.query.media)
+    ? req.query.media
+    : 'movie';
+
+  const genres =
+    typeof req.query.genres === 'string' &&
+    /^[0-9,]{0,80}$/.test(req.query.genres)
+      ? req.query.genres
+      : '';
+
+  const origin =
+    typeof req.query.origin === 'string' &&
+    /^[A-Z]{2}$/.test(req.query.origin)
+      ? req.query.origin
+      : '';
+
+  const page = parsePositiveInt(
+    req.query.page,
+    1,
+    500
+  );
+
+  const year =
+    typeof req.query.year === 'string' &&
+    /^(19|20)\d{2}$/.test(req.query.year)
+      ? req.query.year
+      : '';
+
   const rating = Number(req.query.rating);
-  const originalLanguage = typeof req.query.language === 'string' &&
-    /^[a-z]{2}$/.test(req.query.language) ? req.query.language : '';
-  const runtimeMax = parsePositiveInt(req.query.runtime_max, 0, 1000);
-  const runtimeMin = parsePositiveInt(req.query.runtime_min, 0, 1000);
-  const region = typeof req.query.region === 'string' &&
-    /^[A-Z]{2}$/.test(req.query.region) ? req.query.region : '';
-  const status = typeof req.query.status === 'string' &&
-    /^[0-5]$/.test(req.query.status) ? req.query.status : '';
+
+  const originalLanguage =
+    typeof req.query.language === 'string' &&
+    /^[a-z]{2}$/.test(req.query.language)
+      ? req.query.language
+      : '';
+
+  const runtimeMax = parsePositiveInt(
+    req.query.runtime_max,
+    0,
+    1000
+  );
+
+  const runtimeMin = parsePositiveInt(
+    req.query.runtime_min,
+    0,
+    1000
+  );
+
+  const region =
+    typeof req.query.region === 'string' &&
+    /^[A-Z]{2}$/.test(req.query.region)
+      ? req.query.region
+      : '';
+
+  const status =
+    typeof req.query.status === 'string' &&
+    /^[0-5]$/.test(req.query.status)
+      ? req.query.status
+      : '';
 
   const allowedSort = new Set([
     'popularity.desc',
@@ -146,212 +217,444 @@ app.get('/api/discover', asyncRoute(async (req, res) => {
     with_original_language: originalLanguage,
     region,
     with_status: status,
+
     'vote_average.gte':
-      Number.isFinite(rating) && rating >= 0 && rating <= 10 ? rating : '',
-    'with_runtime.lte': runtimeMax || '',
-    'with_runtime.gte': runtimeMin || ''
+      Number.isFinite(rating) &&
+      rating >= 0 &&
+      rating <= 10
+        ? rating
+        : '',
+
+    'with_runtime.lte':
+      runtimeMax || '',
+
+    'with_runtime.gte':
+      runtimeMin || ''
   };
 
   if (year) {
-    if (media === 'movie') params.primary_release_year = year;
-    else params.first_air_date_year = year;
+    if (media === 'movie') {
+      params.primary_release_year = year;
+    } else {
+      params.first_air_date_year = year;
+    }
   }
 
-  res.json(await tmdb(`/discover/${media}`, params));
+  res.json(
+    await tmdb(`/discover/${media}`, params)
+  );
 }));
 
 app.get('/api/now-playing', asyncRoute(async (req, res) => {
-  res.json(await tmdb('/movie/now_playing', {
-    language: language(req.query.lang),
-    page: parsePositiveInt(req.query.page, 1, 500)
-  }));
+  res.json(
+    await tmdb('/movie/now_playing', {
+      language: language(req.query.lang),
+      page: parsePositiveInt(
+        req.query.page,
+        1,
+        500
+      )
+    })
+  );
 }));
 
 app.get('/api/search', asyncRoute(async (req, res) => {
-  const q = typeof req.query.q === 'string'
-    ? req.query.q.trim().slice(0, 120)
-    : '';
+  const q =
+    typeof req.query.q === 'string'
+      ? req.query.q.trim().slice(0, 120)
+      : '';
 
-  if (!q) return res.json({ results: [] });
+  if (!q) {
+    return res.json({
+      results: []
+    });
+  }
 
-  res.json(await tmdb('/search/multi', {
-    query: q,
-    language: language(req.query.lang),
-    include_adult: 'false',
-    page: parsePositiveInt(req.query.page, 1, 500)
-  }));
+  res.json(
+    await tmdb('/search/multi', {
+      query: q,
+      language: language(req.query.lang),
+      include_adult: 'false',
+      page: parsePositiveInt(
+        req.query.page,
+        1,
+        500
+      )
+    })
+  );
 }));
 
 app.get('/api/item/full-details', asyncRoute(async (req, res) => {
-  const id = parsePositiveInt(req.query.id, 0);
-  const media = validMedia.has(req.query.media) ? req.query.media : '';
+  const id = parsePositiveInt(
+    req.query.id,
+    0
+  );
+
+  const media = validMedia.has(req.query.media)
+    ? req.query.media
+    : '';
 
   if (!id || !media) {
-    return sendError(res, 400, 'A valid id and media=movie|tv are required.');
+    return sendError(
+      res,
+      400,
+      'A valid id and media=movie|tv are required.'
+    );
   }
 
   const lang = language(req.query.lang);
+
   const needsEnglishFallback =
     !String(lang).toLowerCase().startsWith('en');
 
-  const [details, providers, english] = await Promise.all([
-    tmdb(`/${media}/${id}`, {
-      language: lang,
-      append_to_response: 'external_ids,similar,credits,videos,images'
-    }),
-    tmdb(`/${media}/${id}/watch/providers`),
-    needsEnglishFallback
-      ? tmdb(`/${media}/${id}`, {
-          language: 'en-US',
-          append_to_response: 'videos'
-        }).catch(() => null)
-      : Promise.resolve(null)
-  ]);
+  const [details, providers, english] =
+    await Promise.all([
+      tmdb(`/${media}/${id}`, {
+        language: lang,
+        append_to_response:
+          'external_ids,similar,credits,videos,images'
+      }),
 
-  const merged = { ...details };
+      tmdb(`/${media}/${id}/watch/providers`),
 
-  if ((!merged.overview || !String(merged.overview).trim()) && english?.overview) {
+      needsEnglishFallback
+        ? tmdb(`/${media}/${id}`, {
+            language: 'en-US',
+            append_to_response: 'videos'
+          }).catch(() => null)
+        : Promise.resolve(null)
+    ]);
+
+  const merged = {
+    ...details
+  };
+
+  if (
+    (!merged.overview ||
+      !String(merged.overview).trim()) &&
+    english?.overview
+  ) {
     merged.overview = english.overview;
   }
-  if ((!merged.tagline || !String(merged.tagline).trim()) && english?.tagline) {
+
+  if (
+    (!merged.tagline ||
+      !String(merged.tagline).trim()) &&
+    english?.tagline
+  ) {
     merged.tagline = english.tagline;
   }
-  if ((!merged.homepage || !String(merged.homepage).trim()) && english?.homepage) {
+
+  if (
+    (!merged.homepage ||
+      !String(merged.homepage).trim()) &&
+    english?.homepage
+  ) {
     merged.homepage = english.homepage;
   }
-  if ((!merged.videos?.results?.length) && english?.videos?.results?.length) {
-    merged.videos = english.videos;
+
+  // Merge localized + English video results so trailers remain available even when one locale is sparse.
+  const primaryVideos =
+    Array.isArray(merged.videos?.results)
+      ? merged.videos.results
+      : [];
+
+  const englishVideos =
+    Array.isArray(english?.videos?.results)
+      ? english.videos.results
+      : [];
+
+  if (
+    primaryVideos.length ||
+    englishVideos.length
+  ) {
+    const seen = new Set();
+
+    const results = [
+      ...primaryVideos,
+      ...englishVideos
+    ].filter(video => {
+      const key = String(
+        video?.key ||
+        video?.id ||
+        ''
+      );
+
+      if (!key || seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    });
+
+    merged.videos = {
+      ...(merged.videos || {}),
+      results
+    };
   }
 
-  res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=1800');
+  res.set(
+    'Cache-Control',
+    'public, max-age=300, stale-while-revalidate=1800'
+  );
+
   res.json({
     ...merged,
-    watch_providers: providers?.results || {}
+    watch_providers:
+      providers?.results || {}
   });
 }));
 
 app.get('/api/tv/season', asyncRoute(async (req, res) => {
-  const id = parsePositiveInt(req.query.id, 0);
-  const season = Number.parseInt(req.query.season, 10);
+  const id = parsePositiveInt(
+    req.query.id,
+    0
+  );
 
-  if (!id || !Number.isInteger(season) || season < 0 || season > 100) {
-    return sendError(res, 400, 'A valid TV id and season are required.');
+  const season = Number.parseInt(
+    req.query.season,
+    10
+  );
+
+  if (
+    !id ||
+    !Number.isInteger(season) ||
+    season < 0 ||
+    season > 100
+  ) {
+    return sendError(
+      res,
+      400,
+      'A valid TV id and season are required.'
+    );
   }
 
-  const lang = language(req.query.lang);
+  const lang = language(
+    req.query.lang
+  );
+
   const needsEnglishFallback =
-    !String(lang).toLowerCase().startsWith('en');
+    !String(lang)
+      .toLowerCase()
+      .startsWith('en');
 
-  const [primary, english] = await Promise.all([
-    tmdb(`/tv/${id}/season/${season}`, { language: lang }),
-    needsEnglishFallback
-      ? tmdb(`/tv/${id}/season/${season}`, {
-          language: 'en-US'
-        }).catch(() => null)
-      : Promise.resolve(null)
-  ]);
+  const [primary, english] =
+    await Promise.all([
+      tmdb(`/tv/${id}/season/${season}`, {
+        language: lang
+      }),
 
-  if (english?.episodes?.length && primary?.episodes?.length) {
+      needsEnglishFallback
+        ? tmdb(
+            `/tv/${id}/season/${season}`,
+            {
+              language: 'en-US'
+            }
+          ).catch(() => null)
+        : Promise.resolve(null)
+    ]);
+
+  if (
+    english?.episodes?.length &&
+    primary?.episodes?.length
+  ) {
     const byNumber = new Map(
-      english.episodes.map(ep => [Number(ep.episode_number), ep])
+      english.episodes.map(ep => [
+        Number(ep.episode_number),
+        ep
+      ])
     );
 
-    primary.episodes = primary.episodes.map(ep => {
-      const en = byNumber.get(Number(ep.episode_number));
-      if (!en) return ep;
+    primary.episodes =
+      primary.episodes.map(ep => {
+        const en = byNumber.get(
+          Number(ep.episode_number)
+        );
 
-      return {
-        ...ep,
-        name:
-          ep.name && String(ep.name).trim()
-            ? ep.name
-            : en.name,
-        overview:
-          ep.overview && String(ep.overview).trim()
-            ? ep.overview
-            : en.overview
-      };
-    });
+        if (!en) {
+          return ep;
+        }
+
+        return {
+          ...ep,
+
+          name:
+            ep.name &&
+            String(ep.name).trim()
+              ? ep.name
+              : en.name,
+
+          overview:
+            ep.overview &&
+            String(ep.overview).trim()
+              ? ep.overview
+              : en.overview
+        };
+      });
   }
 
-  if ((!primary.overview || !String(primary.overview).trim()) && english?.overview) {
-    primary.overview = english.overview;
-  }
-  if ((!primary.name || !String(primary.name).trim()) && english?.name) {
-    primary.name = english.name;
+  if (
+    (!primary.overview ||
+      !String(primary.overview).trim()) &&
+    english?.overview
+  ) {
+    primary.overview =
+      english.overview;
   }
 
-  res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=1800');
+  if (
+    (!primary.name ||
+      !String(primary.name).trim()) &&
+    english?.name
+  ) {
+    primary.name =
+      english.name;
+  }
+
+  res.set(
+    'Cache-Control',
+    'public, max-age=300, stale-while-revalidate=1800'
+  );
+
   res.json(primary);
 }));
 
 app.get('/api/upcoming', asyncRoute(async (req, res) => {
-  res.json(await tmdb('/movie/upcoming', {
-    language: language(req.query.lang),
-    region: typeof req.query.region === 'string' ? req.query.region : '',
-    page: parsePositiveInt(req.query.page, 1, 500)
-  }));
+  res.json(
+    await tmdb('/movie/upcoming', {
+      language: language(req.query.lang),
+
+      region:
+        typeof req.query.region === 'string'
+          ? req.query.region
+          : '',
+
+      page: parsePositiveInt(
+        req.query.page,
+        1,
+        500
+      )
+    })
+  );
 }));
 
 app.get('/api/airing-today', asyncRoute(async (req, res) => {
-  res.json(await tmdb('/tv/airing_today', {
-    language: language(req.query.lang),
-    page: parsePositiveInt(req.query.page, 1, 500)
-  }));
+  res.json(
+    await tmdb('/tv/airing_today', {
+      language: language(req.query.lang),
+
+      page: parsePositiveInt(
+        req.query.page,
+        1,
+        500
+      )
+    })
+  );
 }));
 
 app.get('/api/recommendations', asyncRoute(async (req, res) => {
-  const id = parsePositiveInt(req.query.id, 0);
-  const media = validMedia.has(req.query.media) ? req.query.media : '';
+  const id = parsePositiveInt(
+    req.query.id,
+    0
+  );
+
+  const media = validMedia.has(req.query.media)
+    ? req.query.media
+    : '';
 
   if (!id || !media) {
-    return sendError(res, 400, 'A valid id and media are required.');
+    return sendError(
+      res,
+      400,
+      'A valid id and media are required.'
+    );
   }
 
-  res.json(await tmdb(`/${media}/${id}/recommendations`, {
-    language: language(req.query.lang),
-    page: parsePositiveInt(req.query.page, 1, 100)
-  }));
+  res.json(
+    await tmdb(
+      `/${media}/${id}/recommendations`,
+      {
+        language: language(req.query.lang),
+
+        page: parsePositiveInt(
+          req.query.page,
+          1,
+          100
+        )
+      }
+    )
+  );
 }));
 
 app.get('/api/person', asyncRoute(async (req, res) => {
-  const id = parsePositiveInt(req.query.id, 0);
+  const id = parsePositiveInt(
+    req.query.id,
+    0
+  );
 
   if (!id) {
-    return sendError(res, 400, 'A valid person id is required.');
+    return sendError(
+      res,
+      400,
+      'A valid person id is required.'
+    );
   }
 
-  const lang = language(req.query.lang);
+  const lang = language(
+    req.query.lang
+  );
 
-  const primary = await tmdb(`/person/${id}`, {
-    language: lang,
-    append_to_response: 'combined_credits,images,external_ids'
-  });
+  const primary = await tmdb(
+    `/person/${id}`,
+    {
+      language: lang,
+      append_to_response:
+        'combined_credits,images,external_ids'
+    }
+  );
 
   if (
-    (!primary.biography || !String(primary.biography).trim()) &&
-    !String(lang).toLowerCase().startsWith('en')
+    (!primary.biography ||
+      !String(primary.biography).trim()) &&
+    !String(lang)
+      .toLowerCase()
+      .startsWith('en')
   ) {
-    const en = await tmdb(`/person/${id}`, {
-      language: 'en-US'
-    }).catch(() => null);
+    const en = await tmdb(
+      `/person/${id}`,
+      {
+        language: 'en-US'
+      }
+    ).catch(() => null);
 
-    if (en?.biography) primary.biography = en.biography;
+    if (en?.biography) {
+      primary.biography =
+        en.biography;
+    }
   }
 
-  res.set('Cache-Control', 'public, max-age=600, stale-while-revalidate=3600');
+  res.set(
+    'Cache-Control',
+    'public, max-age=600, stale-while-revalidate=3600'
+  );
+
   res.json(primary);
 }));
 
+// Optional proxy for Stremio-compatible add-ons that the user is authorized to use.
+// Only exact HTTPS hosts listed in STREMIO_ADDON_HOSTS are allowed.
+// Torrent/infoHash streams are intentionally not proxied or returned.
 app.get('/api/stremio/streams', asyncRoute(async (req, res) => {
   const manifestRaw =
     typeof req.query.manifest === 'string'
       ? req.query.manifest.trim()
       : '';
 
-  const media = validMedia.has(req.query.media)
-    ? req.query.media
-    : '';
+  const media =
+    validMedia.has(req.query.media)
+      ? req.query.media
+      : '';
 
   const imdb =
     typeof req.query.imdb === 'string' &&
@@ -359,7 +662,11 @@ app.get('/api/stremio/streams', asyncRoute(async (req, res) => {
       ? req.query.imdb
       : '';
 
-  if (!manifestRaw || !media || !imdb) {
+  if (
+    !manifestRaw ||
+    !media ||
+    !imdb
+  ) {
     return sendError(
       res,
       400,
@@ -370,14 +677,22 @@ app.get('/api/stremio/streams', asyncRoute(async (req, res) => {
   let manifestUrl;
 
   try {
-    manifestUrl = new URL(manifestRaw);
+    manifestUrl = new URL(
+      manifestRaw
+    );
   } catch {
-    return sendError(res, 400, 'Invalid add-on manifest URL.');
+    return sendError(
+      res,
+      400,
+      'Invalid add-on manifest URL.'
+    );
   }
 
   if (
     manifestUrl.protocol !== 'https:' ||
-    !/\/manifest\.json$/i.test(manifestUrl.pathname)
+    !/\/manifest\.json$/i.test(
+      manifestUrl.pathname
+    )
   ) {
     return sendError(
       res,
@@ -386,9 +701,13 @@ app.get('/api/stremio/streams', asyncRoute(async (req, res) => {
     );
   }
 
-  const host = manifestUrl.hostname.toLowerCase();
+  const host =
+    manifestUrl.hostname.toLowerCase();
 
-  if (!STREMIO_ADDON_HOSTS.size || !STREMIO_ADDON_HOSTS.has(host)) {
+  if (
+    !STREMIO_ADDON_HOSTS.size ||
+    !STREMIO_ADDON_HOSTS.has(host)
+  ) {
     return sendError(
       res,
       403,
@@ -396,18 +715,33 @@ app.get('/api/stremio/streams', asyncRoute(async (req, res) => {
     );
   }
 
-  const stremioType = media === 'tv' ? 'series' : 'movie';
+  const stremioType =
+    media === 'tv'
+      ? 'series'
+      : 'movie';
+
   const season =
     media === 'tv'
-      ? parsePositiveInt(req.query.season, 0, 100)
+      ? parsePositiveInt(
+          req.query.season,
+          0,
+          100
+        )
       : 0;
 
   const episode =
     media === 'tv'
-      ? parsePositiveInt(req.query.episode, 0, 1000)
+      ? parsePositiveInt(
+          req.query.episode,
+          0,
+          1000
+        )
       : 0;
 
-  if (media === 'tv' && (!season || !episode)) {
+  if (
+    media === 'tv' &&
+    (!season || !episode)
+  ) {
     return sendError(
       res,
       400,
@@ -415,31 +749,54 @@ app.get('/api/stremio/streams', asyncRoute(async (req, res) => {
     );
   }
 
-  const manifestResponse = await fetch(manifestUrl, {
-    headers: { Accept: 'application/json' },
-    signal: AbortSignal.timeout(10_000)
-  });
+  const manifestResponse =
+    await fetch(manifestUrl, {
+      headers: {
+        Accept: 'application/json'
+      },
+
+      signal:
+        AbortSignal.timeout(
+          10_000
+        )
+    });
 
   if (!manifestResponse.ok) {
-    return sendError(res, 502, 'The add-on manifest is unavailable.');
+    return sendError(
+      res,
+      502,
+      'The add-on manifest is unavailable.'
+    );
   }
 
-  const manifest = await manifestResponse.json();
-  const resources = Array.isArray(manifest?.resources)
-    ? manifest.resources
-    : [];
+  const manifest =
+    await manifestResponse.json();
 
-  const hasStreamResource = resources.some(
-    r => r === 'stream' || r?.name === 'stream'
-  );
+  const resources =
+    Array.isArray(
+      manifest?.resources
+    )
+      ? manifest.resources
+      : [];
 
-  const types = Array.isArray(manifest?.types)
-    ? manifest.types
-    : [];
+  const hasStreamResource =
+    resources.some(
+      r =>
+        r === 'stream' ||
+        r?.name === 'stream'
+    );
+
+  const types =
+    Array.isArray(manifest?.types)
+      ? manifest.types
+      : [];
 
   if (
     !hasStreamResource ||
-    (types.length && !types.includes(stremioType))
+    (
+      types.length &&
+      !types.includes(stremioType)
+    )
   ) {
     return sendError(
       res,
@@ -448,97 +805,154 @@ app.get('/api/stremio/streams', asyncRoute(async (req, res) => {
     );
   }
 
-  const base = new URL('.', manifestUrl);
+  const base =
+    new URL('.', manifestUrl);
+
   const streamId =
     media === 'tv'
       ? `${imdb}:${season}:${episode}`
       : imdb;
 
-  const streamUrl = new URL(
-    `stream/${stremioType}/${streamId}.json`,
-    base
-  );
+  const streamUrl =
+    new URL(
+      `stream/${stremioType}/${streamId}.json`,
+      base
+    );
 
-  const upstream = await fetch(streamUrl, {
-    headers: { Accept: 'application/json' },
-    signal: AbortSignal.timeout(12_000)
-  });
+  const upstream =
+    await fetch(streamUrl, {
+      headers: {
+        Accept: 'application/json'
+      },
+
+      signal:
+        AbortSignal.timeout(
+          12_000
+        )
+    });
 
   if (!upstream.ok) {
     return sendError(
       res,
-      upstream.status === 404 ? 404 : 502,
+      upstream.status === 404
+        ? 404
+        : 502,
       'The add-on stream endpoint is unavailable.'
     );
   }
 
-  const data = await upstream.json();
-  const rows = Array.isArray(data?.streams)
-    ? data.streams
-    : [];
+  const data =
+    await upstream.json();
 
-  const streams = rows
-    .map((x, i) => {
-      const url =
-        typeof x?.url === 'string' &&
-        /^https:\/\//i.test(x.url)
-          ? x.url
-          : '';
+  const rows =
+    Array.isArray(data?.streams)
+      ? data.streams
+      : [];
 
-      const externalUrl =
-        typeof x?.externalUrl === 'string' &&
-        /^https:\/\//i.test(x.externalUrl)
-          ? x.externalUrl
-          : '';
+  const streams =
+    rows
+      .map((x, i) => {
+        const url =
+          typeof x?.url === 'string' &&
+          /^https:\/\//i.test(x.url)
+            ? x.url
+            : '';
 
-      const ytId =
-        typeof x?.ytId === 'string' &&
-        /^[A-Za-z0-9_-]{6,20}$/.test(x.ytId)
-          ? x.ytId
-          : '';
+        const externalUrl =
+          typeof x?.externalUrl === 'string' &&
+          /^https:\/\//i.test(
+            x.externalUrl
+          )
+            ? x.externalUrl
+            : '';
 
-      if (!url && !externalUrl && !ytId) return null;
+        const ytId =
+          typeof x?.ytId === 'string' &&
+          /^[A-Za-z0-9_-]{6,20}$/.test(
+            x.ytId
+          )
+            ? x.ytId
+            : '';
 
-      const subtitles = Array.isArray(x?.subtitles)
-        ? x.subtitles
-            .map((t, j) => ({
-              id: String(t?.id || j),
-              lang: String(t?.lang || '').toLowerCase(),
-              url:
-                typeof t?.url === 'string' &&
-                /^https:\/\//i.test(t.url)
-                  ? t.url
-                  : ''
-            }))
-            .filter(t => t.url)
-        : [];
+        if (
+          !url &&
+          !externalUrl &&
+          !ytId
+        ) {
+          return null;
+        }
 
-      return {
-        name: String(x?.name || x?.title || `Stream ${i + 1}`).slice(0, 120),
-        description: String(x?.description || '').slice(0, 240),
-        url,
-        externalUrl,
-        ytId,
-        subtitles
-      };
-    })
-    .filter(Boolean)
-    .slice(0, 20);
+        const subtitles =
+          Array.isArray(x?.subtitles)
+            ? x.subtitles
+                .map((t, j) => ({
+                  id: String(
+                    t?.id || j
+                  ),
 
-  res.set('Cache-Control', 'private, max-age=60');
+                  lang: String(
+                    t?.lang || ''
+                  ).toLowerCase(),
+
+                  url:
+                    typeof t?.url === 'string' &&
+                    /^https:\/\//i.test(
+                      t.url
+                    )
+                      ? t.url
+                      : ''
+                }))
+                .filter(
+                  t => t.url
+                )
+            : [];
+
+        return {
+          name: String(
+            x?.name ||
+            x?.title ||
+            `Stream ${i + 1}`
+          ).slice(0, 120),
+
+          description: String(
+            x?.description || ''
+          ).slice(0, 240),
+
+          url,
+          externalUrl,
+          ytId,
+          subtitles
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 20);
+
+  res.set(
+    'Cache-Control',
+    'private, max-age=60'
+  );
+
   res.json({
     addon: {
-      id: manifest?.id || '',
-      name: manifest?.name || host
+      id:
+        manifest?.id || '',
+
+      name:
+        manifest?.name ||
+        host
     },
+
     streams
   });
 }));
 
+// Optional subtitle lookup for videos the user owns/licenses.
+// Uses a fixed upstream host; no arbitrary URL proxying is allowed.
 app.get('/api/subtitles', asyncRoute(async (req, res) => {
-  const media = validMedia.has(req.query.media)
-    ? req.query.media
-    : '';
+  const media =
+    validMedia.has(req.query.media)
+      ? req.query.media
+      : '';
 
   const imdb =
     typeof req.query.imdb === 'string' &&
@@ -554,24 +968,55 @@ app.get('/api/subtitles', asyncRoute(async (req, res) => {
     );
   }
 
-  const allowedLangs = new Set(['ara', 'eng', 'ar', 'en']);
+  const allowedLangs =
+    new Set([
+      'ara',
+      'eng',
+      'ar',
+      'en'
+    ]);
 
-  const requested = String(req.query.langs || 'ara,eng')
-    .split(',')
-    .map(x => x.trim().toLowerCase())
-    .filter(x => allowedLangs.has(x));
+  const requested =
+    String(
+      req.query.langs ||
+      'ara,eng'
+    )
+      .split(',')
+      .map(
+        x =>
+          x.trim().toLowerCase()
+      )
+      .filter(
+        x =>
+          allowedLangs.has(x)
+      );
 
-  const wanted = new Set(
-    requested.length ? requested : ['ara', 'eng']
-  );
+  const wanted =
+    new Set(
+      requested.length
+        ? requested
+        : ['ara', 'eng']
+    );
 
   let path;
 
   if (media === 'movie') {
-    path = `/subtitles/movie/${imdb}.json`;
+    path =
+      `/subtitles/movie/${imdb}.json`;
   } else {
-    const season = parsePositiveInt(req.query.season, 0, 100);
-    const episode = parsePositiveInt(req.query.episode, 0, 1000);
+    const season =
+      parsePositiveInt(
+        req.query.season,
+        0,
+        100
+      );
+
+    const episode =
+      parsePositiveInt(
+        req.query.episode,
+        0,
+        1000
+      );
 
     if (!season || !episode) {
       return sendError(
@@ -581,50 +1026,95 @@ app.get('/api/subtitles', asyncRoute(async (req, res) => {
       );
     }
 
-    path = `/subtitles/series/${imdb}:${season}:${episode}.json`;
+    path =
+      `/subtitles/series/${imdb}:${season}:${episode}.json`;
   }
 
-  const upstream = await fetch(`${OPENSUBTITLES_STREMIO}${path}`, {
-    headers: { Accept: 'application/json' },
-    signal: AbortSignal.timeout(10_000)
-  });
+  const upstream =
+    await fetch(
+      `${OPENSUBTITLES_STREMIO}${path}`,
+      {
+        headers: {
+          Accept:
+            'application/json'
+        },
+
+        signal:
+          AbortSignal.timeout(
+            10_000
+          )
+      }
+    );
 
   if (!upstream.ok) {
     return sendError(
       res,
-      upstream.status === 404 ? 404 : 502,
+      upstream.status === 404
+        ? 404
+        : 502,
       'Subtitle provider is unavailable.'
     );
   }
 
-  const data = await upstream.json();
+  const data =
+    await upstream.json();
 
-  const rows = Array.isArray(data?.subtitles)
-    ? data.subtitles
-    : [];
+  const rows =
+    Array.isArray(data?.subtitles)
+      ? data.subtitles
+      : [];
 
-  const subtitles = rows
-    .map((x, i) => ({
-      id: String(x?.id || i),
-      lang: String(x?.lang || '').toLowerCase(),
-      url: typeof x?.url === 'string' ? x.url : '',
-      label: String(x?.name || x?.label || '')
-    }))
-    .filter(x =>
-      x.url.startsWith('https://') &&
-      (
-        wanted.has(x.lang) ||
-        (x.lang === 'ara' && wanted.has('ar')) ||
-        (x.lang === 'eng' && wanted.has('en'))
+  const subtitles =
+    rows
+      .map((x, i) => ({
+        id:
+          String(x?.id || i),
+
+        lang:
+          String(
+            x?.lang || ''
+          ).toLowerCase(),
+
+        url:
+          typeof x?.url === 'string'
+            ? x.url
+            : '',
+
+        label:
+          String(
+            x?.name ||
+            x?.label ||
+            ''
+          )
+      }))
+      .filter(
+        x =>
+          x.url.startsWith(
+            'https://'
+          ) &&
+          (
+            wanted.has(x.lang) ||
+            (
+              x.lang === 'ara' &&
+              wanted.has('ar')
+            ) ||
+            (
+              x.lang === 'eng' &&
+              wanted.has('en')
+            )
+          )
       )
-    )
-    .slice(0, 12);
+      .slice(0, 12);
 
   subtitles.sort((a, b) => {
     const rank = x =>
-      ['ara', 'ar'].includes(x.lang)
+      ['ara', 'ar'].includes(
+        x.lang
+      )
         ? 0
-        : ['eng', 'en'].includes(x.lang)
+        : ['eng', 'en'].includes(
+            x.lang
+          )
           ? 1
           : 2;
 
@@ -636,35 +1126,55 @@ app.get('/api/subtitles', asyncRoute(async (req, res) => {
     'public, max-age=1800, stale-while-revalidate=7200'
   );
 
-  res.json({ subtitles });
+  res.json({
+    subtitles
+  });
 }));
 
+// Image proxy: only TMDB image paths and a fixed set of sizes are accepted.
 app.get('/api/image', asyncRoute(async (req, res) => {
   const imagePath =
     typeof req.query.path === 'string'
       ? req.query.path
       : '';
 
-  const size = validImageSizes.has(req.query.size)
-    ? req.query.size
-    : 'w500';
+  const size =
+    validImageSizes.has(
+      req.query.size
+    )
+      ? req.query.size
+      : 'w500';
 
   if (
-    !/^\/(?:[A-Za-z0-9_./-]+)$/.test(imagePath) ||
+    !/^\/(?:[A-Za-z0-9_./-]+)$/.test(
+      imagePath
+    ) ||
     imagePath.includes('..')
   ) {
-    return sendError(res, 400, 'Invalid image path.');
+    return sendError(
+      res,
+      400,
+      'Invalid image path.'
+    );
   }
 
-  const upstream = await fetch(
-    `${IMAGE_HOST}/${size}${imagePath}`,
-    { signal: AbortSignal.timeout(12_000) }
-  );
+  const upstream =
+    await fetch(
+      `${IMAGE_HOST}/${size}${imagePath}`,
+      {
+        signal:
+          AbortSignal.timeout(
+            12_000
+          )
+      }
+    );
 
   if (!upstream.ok) {
     return sendError(
       res,
-      upstream.status === 404 ? 404 : 502,
+      upstream.status === 404
+        ? 404
+        : 502,
       'Image is unavailable.'
     );
   }
@@ -673,24 +1183,45 @@ app.get('/api/image', asyncRoute(async (req, res) => {
     'Cache-Control',
     'public, max-age=86400, stale-while-revalidate=604800'
   );
+
   res.set(
     'Content-Type',
-    upstream.headers.get('content-type') || 'image/jpeg'
+    upstream.headers.get(
+      'content-type'
+    ) ||
+    'image/jpeg'
   );
-  res.set('X-Content-Type-Options', 'nosniff');
 
-  const body = Buffer.from(await upstream.arrayBuffer());
+  res.set(
+    'X-Content-Type-Options',
+    'nosniff'
+  );
+
+  const body =
+    Buffer.from(
+      await upstream.arrayBuffer()
+    );
+
   res.end(body);
 }));
 
-app.use((_req, res) => {
-  sendError(res, 404, 'Route not found.');
-});
+app.use((_req, res) =>
+  sendError(
+    res,
+    404,
+    'Route not found.'
+  )
+);
 
 app.use((err, _req, res, _next) => {
-  console.error('[ORBIT API]', err.message);
+  console.error(
+    '[ORBIT CINEMA API]',
+    err.message
+  );
 
-  if (res.headersSent) return res.end();
+  if (res.headersSent) {
+    return res.end();
+  }
 
   const status =
     Number.isInteger(err.status)
@@ -708,5 +1239,7 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`ORBIT API listening on ${PORT}`);
+  console.log(
+    `ORBIT CINEMA API listening on ${PORT}`
+  );
 });
