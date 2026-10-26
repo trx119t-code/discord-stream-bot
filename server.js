@@ -6,22 +6,40 @@ import rateLimit from 'express-rate-limit';
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const TMDB_TOKEN = process.env.TMDB_READ_ACCESS_TOKEN;
-const TORBOX_API_KEY = process.env.TORBOX_API_KEY || 'fbb21907-7aef-4e48-b6e8-d87970df407f';
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || '')
+  .split(',').map(x => x.trim()).filter(Boolean);
 
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors()); // السماح بالاتصال من أي دومين
+app.use(cors({
+  origin(origin, callback) {
+    // Requests without Origin include local health checks; browser origins must be explicitly allowed.
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Origin is not allowed by CORS'));
+  },
+  methods: ['GET', 'HEAD', 'OPTIONS'],
+  maxAge: 86400
+}));
 app.use(express.json({ limit: '16kb' }));
 app.use('/api', rateLimit({
   windowMs: 60_000,
-  limit: 200,
+  limit: 100,
   standardHeaders: 'draft-7',
   legacyHeaders: false
 }));
 
 const TMDB_API = 'https://api.themoviedb.org/3';
 const IMAGE_HOST = 'https://image.tmdb.org/t/p';
+const OPENSUBTITLES_STREMIO = 'https://opensubtitles-v3.strem.io';
+
+const STREMIO_ADDON_HOSTS = new Set(
+  (process.env.STREMIO_ADDON_HOSTS || '')
+    .split(',')
+    .map(x => x.trim().toLowerCase())
+    .filter(Boolean)
+);
+
 const validMedia = new Set(['movie', 'tv']);
 const validTrendTypes = new Set(['all', 'movie', 'tv', 'person']);
 const validTime = new Set(['day', 'week']);
@@ -33,7 +51,9 @@ function parsePositiveInt(value, fallback, max = 10000000) {
 }
 
 function language(value) {
-  return ['ar-SA', 'en-US', 'ar', 'en'].includes(value) ? value : 'ar-SA';
+  return ['ar-SA', 'en-US', 'ar', 'en'].includes(value)
+    ? value
+    : 'ar-SA';
 }
 
 function sendError(res, status, message) {
@@ -42,7 +62,9 @@ function sendError(res, status, message) {
 
 async function tmdb(path, params = {}) {
   if (!TMDB_TOKEN) {
-    const error = new Error('TMDB_READ_ACCESS_TOKEN is not configured on the server.');
+    const error = new Error(
+      'TMDB_READ_ACCESS_TOKEN is not configured on the server.'
+    );
     error.status = 503;
     throw error;
   }
@@ -50,7 +72,11 @@ async function tmdb(path, params = {}) {
   const url = new URL(`${TMDB_API}${path}`);
 
   for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null && value !== '') {
+    if (
+      value !== undefined &&
+      value !== null &&
+      value !== ''
+    ) {
       url.searchParams.set(key, String(value));
     }
   }
@@ -64,7 +90,9 @@ async function tmdb(path, params = {}) {
   });
 
   if (!response.ok) {
-    const error = new Error(`Metadata provider returned ${response.status}`);
+    const error = new Error(
+      `Metadata provider returned ${response.status}`
+    );
     error.status = response.status === 404 ? 404 : 502;
     throw error;
   }
@@ -77,14 +105,27 @@ function asyncRoute(handler) {
     Promise.resolve(handler(req, res, next)).catch(next);
 }
 
-app.get('/health', (_req, res) => {
-  res.json({ ok: true, service: 'orbit-imperial-api' });
-});
+app.get('/health', (_req, res) =>
+  res.json({
+    ok: true,
+    service: 'orbit-cinema-api'
+  })
+);
 
 app.get('/api/trending', asyncRoute(async (req, res) => {
-  const type = validTrendTypes.has(req.query.type) ? req.query.type : 'all';
-  const time = validTime.has(req.query.time) ? req.query.time : 'week';
-  const page = parsePositiveInt(req.query.page, 1, 500);
+  const type = validTrendTypes.has(req.query.type)
+    ? req.query.type
+    : 'all';
+
+  const time = validTime.has(req.query.time)
+    ? req.query.time
+    : 'week';
+
+  const page = parsePositiveInt(
+    req.query.page,
+    1,
+    500
+  );
 
   res.json(
     await tmdb(`/trending/${type}/${time}`, {
@@ -95,17 +136,65 @@ app.get('/api/trending', asyncRoute(async (req, res) => {
 }));
 
 app.get('/api/discover', asyncRoute(async (req, res) => {
-  const media = validMedia.has(req.query.media) ? req.query.media : 'movie';
-  const genres = typeof req.query.genres === 'string' && /^[0-9,]{0,80}$/.test(req.query.genres) ? req.query.genres : '';
-  const origin = typeof req.query.origin === 'string' && /^[A-Z]{2}$/.test(req.query.origin) ? req.query.origin : '';
-  const page = parsePositiveInt(req.query.page, 1, 500);
-  const year = typeof req.query.year === 'string' && /^(19|20)\d{2}$/.test(req.query.year) ? req.query.year : '';
+  const media = validMedia.has(req.query.media)
+    ? req.query.media
+    : 'movie';
+
+  const genres =
+    typeof req.query.genres === 'string' &&
+    /^[0-9,]{0,80}$/.test(req.query.genres)
+      ? req.query.genres
+      : '';
+
+  const origin =
+    typeof req.query.origin === 'string' &&
+    /^[A-Z]{2}$/.test(req.query.origin)
+      ? req.query.origin
+      : '';
+
+  const page = parsePositiveInt(
+    req.query.page,
+    1,
+    500
+  );
+
+  const year =
+    typeof req.query.year === 'string' &&
+    /^(19|20)\d{2}$/.test(req.query.year)
+      ? req.query.year
+      : '';
+
   const rating = Number(req.query.rating);
-  const originalLanguage = typeof req.query.language === 'string' && /^[a-z]{2}$/.test(req.query.language) ? req.query.language : '';
-  const runtimeMax = parsePositiveInt(req.query.runtime_max, 0, 1000);
-  const runtimeMin = parsePositiveInt(req.query.runtime_min, 0, 1000);
-  const region = typeof req.query.region === 'string' && /^[A-Z]{2}$/.test(req.query.region) ? req.query.region : '';
-  const status = typeof req.query.status === 'string' && /^[0-5]$/.test(req.query.status) ? req.query.status : '';
+
+  const originalLanguage =
+    typeof req.query.language === 'string' &&
+    /^[a-z]{2}$/.test(req.query.language)
+      ? req.query.language
+      : '';
+
+  const runtimeMax = parsePositiveInt(
+    req.query.runtime_max,
+    0,
+    1000
+  );
+
+  const runtimeMin = parsePositiveInt(
+    req.query.runtime_min,
+    0,
+    1000
+  );
+
+  const region =
+    typeof req.query.region === 'string' &&
+    /^[A-Z]{2}$/.test(req.query.region)
+      ? req.query.region
+      : '';
+
+  const status =
+    typeof req.query.status === 'string' &&
+    /^[0-5]$/.test(req.query.status)
+      ? req.query.status
+      : '';
 
   const allowedSort = new Set([
     'popularity.desc',
@@ -114,7 +203,9 @@ app.get('/api/discover', asyncRoute(async (req, res) => {
     'first_air_date.desc'
   ]);
 
-  const sort = allowedSort.has(req.query.sort) ? req.query.sort : 'popularity.desc';
+  const sort = allowedSort.has(req.query.sort)
+    ? req.query.sort
+    : 'popularity.desc';
 
   const params = {
     language: language(req.query.lang),
@@ -126,9 +217,19 @@ app.get('/api/discover', asyncRoute(async (req, res) => {
     with_original_language: originalLanguage,
     region,
     with_status: status,
-    'vote_average.gte': Number.isFinite(rating) && rating >= 0 && rating <= 10 ? rating : '',
-    'with_runtime.lte': runtimeMax || '',
-    'with_runtime.gte': runtimeMin || ''
+
+    'vote_average.gte':
+      Number.isFinite(rating) &&
+      rating >= 0 &&
+      rating <= 10
+        ? rating
+        : '',
+
+    'with_runtime.lte':
+      runtimeMax || '',
+
+    'with_runtime.gte':
+      runtimeMin || ''
   };
 
   if (year) {
@@ -139,22 +240,34 @@ app.get('/api/discover', asyncRoute(async (req, res) => {
     }
   }
 
-  res.json(await tmdb(`/discover/${media}`, params));
+  res.json(
+    await tmdb(`/discover/${media}`, params)
+  );
 }));
 
 app.get('/api/now-playing', asyncRoute(async (req, res) => {
   res.json(
     await tmdb('/movie/now_playing', {
       language: language(req.query.lang),
-      page: parsePositiveInt(req.query.page, 1, 500)
+      page: parsePositiveInt(
+        req.query.page,
+        1,
+        500
+      )
     })
   );
 }));
 
 app.get('/api/search', asyncRoute(async (req, res) => {
-  const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 120) : '';
+  const q =
+    typeof req.query.q === 'string'
+      ? req.query.q.trim().slice(0, 120)
+      : '';
+
   if (!q) {
-    return res.json({ results: [] });
+    return res.json({
+      results: []
+    });
   }
 
   res.json(
@@ -162,98 +275,248 @@ app.get('/api/search', asyncRoute(async (req, res) => {
       query: q,
       language: language(req.query.lang),
       include_adult: 'false',
-      page: parsePositiveInt(req.query.page, 1, 500)
+      page: parsePositiveInt(
+        req.query.page,
+        1,
+        500
+      )
     })
   );
 }));
 
 app.get('/api/item/full-details', asyncRoute(async (req, res) => {
-  const id = parsePositiveInt(req.query.id, 0);
-  const media = validMedia.has(req.query.media) ? req.query.media : '';
+  const id = parsePositiveInt(
+    req.query.id,
+    0
+  );
+
+  const media = validMedia.has(req.query.media)
+    ? req.query.media
+    : '';
 
   if (!id || !media) {
-    return sendError(res, 400, 'A valid id and media=movie|tv are required.');
+    return sendError(
+      res,
+      400,
+      'A valid id and media=movie|tv are required.'
+    );
   }
 
   const lang = language(req.query.lang);
-  const needsEnglishFallback = !String(lang).toLowerCase().startsWith('en');
 
-  const [details, providers, english] = await Promise.all([
-    tmdb(`/${media}/${id}`, {
-      language: lang,
-      append_to_response: 'external_ids,similar,credits,videos,images'
-    }),
-    tmdb(`/${media}/${id}/watch/providers`),
-    needsEnglishFallback
-      ? tmdb(`/${media}/${id}`, {
-          language: 'en-US',
-          append_to_response: 'videos'
-        }).catch(() => null)
-      : Promise.resolve(null)
-  ]);
+  const needsEnglishFallback =
+    !String(lang).toLowerCase().startsWith('en');
 
-  const merged = { ...details };
+  const [details, providers, english] =
+    await Promise.all([
+      tmdb(`/${media}/${id}`, {
+        language: lang,
+        append_to_response:
+          'external_ids,similar,credits,videos,images'
+      }),
 
-  if ((!merged.overview || !String(merged.overview).trim()) && english?.overview) {
+      tmdb(`/${media}/${id}/watch/providers`),
+
+      needsEnglishFallback
+        ? tmdb(`/${media}/${id}`, {
+            language: 'en-US',
+            append_to_response: 'videos'
+          }).catch(() => null)
+        : Promise.resolve(null)
+    ]);
+
+  const merged = {
+    ...details
+  };
+
+  if (
+    (!merged.overview ||
+      !String(merged.overview).trim()) &&
+    english?.overview
+  ) {
     merged.overview = english.overview;
   }
-  if ((!merged.tagline || !String(merged.tagline).trim()) && english?.tagline) {
+
+  if (
+    (!merged.tagline ||
+      !String(merged.tagline).trim()) &&
+    english?.tagline
+  ) {
     merged.tagline = english.tagline;
   }
-  if ((!merged.homepage || !String(merged.homepage).trim()) && english?.homepage) {
+
+  if (
+    (!merged.homepage ||
+      !String(merged.homepage).trim()) &&
+    english?.homepage
+  ) {
     merged.homepage = english.homepage;
   }
-  if ((!merged.videos?.results?.length) && english?.videos?.results?.length) {
-    merged.videos = english.videos;
+
+  // Merge localized + English video results so trailers remain available even when one locale is sparse.
+  const primaryVideos =
+    Array.isArray(merged.videos?.results)
+      ? merged.videos.results
+      : [];
+
+  const englishVideos =
+    Array.isArray(english?.videos?.results)
+      ? english.videos.results
+      : [];
+
+  if (
+    primaryVideos.length ||
+    englishVideos.length
+  ) {
+    const seen = new Set();
+
+    const results = [
+      ...primaryVideos,
+      ...englishVideos
+    ].filter(video => {
+      const key = String(
+        video?.key ||
+        video?.id ||
+        ''
+      );
+
+      if (!key || seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    });
+
+    merged.videos = {
+      ...(merged.videos || {}),
+      results
+    };
   }
 
-  res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=1800');
+  res.set(
+    'Cache-Control',
+    'public, max-age=300, stale-while-revalidate=1800'
+  );
+
   res.json({
     ...merged,
-    watch_providers: providers?.results || {}
+    watch_providers:
+      providers?.results || {}
   });
 }));
 
 app.get('/api/tv/season', asyncRoute(async (req, res) => {
-  const id = parsePositiveInt(req.query.id, 0);
-  const season = Number.parseInt(req.query.season, 10);
+  const id = parsePositiveInt(
+    req.query.id,
+    0
+  );
 
-  if (!id || !Number.isInteger(season) || season < 0 || season > 100) {
-    return sendError(res, 400, 'A valid TV id and season are required.');
+  const season = Number.parseInt(
+    req.query.season,
+    10
+  );
+
+  if (
+    !id ||
+    !Number.isInteger(season) ||
+    season < 0 ||
+    season > 100
+  ) {
+    return sendError(
+      res,
+      400,
+      'A valid TV id and season are required.'
+    );
   }
 
-  const lang = language(req.query.lang);
-  const needsEnglishFallback = !String(lang).toLowerCase().startsWith('en');
+  const lang = language(
+    req.query.lang
+  );
 
-  const [primary, english] = await Promise.all([
-    tmdb(`/tv/${id}/season/${season}`, { language: lang }),
-    needsEnglishFallback
-      ? tmdb(`/tv/${id}/season/${season}`, { language: 'en-US' }).catch(() => null)
-      : Promise.resolve(null)
-  ]);
+  const needsEnglishFallback =
+    !String(lang)
+      .toLowerCase()
+      .startsWith('en');
 
-  if (english?.episodes?.length && primary?.episodes?.length) {
-    const byNumber = new Map(english.episodes.map(ep => [Number(ep.episode_number), ep]));
+  const [primary, english] =
+    await Promise.all([
+      tmdb(`/tv/${id}/season/${season}`, {
+        language: lang
+      }),
 
-    primary.episodes = primary.episodes.map(ep => {
-      const en = byNumber.get(Number(ep.episode_number));
-      if (!en) return ep;
-      return {
-        ...ep,
-        name: ep.name && String(ep.name).trim() ? ep.name : en.name,
-        overview: ep.overview && String(ep.overview).trim() ? ep.overview : en.overview
-      };
-    });
+      needsEnglishFallback
+        ? tmdb(
+            `/tv/${id}/season/${season}`,
+            {
+              language: 'en-US'
+            }
+          ).catch(() => null)
+        : Promise.resolve(null)
+    ]);
+
+  if (
+    english?.episodes?.length &&
+    primary?.episodes?.length
+  ) {
+    const byNumber = new Map(
+      english.episodes.map(ep => [
+        Number(ep.episode_number),
+        ep
+      ])
+    );
+
+    primary.episodes =
+      primary.episodes.map(ep => {
+        const en = byNumber.get(
+          Number(ep.episode_number)
+        );
+
+        if (!en) {
+          return ep;
+        }
+
+        return {
+          ...ep,
+
+          name:
+            ep.name &&
+            String(ep.name).trim()
+              ? ep.name
+              : en.name,
+
+          overview:
+            ep.overview &&
+            String(ep.overview).trim()
+              ? ep.overview
+              : en.overview
+        };
+      });
   }
 
-  if ((!primary.overview || !String(primary.overview).trim()) && english?.overview) {
-    primary.overview = english.overview;
-  }
-  if ((!primary.name || !String(primary.name).trim()) && english?.name) {
-    primary.name = english.name;
+  if (
+    (!primary.overview ||
+      !String(primary.overview).trim()) &&
+    english?.overview
+  ) {
+    primary.overview =
+      english.overview;
   }
 
-  res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=1800');
+  if (
+    (!primary.name ||
+      !String(primary.name).trim()) &&
+    english?.name
+  ) {
+    primary.name =
+      english.name;
+  }
+
+  res.set(
+    'Cache-Control',
+    'public, max-age=300, stale-while-revalidate=1800'
+  );
+
   res.json(primary);
 }));
 
@@ -261,8 +524,17 @@ app.get('/api/upcoming', asyncRoute(async (req, res) => {
   res.json(
     await tmdb('/movie/upcoming', {
       language: language(req.query.lang),
-      region: typeof req.query.region === 'string' ? req.query.region : '',
-      page: parsePositiveInt(req.query.page, 1, 500)
+
+      region:
+        typeof req.query.region === 'string'
+          ? req.query.region
+          : '',
+
+      page: parsePositiveInt(
+        req.query.page,
+        1,
+        500
+      )
     })
   );
 }));
@@ -271,96 +543,703 @@ app.get('/api/airing-today', asyncRoute(async (req, res) => {
   res.json(
     await tmdb('/tv/airing_today', {
       language: language(req.query.lang),
-      page: parsePositiveInt(req.query.page, 1, 500)
+
+      page: parsePositiveInt(
+        req.query.page,
+        1,
+        500
+      )
     })
   );
 }));
 
 app.get('/api/recommendations', asyncRoute(async (req, res) => {
-  const id = parsePositiveInt(req.query.id, 0);
-  const media = validMedia.has(req.query.media) ? req.query.media : '';
+  const id = parsePositiveInt(
+    req.query.id,
+    0
+  );
+
+  const media = validMedia.has(req.query.media)
+    ? req.query.media
+    : '';
 
   if (!id || !media) {
-    return sendError(res, 400, 'A valid id and media are required.');
+    return sendError(
+      res,
+      400,
+      'A valid id and media are required.'
+    );
   }
 
   res.json(
-    await tmdb(`/${media}/${id}/recommendations`, {
-      language: language(req.query.lang),
-      page: parsePositiveInt(req.query.page, 1, 100)
-    })
+    await tmdb(
+      `/${media}/${id}/recommendations`,
+      {
+        language: language(req.query.lang),
+
+        page: parsePositiveInt(
+          req.query.page,
+          1,
+          100
+        )
+      }
+    )
   );
 }));
 
 app.get('/api/person', asyncRoute(async (req, res) => {
-  const id = parsePositiveInt(req.query.id, 0);
+  const id = parsePositiveInt(
+    req.query.id,
+    0
+  );
+
   if (!id) {
-    return sendError(res, 400, 'A valid person id is required.');
+    return sendError(
+      res,
+      400,
+      'A valid person id is required.'
+    );
   }
 
-  const lang = language(req.query.lang);
-  const primary = await tmdb(`/person/${id}`, {
-    language: lang,
-    append_to_response: 'combined_credits,images,external_ids'
-  });
+  const lang = language(
+    req.query.lang
+  );
 
-  if ((!primary.biography || !String(primary.biography).trim()) && !String(lang).toLowerCase().startsWith('en')) {
-    const en = await tmdb(`/person/${id}`, { language: 'en-US' }).catch(() => null);
+  const primary = await tmdb(
+    `/person/${id}`,
+    {
+      language: lang,
+      append_to_response:
+        'combined_credits,images,external_ids'
+    }
+  );
+
+  if (
+    (!primary.biography ||
+      !String(primary.biography).trim()) &&
+    !String(lang)
+      .toLowerCase()
+      .startsWith('en')
+  ) {
+    const en = await tmdb(
+      `/person/${id}`,
+      {
+        language: 'en-US'
+      }
+    ).catch(() => null);
+
     if (en?.biography) {
-      primary.biography = en.biography;
+      primary.biography =
+        en.biography;
     }
   }
 
-  res.set('Cache-Control', 'public, max-age=600, stale-while-revalidate=3600');
+  res.set(
+    'Cache-Control',
+    'public, max-age=600, stale-while-revalidate=3600'
+  );
+
   res.json(primary);
 }));
 
-app.get('/api/image', asyncRoute(async (req, res) => {
-  const imagePath = typeof req.query.path === 'string' ? req.query.path : '';
-  const size = validImageSizes.has(req.query.size) ? req.query.size : 'w500';
+// Optional proxy for Stremio-compatible add-ons that the user is authorized to use.
+// Only exact HTTPS hosts listed in STREMIO_ADDON_HOSTS are allowed.
+// Torrent/infoHash streams are intentionally not proxied or returned.
+app.get('/api/stremio/streams', asyncRoute(async (req, res) => {
+  const manifestRaw =
+    typeof req.query.manifest === 'string'
+      ? req.query.manifest.trim()
+      : '';
 
-  if (!/^\/(?:[A-Za-z0-9_./-]+)$/.test(imagePath) || imagePath.includes('..')) {
-    return sendError(res, 400, 'Invalid image path.');
+  const media =
+    validMedia.has(req.query.media)
+      ? req.query.media
+      : '';
+
+  const imdb =
+    typeof req.query.imdb === 'string' &&
+    /^tt\d{5,12}$/i.test(req.query.imdb)
+      ? req.query.imdb
+      : '';
+
+  if (
+    !manifestRaw ||
+    !media ||
+    !imdb
+  ) {
+    return sendError(
+      res,
+      400,
+      'A valid manifest, media and IMDb id are required.'
+    );
   }
 
-  const upstream = await fetch(`${IMAGE_HOST}/${size}${imagePath}`, {
-    signal: AbortSignal.timeout(12_000)
-  });
+  let manifestUrl;
+
+  try {
+    manifestUrl = new URL(
+      manifestRaw
+    );
+  } catch {
+    return sendError(
+      res,
+      400,
+      'Invalid add-on manifest URL.'
+    );
+  }
+
+  if (
+    manifestUrl.protocol !== 'https:' ||
+    !/\/manifest\.json$/i.test(
+      manifestUrl.pathname
+    )
+  ) {
+    return sendError(
+      res,
+      400,
+      'The add-on manifest must be an HTTPS manifest.json URL.'
+    );
+  }
+
+  const host =
+    manifestUrl.hostname.toLowerCase();
+
+  if (
+    !STREMIO_ADDON_HOSTS.size ||
+    !STREMIO_ADDON_HOSTS.has(host)
+  ) {
+    return sendError(
+      res,
+      403,
+      'This add-on host is not allowlisted on the server.'
+    );
+  }
+
+  const stremioType =
+    media === 'tv'
+      ? 'series'
+      : 'movie';
+
+  const season =
+    media === 'tv'
+      ? parsePositiveInt(
+          req.query.season,
+          0,
+          100
+        )
+      : 0;
+
+  const episode =
+    media === 'tv'
+      ? parsePositiveInt(
+          req.query.episode,
+          0,
+          1000
+        )
+      : 0;
+
+  if (
+    media === 'tv' &&
+    (!season || !episode)
+  ) {
+    return sendError(
+      res,
+      400,
+      'Season and episode are required for TV streams.'
+    );
+  }
+
+  const manifestResponse =
+    await fetch(manifestUrl, {
+      headers: {
+        Accept: 'application/json'
+      },
+
+      signal:
+        AbortSignal.timeout(
+          10_000
+        )
+    });
+
+  if (!manifestResponse.ok) {
+    return sendError(
+      res,
+      502,
+      'The add-on manifest is unavailable.'
+    );
+  }
+
+  const manifest =
+    await manifestResponse.json();
+
+  const resources =
+    Array.isArray(
+      manifest?.resources
+    )
+      ? manifest.resources
+      : [];
+
+  const hasStreamResource =
+    resources.some(
+      r =>
+        r === 'stream' ||
+        r?.name === 'stream'
+    );
+
+  const types =
+    Array.isArray(manifest?.types)
+      ? manifest.types
+      : [];
+
+  if (
+    !hasStreamResource ||
+    (
+      types.length &&
+      !types.includes(stremioType)
+    )
+  ) {
+    return sendError(
+      res,
+      400,
+      'This add-on does not expose compatible stream resources.'
+    );
+  }
+
+  const base =
+    new URL('.', manifestUrl);
+
+  const streamId =
+    media === 'tv'
+      ? `${imdb}:${season}:${episode}`
+      : imdb;
+
+  const streamUrl =
+    new URL(
+      `stream/${stremioType}/${streamId}.json`,
+      base
+    );
+
+  const upstream =
+    await fetch(streamUrl, {
+      headers: {
+        Accept: 'application/json'
+      },
+
+      signal:
+        AbortSignal.timeout(
+          12_000
+        )
+    });
 
   if (!upstream.ok) {
-    return sendError(res, upstream.status === 404 ? 404 : 502, 'Image is unavailable.');
+    return sendError(
+      res,
+      upstream.status === 404
+        ? 404
+        : 502,
+      'The add-on stream endpoint is unavailable.'
+    );
   }
 
-  res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
-  res.set('Content-Type', upstream.headers.get('content-type') || 'image/jpeg');
-  res.set('X-Content-Type-Options', 'nosniff');
+  const data =
+    await upstream.json();
 
-  const body = Buffer.from(await upstream.arrayBuffer());
+  const rows =
+    Array.isArray(data?.streams)
+      ? data.streams
+      : [];
+
+  const streams =
+    rows
+      .map((x, i) => {
+        const url =
+          typeof x?.url === 'string' &&
+          /^https:\/\//i.test(x.url)
+            ? x.url
+            : '';
+
+        const externalUrl =
+          typeof x?.externalUrl === 'string' &&
+          /^https:\/\//i.test(
+            x.externalUrl
+          )
+            ? x.externalUrl
+            : '';
+
+        const ytId =
+          typeof x?.ytId === 'string' &&
+          /^[A-Za-z0-9_-]{6,20}$/.test(
+            x.ytId
+          )
+            ? x.ytId
+            : '';
+
+        if (
+          !url &&
+          !externalUrl &&
+          !ytId
+        ) {
+          return null;
+        }
+
+        const subtitles =
+          Array.isArray(x?.subtitles)
+            ? x.subtitles
+                .map((t, j) => ({
+                  id: String(
+                    t?.id || j
+                  ),
+
+                  lang: String(
+                    t?.lang || ''
+                  ).toLowerCase(),
+
+                  url:
+                    typeof t?.url === 'string' &&
+                    /^https:\/\//i.test(
+                      t.url
+                    )
+                      ? t.url
+                      : ''
+                }))
+                .filter(
+                  t => t.url
+                )
+            : [];
+
+        return {
+          name: String(
+            x?.name ||
+            x?.title ||
+            `Stream ${i + 1}`
+          ).slice(0, 120),
+
+          description: String(
+            x?.description || ''
+          ).slice(0, 240),
+
+          url,
+          externalUrl,
+          ytId,
+          subtitles
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 20);
+
+  res.set(
+    'Cache-Control',
+    'private, max-age=60'
+  );
+
+  res.json({
+    addon: {
+      id:
+        manifest?.id || '',
+
+      name:
+        manifest?.name ||
+        host
+    },
+
+    streams
+  });
+}));
+
+// Optional subtitle lookup for videos the user owns/licenses.
+// Uses a fixed upstream host; no arbitrary URL proxying is allowed.
+app.get('/api/subtitles', asyncRoute(async (req, res) => {
+  const media =
+    validMedia.has(req.query.media)
+      ? req.query.media
+      : '';
+
+  const imdb =
+    typeof req.query.imdb === 'string' &&
+    /^tt\d{5,12}$/i.test(req.query.imdb)
+      ? req.query.imdb
+      : '';
+
+  if (!media || !imdb) {
+    return sendError(
+      res,
+      400,
+      'A valid media and IMDb id are required.'
+    );
+  }
+
+  const allowedLangs =
+    new Set([
+      'ara',
+      'eng',
+      'ar',
+      'en'
+    ]);
+
+  const requested =
+    String(
+      req.query.langs ||
+      'ara,eng'
+    )
+      .split(',')
+      .map(
+        x =>
+          x.trim().toLowerCase()
+      )
+      .filter(
+        x =>
+          allowedLangs.has(x)
+      );
+
+  const wanted =
+    new Set(
+      requested.length
+        ? requested
+        : ['ara', 'eng']
+    );
+
+  let path;
+
+  if (media === 'movie') {
+    path =
+      `/subtitles/movie/${imdb}.json`;
+  } else {
+    const season =
+      parsePositiveInt(
+        req.query.season,
+        0,
+        100
+      );
+
+    const episode =
+      parsePositiveInt(
+        req.query.episode,
+        0,
+        1000
+      );
+
+    if (!season || !episode) {
+      return sendError(
+        res,
+        400,
+        'Season and episode are required for TV subtitles.'
+      );
+    }
+
+    path =
+      `/subtitles/series/${imdb}:${season}:${episode}.json`;
+  }
+
+  const upstream =
+    await fetch(
+      `${OPENSUBTITLES_STREMIO}${path}`,
+      {
+        headers: {
+          Accept:
+            'application/json'
+        },
+
+        signal:
+          AbortSignal.timeout(
+            10_000
+          )
+      }
+    );
+
+  if (!upstream.ok) {
+    return sendError(
+      res,
+      upstream.status === 404
+        ? 404
+        : 502,
+      'Subtitle provider is unavailable.'
+    );
+  }
+
+  const data =
+    await upstream.json();
+
+  const rows =
+    Array.isArray(data?.subtitles)
+      ? data.subtitles
+      : [];
+
+  const subtitles =
+    rows
+      .map((x, i) => ({
+        id:
+          String(x?.id || i),
+
+        lang:
+          String(
+            x?.lang || ''
+          ).toLowerCase(),
+
+        url:
+          typeof x?.url === 'string'
+            ? x.url
+            : '',
+
+        label:
+          String(
+            x?.name ||
+            x?.label ||
+            ''
+          )
+      }))
+      .filter(
+        x =>
+          x.url.startsWith(
+            'https://'
+          ) &&
+          (
+            wanted.has(x.lang) ||
+            (
+              x.lang === 'ara' &&
+              wanted.has('ar')
+            ) ||
+            (
+              x.lang === 'eng' &&
+              wanted.has('en')
+            )
+          )
+      )
+      .slice(0, 12);
+
+  subtitles.sort((a, b) => {
+    const rank = x =>
+      ['ara', 'ar'].includes(
+        x.lang
+      )
+        ? 0
+        : ['eng', 'en'].includes(
+            x.lang
+          )
+          ? 1
+          : 2;
+
+    return rank(a) - rank(b);
+  });
+
+  res.set(
+    'Cache-Control',
+    'public, max-age=1800, stale-while-revalidate=7200'
+  );
+
+  res.json({
+    subtitles
+  });
+}));
+
+// Image proxy: only TMDB image paths and a fixed set of sizes are accepted.
+app.get('/api/image', asyncRoute(async (req, res) => {
+  const imagePath =
+    typeof req.query.path === 'string'
+      ? req.query.path
+      : '';
+
+  const size =
+    validImageSizes.has(
+      req.query.size
+    )
+      ? req.query.size
+      : 'w500';
+
+  if (
+    !/^\/(?:[A-Za-z0-9_./-]+)$/.test(
+      imagePath
+    ) ||
+    imagePath.includes('..')
+  ) {
+    return sendError(
+      res,
+      400,
+      'Invalid image path.'
+    );
+  }
+
+  const upstream =
+    await fetch(
+      `${IMAGE_HOST}/${size}${imagePath}`,
+      {
+        signal:
+          AbortSignal.timeout(
+            12_000
+          )
+      }
+    );
+
+  if (!upstream.ok) {
+    return sendError(
+      res,
+      upstream.status === 404
+        ? 404
+        : 502,
+      'Image is unavailable.'
+    );
+  }
+
+  res.set(
+    'Cache-Control',
+    'public, max-age=86400, stale-while-revalidate=604800'
+  );
+
+  res.set(
+    'Content-Type',
+    upstream.headers.get(
+      'content-type'
+    ) ||
+    'image/jpeg'
+  );
+
+  res.set(
+    'X-Content-Type-Options',
+    'nosniff'
+  );
+
+  const body =
+    Buffer.from(
+      await upstream.arrayBuffer()
+    );
+
   res.end(body);
 }));
 
-app.use((_req, res) => {
-  sendError(res, 404, 'Route not found.');
-});
+app.use((_req, res) =>
+  sendError(
+    res,
+    404,
+    'Route not found.'
+  )
+);
 
 app.use((err, _req, res, _next) => {
-  console.error('[ORBIT API]', err.message);
+  console.error(
+    '[ORBIT CINEMA API]',
+    err.message
+  );
 
   if (res.headersSent) {
     return res.end();
   }
 
-  const status = Number.isInteger(err.status)
-    ? err.status
-    : err.name === 'TimeoutError'
-      ? 504
-      : 502;
+  const status =
+    Number.isInteger(err.status)
+      ? err.status
+      : err.name === 'TimeoutError'
+        ? 504
+        : 502;
 
   res.status(status).json({
-    error: status === 503 ? err.message : 'The metadata service is temporarily unavailable.'
+    error:
+      status === 503
+        ? err.message
+        : 'The metadata service is temporarily unavailable.'
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`ORBIT API listening on ${PORT}`);
+  console.log(
+    `ORBIT CINEMA API listening on ${PORT}`
+  );
 });
