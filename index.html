@@ -303,6 +303,7 @@ const PLAYBACK = window.ORBIT_PLAYBACK || { sources: {} };
 const PROVIDERS = Array.isArray(window.ORBIT_PROVIDERS) ? window.ORBIT_PROVIDERS : [];
 const STREMIO_ADDONS = Array.isArray(window.ORBIT_STREMIO_ADDONS) ? window.ORBIT_STREMIO_ADDONS : [];
 const SUBTITLES = window.ORBIT_SUBTITLES || { enabled:false, languages:['ara','eng'] };
+const LIBRARY_DEMO = window.ORBIT_LIBRARY_DEMO || { enabled:false };
 const STORE = { fav:'orbit_v4_default_favorites', history:'orbit_v4_default_history', progress:'orbit_v4_default_progress', reactions:'orbit_v4_default_reactions', reminders:'orbit_v4_default_reminders', prefs:'orbit_v4_default_prefs' };
 const state = { hero:[], heroIndex:0, heroTimer:null, favorites:loadStore(STORE.fav), history:loadStore(STORE.history), progress:loadProgressStore(), reactions:{}, reminders:[], prefs:{}, profiles:[], activeProfile:'default', currentDetails:null, detailsSeq:0, catalog:null, searchTimer:null, searchController:null, currentSeason:null, currentSeasonShow:null, currentSeasonEpisodes:[], playContext:null, nextTimer:null, hls:null, topItems:[], homePool:[], coming:[], previewTimer:null, previewItem:null, locale:'ar', theme:'nebula', imdbCache:{}, stremioCache:{} };
 const $ = (s,r=document)=>r.querySelector(s); const $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -429,11 +430,24 @@ function configuredProviderSources(item,opt={}){
     .filter(Boolean)
     .sort((a,b)=>(a.priority||100)-(b.priority||100));
 }
+function demoLibrarySources(item,opt={}){
+  if(!LIBRARY_DEMO?.enabled || mediaOf(item)!=='tv')return [];
+  const ep=Number(opt.episode||0);
+  const max=Math.max(0,Number(LIBRARY_DEMO.maxEpisodes||3));
+  if(!Number.isInteger(ep)||ep<1||ep>max||!LIBRARY_DEMO.url)return [];
+  return [normalizePlaybackSource({
+    label:LIBRARY_DEMO.label||'ORBIT Demo Library',
+    type:LIBRARY_DEMO.type||'video',
+    url:LIBRARY_DEMO.url,
+    tags:Array.isArray(LIBRARY_DEMO.tags)?LIBRARY_DEMO.tags:['Demo'],
+    priority:5
+  })];
+}
 function getPlaybackSources(item,opt={}){
   const key=playbackKey(item,opt);
   const base=PLAYBACK.sources?.[key]||[];
   const owned=Array.isArray(base)?base.map(normalizePlaybackSource).filter(Boolean):[];
-  return [...owned,...configuredProviderSources(item,opt)];
+  return [...owned,...demoLibrarySources(item,opt),...configuredProviderSources(item,opt)];
 }
 function hasPotentialPlayback(item,opt={}){
   return getPlaybackSources(item,opt).length>0 || STREMIO_ADDONS.some(a=>a&&a.enabled!==false&&a.manifestUrl);
