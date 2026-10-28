@@ -431,16 +431,16 @@ function configuredProviderSources(item,opt={}){
     .sort((a,b)=>(a.priority||100)-(b.priority||100));
 }
 function demoLibrarySources(item,opt={}){
-  if(!LIBRARY_DEMO?.enabled || mediaOf(item)!=='tv')return [];
+  // Self-contained test source for episodes 1-3; does not depend on config.js.
+  if(mediaOf(item)!=='tv')return [];
   const ep=Number(opt.episode||0);
-  const max=Math.max(0,Number(LIBRARY_DEMO.maxEpisodes||3));
-  if(!Number.isInteger(ep)||ep<1||ep>max||!LIBRARY_DEMO.url)return [];
+  if(!Number.isInteger(ep)||ep<1||ep>3)return [];
   return [normalizePlaybackSource({
-    label:LIBRARY_DEMO.label||'ORBIT Demo Library',
-    type:LIBRARY_DEMO.type||'video',
-    url:LIBRARY_DEMO.url,
-    tags:Array.isArray(LIBRARY_DEMO.tags)?LIBRARY_DEMO.tags:['Demo'],
-    priority:5
+    label:'ORBIT Demo Library',
+    type:'video',
+    url:'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    tags:['Demo','Test'],
+    priority:1
   })];
 }
 function getPlaybackSources(item,opt={}){
@@ -696,7 +696,7 @@ function prepareV4Profile(){
   state.profiles=loadStore(V4.profilesKey);if(!state.profiles.length){state.profiles=defaultProfiles();saveStore(V4.profilesKey,state.profiles)}
   state.activeProfile=localStorage.getItem(V4.activeKey)||state.profiles[0].id;if(!state.profiles.some(p=>p.id===state.activeProfile))state.activeProfile=state.profiles[0].id;
   state.theme=localStorage.getItem(V4.themeKey)||'nebula';state.locale=localStorage.getItem(V4.localeKey)||'ar';applyTheme();loadProfileData();applyLocale();
-  if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=orbit-test-2',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{})}
   updateOnlineState();window.addEventListener('online',updateOnlineState);window.addEventListener('offline',updateOnlineState)
 }
 function loadProfileData(){
