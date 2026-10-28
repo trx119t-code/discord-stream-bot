@@ -105,3 +105,13 @@ window.ORBIT_SUBTITLES = {
   }
 */
 window.ORBIT_STREMIO_ADDONS = window.ORBIT_STREMIO_ADDONS || [];
+
+/* ORBIT LIBRARY TEST MODE - safe public sample video */
+window.ORBIT_LIBRARY_DEMO = {
+  enabled: true,
+  maxEpisodes: 3,
+  label: "ORBIT Demo Library",
+  type: "video",
+  url: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+  tags: ["Demo", "Test"]
+};
