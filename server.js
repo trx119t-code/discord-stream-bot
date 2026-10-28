@@ -33,6 +33,86 @@ const TMDB_API = 'https://api.themoviedb.org/3';
 const IMAGE_HOST = 'https://image.tmdb.org/t/p';
 const OPENSUBTITLES_STREMIO = 'https://opensubtitles-v3.strem.io';
 
+// ORBIT authorized Google Drive library (One Piece test collection)
+const GOOGLE_DRIVE_API_KEY = process.env.GOOGLE_DRIVE_API_KEY || '';
+const ONE_PIECE_DRIVE_FOLDERS = [
+  '1KTFMJlzNzZ3y6yd65ZfKJSeQ5CfPmR9J', // 1-250
+  '121zFDA8tO_xkxJ94N0I7pCsdH5bYkG02', // 251-500
+  '1w-7XrqrQr0Fmv__wrGj6xf61LmRP0J0-', // 501-750
+  '1YxxxtRk3P8hYfh7bOXiiYMZcdaz_Sp3q', // 751-1000
+  '1PC7lTbE1Vqt5Y_3Bk0WtCr3wghmGx8m1'  // 1001-1250
+];
+let onePieceDriveCache = { expiresAt: 0, byEpisode: new Map(), files: [] };
+
+function episodeNumberFromDriveName(name = '') {
+  const match = String(name).match(/\bEP\s*([0-9]+(?:\.[0-9]+)?)/i)
+    || String(name).match(/(?:^|\D)([0-9]{1,4}(?:\.[0-9]+)?)(?:\D|$)/);
+  if (!match) return null;
+  const n = Number(match[1]);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+async function listPublicDriveFolder(folderId) {
+  if (!GOOGLE_DRIVE_API_KEY) {
+    const error = new Error('GOOGLE_DRIVE_API_KEY is not configured on the server.');
+    error.status = 503;
+    throw error;
+  }
+  const files = [];
+  let pageToken = '';
+  do {
+    const url = new URL('https://www.googleapis.com/drive/v3/files');
+    url.searchParams.set('key', GOOGLE_DRIVE_API_KEY);
+    url.searchParams.set('q', `'${folderId}' in parents and trashed=false`);
+    url.searchParams.set('fields', 'nextPageToken,files(id,name,mimeType,size)');
+    url.searchParams.set('pageSize', '1000');
+    url.searchParams.set('orderBy', 'name_natural');
+    if (pageToken) url.searchParams.set('pageToken', pageToken);
+    const response = await fetch(url, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(15_000)
+    });
+    if (!response.ok) {
+      const error = new Error(`Google Drive returned ${response.status}. Make sure the folder/files are shared for link viewing and the Drive API key is valid.`);
+      error.status = response.status === 403 ? 503 : 502;
+      throw error;
+    }
+    const data = await response.json();
+    files.push(...(Array.isArray(data.files) ? data.files : []));
+    pageToken = data.nextPageToken || '';
+  } while (pageToken);
+  return files;
+}
+
+async function loadOnePieceDriveIndex(force = false) {
+  const now = Date.now();
+  if (!force && onePieceDriveCache.expiresAt > now && onePieceDriveCache.byEpisode.size) {
+    return onePieceDriveCache;
+  }
+  const groups = await Promise.all(ONE_PIECE_DRIVE_FOLDERS.map(listPublicDriveFolder));
+  const all = groups.flat().filter(f => String(f.mimeType || '').startsWith('video/'));
+  const byEpisode = new Map();
+  for (const file of all) {
+    const episode = episodeNumberFromDriveName(file.name);
+    if (episode == null) continue;
+    byEpisode.set(String(episode), {
+      episode,
+      fileId: file.id,
+      title: file.name,
+      mimeType: file.mimeType,
+      size: file.size || null,
+      previewUrl: `https://drive.google.com/file/d/${encodeURIComponent(file.id)}/preview`
+    });
+  }
+  const files = [...byEpisode.values()].sort((a, b) => a.episode - b.episode);
+  onePieceDriveCache = {
+    expiresAt: now + 10 * 60_000,
+    byEpisode,
+    files
+  };
+  return onePieceDriveCache;
+}
+
 const STREMIO_ADDON_HOSTS = new Set(
   (process.env.STREMIO_ADDON_HOSTS || '')
     .split(',')
@@ -111,6 +191,33 @@ app.get('/health', (_req, res) =>
     service: 'orbit-cinema-api'
   })
 );
+
+
+app.get('/api/onepiece/library', asyncRoute(async (_req, res) => {
+  const index = await loadOnePieceDriveIndex();
+  const episodes = index.files.map(({ episode, fileId, title, previewUrl }) => ({
+    episode, fileId, title, previewUrl
+  }));
+  res.set('Cache-Control', 'public, max-age=300');
+  res.json({
+    count: episodes.length,
+    firstEpisode: episodes[0]?.episode ?? null,
+    lastEpisode: episodes.at(-1)?.episode ?? null,
+    episodes
+  });
+}));
+
+app.get('/api/onepiece/episode', asyncRoute(async (req, res) => {
+  const episode = Number(req.query.episode);
+  if (!Number.isFinite(episode) || episode <= 0) {
+    return sendError(res, 400, 'Invalid episode number');
+  }
+  const index = await loadOnePieceDriveIndex();
+  const item = index.byEpisode.get(String(episode));
+  if (!item) return sendError(res, 404, 'Episode is not present in the Drive library');
+  res.set('Cache-Control', 'public, max-age=300');
+  res.json(item);
+}));
 
 app.get('/api/trending', asyncRoute(async (req, res) => {
   const type = validTrendTypes.has(req.query.type)
