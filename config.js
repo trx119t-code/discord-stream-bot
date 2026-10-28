@@ -6,51 +6,62 @@ window.ORBIT_PLAYBACK = {
 };
 
 /*
-  سيرفرات بث محدّثة ومتعددة المصادر (FHD 1080p + ترجمة عربية لجميع الأفلام والمسلسلات والأنمي)
+  سيرفرات بث شاملة ومجرّبة (FHD 1080p + ترجمة عربية لجميع الأفلام والمسلسلات والأنمي)
 */
 window.ORBIT_PROVIDERS = [
   {
-    id: "vidsrc-xyz",
-    label: "سيرفر 1 (VidSrc Pro - مترجم)",
+    id: "vidlink-pro",
+    label: "سيرفر 1 (VidLink Pro - ممتاز للأنمي ومترجم)",
     enabled: true,
     type: "embed",
-    movieUrl: "https://vidsrc.xyz/embed/movie/{id}",
-    tvUrl: "https://vidsrc.xyz/embed/tv/{id}/{season}-{episode}",
+    movieUrl: "https://vidlink.pro/movie/{id}",
+    tvUrl: "https://vidlink.pro/tv/{id}/{season}/{episode}",
     priority: 10,
-    tags: ["FHD", "مترجم عربي"],
-    subtitlesMode: "internal"
-  },
-  {
-    id: "vidsrc-cc",
-    label: "سيرفر 2 (بديل سريع - مسلسلات وأنمي)",
-    enabled: true,
-    type: "embed",
-    movieUrl: "https://vidsrc.cc/v2/embed/movie/{id}",
-    tvUrl: "https://vidsrc.cc/v2/embed/tv/{id}/{season}/{episode}",
-    priority: 20,
     tags: ["1080p", "عربي"],
     subtitlesMode: "internal"
   },
   {
     id: "superembed",
-    label: "سيرفر 3 (SuperEmbed - تغطية شاملة)",
+    label: "سيرفر 2 (SuperEmbed - متعدد السيرفرات)",
     enabled: true,
     type: "embed",
     movieUrl: "https://multiembed.mov/?video_id={id}&tmdb=1",
     tvUrl: "https://multiembed.mov/?video_id={id}&tmdb=1&s={season}&e={episode}",
-    priority: 30,
-    tags: ["متعدد السيرفرات", "FHD"],
+    priority: 20,
+    tags: ["سيرفرات متعددة", "FHD"],
     subtitlesMode: "internal"
   },
   {
-    id: "autoembed-multi",
-    label: "سيرفر 4 (AutoEmbed)",
+    id: "vidsrc-cc",
+    label: "سيرفر 3 (VidSrc CC - سريع)",
+    enabled: true,
+    type: "embed",
+    movieUrl: "https://vidsrc.cc/v2/embed/movie/{id}",
+    tvUrl: "https://vidsrc.cc/v2/embed/tv/{id}/{season}/{episode}",
+    priority: 30,
+    tags: ["FHD", "ترجمة عربية"],
+    subtitlesMode: "internal"
+  },
+  {
+    id: "vidsrc-in",
+    label: "سيرفر 4 (VidSrc In - احتياطي)",
+    enabled: true,
+    type: "embed",
+    movieUrl: "https://vidsrc.in/embed/movie/{id}",
+    tvUrl: "https://vidsrc.in/embed/tv/{id}/{season}/{episode}",
+    priority: 40,
+    tags: ["سيرفر بديل"],
+    subtitlesMode: "internal"
+  },
+  {
+    id: "autoembed",
+    label: "سيرفر 5 (AutoEmbed)",
     enabled: true,
     type: "embed",
     movieUrl: "https://player.autoembed.cc/embed/movie/{id}",
     tvUrl: "https://player.autoembed.cc/embed/tv/{id}/{season}/{episode}",
-    priority: 40,
-    tags: ["سيرفر إضافي"],
+    priority: 50,
+    tags: ["احتياطي"],
     subtitlesMode: "internal"
   }
 ];
