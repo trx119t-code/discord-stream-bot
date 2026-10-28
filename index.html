@@ -303,7 +303,6 @@ const PLAYBACK = window.ORBIT_PLAYBACK || { sources: {} };
 const PROVIDERS = Array.isArray(window.ORBIT_PROVIDERS) ? window.ORBIT_PROVIDERS : [];
 const STREMIO_ADDONS = Array.isArray(window.ORBIT_STREMIO_ADDONS) ? window.ORBIT_STREMIO_ADDONS : [];
 const SUBTITLES = window.ORBIT_SUBTITLES || { enabled:false, languages:['ara','eng'] };
-const LIBRARY_DEMO = window.ORBIT_LIBRARY_DEMO || { enabled:false };
 const STORE = { fav:'orbit_v4_default_favorites', history:'orbit_v4_default_history', progress:'orbit_v4_default_progress', reactions:'orbit_v4_default_reactions', reminders:'orbit_v4_default_reminders', prefs:'orbit_v4_default_prefs' };
 const state = { hero:[], heroIndex:0, heroTimer:null, favorites:loadStore(STORE.fav), history:loadStore(STORE.history), progress:loadProgressStore(), reactions:{}, reminders:[], prefs:{}, profiles:[], activeProfile:'default', currentDetails:null, detailsSeq:0, catalog:null, searchTimer:null, searchController:null, currentSeason:null, currentSeasonShow:null, currentSeasonEpisodes:[], playContext:null, nextTimer:null, hls:null, topItems:[], homePool:[], coming:[], previewTimer:null, previewItem:null, locale:'ar', theme:'nebula', imdbCache:{}, stremioCache:{} };
 const $ = (s,r=document)=>r.querySelector(s); const $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -392,34 +391,13 @@ function updateProgress(item,opt={},patch={}){const key=progressKey(item,opt),pr
 function syncHistoryProgress(key,percent){const h=state.history.find(x=>x.key===key);if(!h)return;h.progress=Math.max(0,Math.min(100,Math.round(percent||0)));h.date=Date.now();saveStore(STORE.history,state.history);renderContinue()}
 function formatEpisodeDate(v){if(!v)return'';try{return new Intl.DateTimeFormat('ar-SA',{year:'numeric',month:'short',day:'numeric'}).format(new Date(v+'T00:00:00'))}catch{return v}}
 function episodeStateText(rec,available){if(rec.watched)return['✓ تمت المشاهدة','يمكنك إعادة التشغيل'];if(rec.percent>1)return[`متابعة • ${Math.round(rec.percent)}%`,'يكمل من آخر نقطة'];if(available)return['▶ تشغيل الحلقة','جاهزة للمشاهدة'];return['غير مربوطة بمصدر','معلومات الحلقة متاحة']}
-function renderEpisodeList(show,season,episodes,query=''){const grid=$('#episodesGrid');const q=query.trim().toLowerCase();const filtered=q?episodes.filter(ep=>`${ep.name||''} ${ep.overview||''} ${ep.episode_number||''}`.toLowerCase().includes(q)):episodes;$('#episodeCount').textContent=`${episodes.length} حلقة • الموسم ${season}`;if(!filtered.length){grid.innerHTML='<div class="episode-empty">لا توجد حلقات مطابقة للبحث.</div>';return}grid.innerHTML=filtered.map(ep=>{const opt={season,episode:Number(ep.episode_number)};const key=progressKey(show,opt);const rec=progressOf(show,opt);const available=hasPotentialPlayback(show,opt);const [status,sub]=episodeStateText(rec,available);const runtime=ep.runtime?`${ep.runtime} دقيقة`:'';const air=formatEpisodeDate(ep.air_date);return `<article class="episode ${available?'':'unavailable'} ${rec.watched?'watched':''}" data-ep="${ep.episode_number}" data-available="${available?'1':'0'}" data-progress-key="${esc(key)}"><div class="episode-thumb"><img loading="lazy" src="${esc(img(ep.still_path,'w500')||img(show.backdrop_path,'w500')||placeholder())}" alt=""><div class="episode-play-badge">${rec.watched?'✓':available?'▶':'i'}</div>${rec.percent>0?`<div class="episode-progress"><span style="width:${Math.min(100,Math.max(0,rec.percent))}%"></span></div>`:''}</div><div class="episode-copy"><div class="episode-head"><span class="ep-num">E${String(ep.episode_number).padStart(2,'0')}</span><strong>${esc(ep.name||`الحلقة ${ep.episode_number}`)}</strong></div><p>${esc(ep.overview||'لا يوجد وصف متاح لهذه الحلقة.')}</p><div class="episode-meta">${runtime?`<span>◷ ${runtime}</span>`:''}${air?`<span>◫ ${esc(air)}</span>`:''}${rec.currentTime>0&&!rec.watched?`<span>⏱ ${Math.floor(rec.currentTime/60)}:${String(Math.floor(rec.currentTime%60)).padStart(2,'0')}</span>`:''}</div></div><div class="episode-state"><b>${esc(status)}</b><span>${esc(sub)}</span></div></article>`}).join('');grid.onclick=e=>{const card=e.target.closest('.episode');if(!card)return;const opt={season,episode:Number(card.dataset.ep)};if(Number(opt.episode)>=1&&Number(opt.episode)<=1133){openDemoEpisode(show,opt);return}openPlayer(show,opt)}}
+function renderEpisodeList(show,season,episodes,query=''){const grid=$('#episodesGrid');const q=query.trim().toLowerCase();const filtered=q?episodes.filter(ep=>`${ep.name||''} ${ep.overview||''} ${ep.episode_number||''}`.toLowerCase().includes(q)):episodes;$('#episodeCount').textContent=`${episodes.length} حلقة • الموسم ${season}`;if(!filtered.length){grid.innerHTML='<div class="episode-empty">لا توجد حلقات مطابقة للبحث.</div>';return}grid.innerHTML=filtered.map(ep=>{const opt={season,episode:Number(ep.episode_number)};const key=progressKey(show,opt);const rec=progressOf(show,opt);const available=hasPotentialPlayback(show,opt);const [status,sub]=episodeStateText(rec,available);const runtime=ep.runtime?`${ep.runtime} دقيقة`:'';const air=formatEpisodeDate(ep.air_date);return `<article class="episode ${available?'':'unavailable'} ${rec.watched?'watched':''}" data-ep="${ep.episode_number}" data-available="${available?'1':'0'}" data-progress-key="${esc(key)}"><div class="episode-thumb"><img loading="lazy" src="${esc(img(ep.still_path,'w500')||img(show.backdrop_path,'w500')||placeholder())}" alt=""><div class="episode-play-badge">${rec.watched?'✓':available?'▶':'i'}</div>${rec.percent>0?`<div class="episode-progress"><span style="width:${Math.min(100,Math.max(0,rec.percent))}%"></span></div>`:''}</div><div class="episode-copy"><div class="episode-head"><span class="ep-num">E${String(ep.episode_number).padStart(2,'0')}</span><strong>${esc(ep.name||`الحلقة ${ep.episode_number}`)}</strong></div><p>${esc(ep.overview||'لا يوجد وصف متاح لهذه الحلقة.')}</p><div class="episode-meta">${runtime?`<span>◷ ${runtime}</span>`:''}${air?`<span>◫ ${esc(air)}</span>`:''}${rec.currentTime>0&&!rec.watched?`<span>⏱ ${Math.floor(rec.currentTime/60)}:${String(Math.floor(rec.currentTime%60)).padStart(2,'0')}</span>`:''}</div></div><div class="episode-state"><b>${esc(status)}</b><span>${esc(sub)}</span></div></article>`}).join('');grid.onclick=e=>{const card=e.target.closest('.episode');if(!card)return;const opt={season,episode:Number(card.dataset.ep)};openPlayer(show,opt)}}
 function refreshEpisodeCard(key){const card=document.querySelector(`.episode[data-progress-key="${CSS.escape(key)}"]`);if(!card||!state.currentSeasonShow)return;const ep=state.currentSeasonEpisodes.find(x=>Number(x.episode_number)===Number(card.dataset.ep));if(!ep)return;renderEpisodeList(state.currentSeasonShow,state.currentSeason,state.currentSeasonEpisodes,$('#episodeSearch').value)}
 async function loadSeason(show,season){const grid=$('#episodesGrid');const showId=Number(show?.id);if(!Number.isInteger(showId)||showId<=0){grid.innerHTML='<div class="episode-empty">تعذر تحميل الحلقات: معرف المسلسل غير صالح.</div>';return}state.currentSeason=season;state.currentSeasonShow=show;$('#episodeSearch').value='';$('#episodeCount').textContent='جاري تحميل الحلقات…';grid.innerHTML='<div class="episode-empty">جاري تحميل الحلقات…</div>';try{const d=await api(`/api/tv/season?id=${encodeURIComponent(showId)}&season=${encodeURIComponent(season)}&lang=${encodeURIComponent(apiLang())}`);if(state.currentDetails&&Number(state.currentDetails.id)!==showId)return;const eps=d.episodes||[];state.currentSeasonEpisodes=eps;renderEpisodeList(show,season,eps);$('#episodeSearch').oninput=e=>renderEpisodeList(show,season,eps,e.target.value)}catch(e){grid.innerHTML=`<div class="episode-empty">${esc(e.message)}</div>`;$('#episodeCount').textContent='تعذر تحميل الحلقات'}}
 function findTrailers(videos){const seen=new Set();return (videos||[]).filter(v=>v?.site==='YouTube'&&v?.key&&['Trailer','Teaser','Clip','Featurette'].includes(v.type)).sort((a,b)=>Number(Boolean(b.official))-Number(Boolean(a.official))||(['Trailer','Teaser','Clip','Featurette'].indexOf(a.type)-['Trailer','Teaser','Clip','Featurette'].indexOf(b.type))).filter(v=>{if(seen.has(v.key))return false;seen.add(v.key);return true}).slice(0,6)}
 function findTrailer(videos){return findTrailers(videos)[0]}
 function renderGallery(d){const sec=$('#gallerySection'),grid=$('#galleryGrid');const imgs=[...(d.images?.backdrops||[]).slice(0,6),...(d.images?.posters||[]).slice(0,2)].filter(x=>x.file_path);if(!imgs.length){sec.hidden=true;grid.innerHTML='';return}sec.hidden=false;grid.innerHTML=imgs.map(x=>`<button class="trailer-card" type="button" onclick="window.open('${img(x.file_path,'original')}','_blank')"><div class="trailer-thumb"><img loading="lazy" src="${esc(img(x.file_path,'w780'))}" alt=""></div><div class="trailer-copy"><strong>ORBIT Gallery</strong><span>${x.width||''}×${x.height||''}</span></div></button>`).join('')}
 function renderTrailerGallery(trailers,title){const sec=$('#trailerSection'),grid=$('#trailerGrid');if(!trailers?.length){sec.hidden=true;grid.innerHTML='';return}sec.hidden=false;grid.innerHTML=trailers.map((t,i)=>`<button class="trailer-card" data-trailer="${i}" type="button"><div class="trailer-thumb"><img loading="lazy" src="https://i.ytimg.com/vi/${encodeURIComponent(t.key)}/hqdefault.jpg" alt=""></div><div class="trailer-copy"><strong>${esc(t.name||`${t.type==='Teaser'?'تشويق':'إعلان'} ${i+1}`)}</strong><span>${esc(t.official?'رسمي • YouTube':`${t.type||'Video'} • YouTube`)}</span></div></button>`).join('');grid.onclick=e=>{const b=e.target.closest('.trailer-card');if(!b)return;const t=trailers[Number(b.dataset.trailer)];if(t)openTrailer(t,title)}}
-function openDemoEpisode(item,opt={}){
-  clearInterval(state.nextTimer);
-  state.playContext={item,opt};
-  const ep=Number(opt.episode||1);
-  const season=Number(opt.season||1);
-  const modal=$('#playerModal');
-  const frame=$('#playerFrame');
-  cleanupPlayerEngine();
-  $('#playerTitle').textContent=titleOf(item);
-  $('#playerSub').textContent=`اختبار مباشر • الموسم ${season} • الحلقة ${ep}`;
-  $('#sourceStrip').innerHTML='<span class="stream-badge">ORBIT DEMO • MP4</span>';
-  $('#nextEpisodeBtn').style.display=ep<1133?'inline-flex':'none';
-  if(ep<1133){$('#nextEpisodeBtn').textContent='الحلقة التالية';$('#nextEpisodeBtn').onclick=()=>openDemoEpisode(item,{season,episode:ep+1})}
-  modal.classList.remove('mini');
-  modal.classList.add('open');
-  modal.style.zIndex='9999';
-  document.body.style.overflow='hidden';
-  frame.innerHTML='<video id="orbitVideo" controls autoplay playsinline preload="auto" style="width:100%;height:100%;background:#000"><source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">متصفحك لا يدعم تشغيل الفيديو.</video>';
-  const video=$('#orbitVideo');
-  video?.play?.().catch(()=>{});
-}
 function openTrailer(t,title){if(!t?.key)return;cleanupPlayerEngine();$('#sourceStrip').innerHTML='<span class="stream-badge">TRAILER • YOUTUBE</span>';$('#playerTools').classList.remove('show');$('#nextEpisodeBtn').style.display='none';$('#playerTitle').textContent=title||'ORBIT Trailer';$('#playerSub').textContent=t.name||'الإعلان الرسمي';$('#playerModal').classList.add('open');document.body.style.overflow='hidden';openPlayerFrame({type:'embed',url:`https://www.youtube-nocookie.com/embed/${encodeURIComponent(t.key)}?autoplay=1&rel=0&modestbranding=1`,label:t.name||'الإعلان الرسمي'},title||'ORBIT Trailer','YouTube')}
 function closeDetails(){state.detailsSeq++;state.currentDetails=null;$('#detailsOverlay').classList.remove('open');document.body.style.overflow='';if(location.search.includes('id=')){history.replaceState({},'',location.pathname)}$('#detailsOverlay').style.background=''}
 function playbackKey(item,opt={}){const m=mediaOf(item);return m==='tv'?`tv:${item.id}:${opt.season||1}:${opt.episode||1}`:`movie:${item.id}`}
@@ -451,26 +429,17 @@ function configuredProviderSources(item,opt={}){
     .filter(Boolean)
     .sort((a,b)=>(a.priority||100)-(b.priority||100));
 }
-function demoLibrarySources(item,opt={}){
-  // Self-contained test source for episodes 1-1133; does not depend on config.js.
-  if(mediaOf(item)!=='tv')return [];
-  const ep=Number(opt.episode||0);
-  if(!Number.isInteger(ep)||ep<1||ep>1133)return [];
-  return [normalizePlaybackSource({
-    label:'ORBIT Demo Library',
-    type:'video',
-    url:'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    tags:['Demo','Test'],
-    priority:1
-  })];
+function isOnePieceDriveEpisode(item,opt={}){
+  return mediaOf(item)==='tv' && Number(item?.id)===37854 && Number(opt?.episode)>0;
 }
 function getPlaybackSources(item,opt={}){
   const key=playbackKey(item,opt);
   const base=PLAYBACK.sources?.[key]||[];
   const owned=Array.isArray(base)?base.map(normalizePlaybackSource).filter(Boolean):[];
-  return [...owned,...demoLibrarySources(item,opt),...configuredProviderSources(item,opt)];
+  return [...owned,...configuredProviderSources(item,opt)];
 }
 function hasPotentialPlayback(item,opt={}){
+  if(isOnePieceDriveEpisode(item,opt)) return true;
   return getPlaybackSources(item,opt).length>0 || STREMIO_ADDONS.some(a=>a&&a.enabled!==false&&a.manifestUrl);
 }
 async function ensureImdbId(item){
@@ -625,6 +594,32 @@ async function openPlayer(item,opt={}){
   clearInterval(state.nextTimer);state.playContext={item,opt};
   const sub=mediaOf(item)==='tv'?`الموسم ${opt.season||1} • الحلقة ${opt.episode||1}`:'فيلم';
   $('#playerTitle').textContent=titleOf(item);$('#playerSub').textContent='جاري البحث عن أفضل مصدر…';$('#playerModal').classList.add('open');document.body.style.overflow='hidden';
+
+  // Authorized Drive collection: resolve the requested episode on the server,
+  // then use Google Drive's preview player inside ORBIT.
+  if(isOnePieceDriveEpisode(item,opt)){
+    try{
+      $('#playerSub').textContent=`جاري تجهيز الحلقة ${opt.episode} من Google Drive…`;
+      const drive=await api(`/api/onepiece/episode?episode=${encodeURIComponent(opt.episode)}`);
+      const driveSource=normalizePlaybackSource({
+        label:'ORBIT Drive',
+        type:'embed',
+        url:drive.previewUrl,
+        providerId:'orbit-drive',
+        tags:['Google Drive'],
+        priority:1
+      });
+      sources=[driveSource,...sources].filter(Boolean);
+      recordHistory(item,opt);renderSources(sources,item,opt);selectSource(sources,0,item,opt);setupNextEpisode(item,opt,false);
+      return;
+    }catch(e){
+      console.error('Drive episode lookup failed',e);
+      $('#playerSub').textContent=sub;
+      $('#playerFrame').innerHTML=`<div class="player-empty"><div class="orb"></div><h3>تعذر تحميل الحلقة من Drive</h3><p>${esc(e.message||'تحقق من إعداد GOOGLE_DRIVE_API_KEY في Render ومن صلاحيات مشاركة المجلد.')}</p><button class="btn btn-ghost" onclick="closePlayer()">العودة</button></div>`;
+      return;
+    }
+  }
+
   const addonSources=await getStremioSources(item,opt);
   sources=[...sources,...addonSources].sort((a,b)=>(Number(a.priority)||0)-(Number(b.priority)||0));
   if(!sources.length){$('#playerSub').textContent=sub;renderPlayerEmpty(item,opt);return}
@@ -717,7 +712,7 @@ function prepareV4Profile(){
   state.profiles=loadStore(V4.profilesKey);if(!state.profiles.length){state.profiles=defaultProfiles();saveStore(V4.profilesKey,state.profiles)}
   state.activeProfile=localStorage.getItem(V4.activeKey)||state.profiles[0].id;if(!state.profiles.some(p=>p.id===state.activeProfile))state.activeProfile=state.profiles[0].id;
   state.theme=localStorage.getItem(V4.themeKey)||'nebula';state.locale=localStorage.getItem(V4.localeKey)||'ar';applyTheme();loadProfileData();applyLocale();
-  if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=orbit-test-2',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{})}
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
   updateOnlineState();window.addEventListener('online',updateOnlineState);window.addEventListener('offline',updateOnlineState)
 }
 function loadProfileData(){
