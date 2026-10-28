@@ -429,9 +429,6 @@ function configuredProviderSources(item,opt={}){
     .filter(Boolean)
     .sort((a,b)=>(a.priority||100)-(b.priority||100));
 }
-function isOnePieceDriveEpisode(item,opt={}){
-  return mediaOf(item)==='tv' && Number(item?.id)===37854 && Number(opt?.episode)>0;
-}
 function getPlaybackSources(item,opt={}){
   const key=playbackKey(item,opt);
   const base=PLAYBACK.sources?.[key]||[];
@@ -439,7 +436,6 @@ function getPlaybackSources(item,opt={}){
   return [...owned,...configuredProviderSources(item,opt)];
 }
 function hasPotentialPlayback(item,opt={}){
-  if(isOnePieceDriveEpisode(item,opt)) return true;
   return getPlaybackSources(item,opt).length>0 || STREMIO_ADDONS.some(a=>a&&a.enabled!==false&&a.manifestUrl);
 }
 async function ensureImdbId(item){
@@ -594,32 +590,6 @@ async function openPlayer(item,opt={}){
   clearInterval(state.nextTimer);state.playContext={item,opt};
   const sub=mediaOf(item)==='tv'?`الموسم ${opt.season||1} • الحلقة ${opt.episode||1}`:'فيلم';
   $('#playerTitle').textContent=titleOf(item);$('#playerSub').textContent='جاري البحث عن أفضل مصدر…';$('#playerModal').classList.add('open');document.body.style.overflow='hidden';
-
-  // Authorized Drive collection: resolve the requested episode on the server,
-  // then use Google Drive's preview player inside ORBIT.
-  if(isOnePieceDriveEpisode(item,opt)){
-    try{
-      $('#playerSub').textContent=`جاري تجهيز الحلقة ${opt.episode} من Google Drive…`;
-      const drive=await api(`/api/onepiece/episode?episode=${encodeURIComponent(opt.episode)}`);
-      const driveSource=normalizePlaybackSource({
-        label:'ORBIT Drive',
-        type:'embed',
-        url:drive.previewUrl,
-        providerId:'orbit-drive',
-        tags:['Google Drive'],
-        priority:1
-      });
-      sources=[driveSource,...sources].filter(Boolean);
-      recordHistory(item,opt);renderSources(sources,item,opt);selectSource(sources,0,item,opt);setupNextEpisode(item,opt,false);
-      return;
-    }catch(e){
-      console.error('Drive episode lookup failed',e);
-      $('#playerSub').textContent=sub;
-      $('#playerFrame').innerHTML=`<div class="player-empty"><div class="orb"></div><h3>تعذر تحميل الحلقة من Drive</h3><p>${esc(e.message||'تحقق من إعداد GOOGLE_DRIVE_API_KEY في Render ومن صلاحيات مشاركة المجلد.')}</p><button class="btn btn-ghost" onclick="closePlayer()">العودة</button></div>`;
-      return;
-    }
-  }
-
   const addonSources=await getStremioSources(item,opt);
   sources=[...sources,...addonSources].sort((a,b)=>(Number(a.priority)||0)-(Number(b.priority)||0));
   if(!sources.length){$('#playerSub').textContent=sub;renderPlayerEmpty(item,opt);return}
@@ -659,7 +629,7 @@ function bindProgress(video,item,opt){if(!item||!opt)return;const saved=progress
 function setupSubtitleMenu(video,source,hls=null){const sel=$('#subtitleSelect');sel.innerHTML='<option value="off">الترجمة: إيقاف</option>';const external=source.subtitles||[];external.forEach((t,i)=>sel.insertAdjacentHTML('beforeend',`<option value="ext:${i}">الترجمة: ${esc(t.label||t.srclang||`خارجي ${i+1}`)}</option>`));const internal=hls?.subtitleTracks||[];internal.forEach((t,i)=>sel.insertAdjacentHTML('beforeend',`<option value="hls:${i}">الترجمة: ${esc(t.name||t.lang||`مسار ${i+1}`)}</option>`));sel.onchange=()=>{[...video.textTracks].forEach(t=>t.mode='disabled');if(hls)hls.subtitleTrack=-1;if(sel.value.startsWith('ext:')){const i=Number(sel.value.split(':')[1]);if(video.textTracks[i])video.textTracks[i].mode='showing'}else if(sel.value.startsWith('hls:')&&hls)hls.subtitleTrack=Number(sel.value.split(':')[1])};const def=external.findIndex(x=>x.default);if(def>=0){sel.value=`ext:${def}`;setTimeout(()=>{[...video.textTracks].forEach((t,i)=>t.mode=i===def?'showing':'disabled')},180)}}
 function populateHlsMenus(hls,video,source){const tools=$('#playerTools'),q=$('#qualitySelect'),a=$('#audioSelect');tools.classList.add('show');q.innerHTML='<option value="auto">الجودة: تلقائي (أفضل)</option>';const levels=(hls.levels||[]).map((x,i)=>({i,h:Number(x.height||0),br:Number(x.bitrate||0)})).sort((x,y)=>y.h-x.h||y.br-x.br);levels.forEach(x=>q.insertAdjacentHTML('beforeend',`<option value="${x.i}">${x.h?`${x.h}p`:Math.round(x.br/1000)+' kbps'}</option>`));q.onchange=()=>{hls.currentLevel=q.value==='auto'?-1:Number(q.value)};const aud=hls.audioTracks||[];a.innerHTML='';if(aud.length>1){a.style.display='inline-block';aud.forEach((x,i)=>a.insertAdjacentHTML('beforeend',`<option value="${i}">الصوت: ${esc(x.name||x.lang||`مسار ${i+1}`)}</option>`));a.value=String(Math.max(0,hls.audioTrack));a.onchange=()=>{hls.audioTrack=Number(a.value)}}else a.style.display='none';setupSubtitleMenu(video,source,hls)}
 function openPlayerFrame(source,title,sub,item,opt){cleanupPlayerEngine();const frame=$('#playerFrame');$('#playerTitle').textContent=title;$('#playerSub').textContent=sub||source.label||'';if(['video','hls'].includes(source.type)){const tracks=(source.subtitles||[]).map(t=>`<track kind="subtitles" label="${esc(t.label||t.srclang||'Subtitle')}" srclang="${esc(t.srclang||'ar')}" src="${esc(t.src)}" ${t.default?'default':''}>`).join('');frame.innerHTML=`<video id="orbitVideo" controls autoplay playsinline crossorigin="anonymous">${tracks}</video>`;const video=$('#orbitVideo');bindProgress(video,item,opt);if(source.type==='hls'){const nativeHls=video.canPlayType('application/vnd.apple.mpegurl');if(nativeHls){video.src=source.url;$('#playerTools').classList.add('show');setupSubtitleMenu(video,source);video.play().catch(()=>{})}else if(window.Hls&&window.Hls.isSupported()){const hls=new window.Hls({enableWorker:true,capLevelToPlayerSize:true,startLevel:-1,maxBufferLength:30,backBufferLength:30});state.hls=hls;hls.loadSource(source.url);hls.attachMedia(video);hls.on(window.Hls.Events.MANIFEST_PARSED,()=>{populateHlsMenus(hls,video,source);video.play().catch(()=>{})});hls.on(window.Hls.Events.AUDIO_TRACKS_UPDATED,()=>populateHlsMenus(hls,video,source));hls.on(window.Hls.Events.SUBTITLE_TRACKS_UPDATED,()=>populateHlsMenus(hls,video,source));hls.on(window.Hls.Events.ERROR,(_e,data)=>{if(data?.fatal){console.error('HLS fatal error',data);toast('تعذر تشغيل هذا البث. نجرب المصدر التالي…');setTimeout(selectNextSource,700)}})}else{frame.innerHTML='<div class="player-empty"><h3>المتصفح لا يدعم HLS</h3><p>جرّب متصفحًا حديثًا أو استخدم مصدر MP4/WebM.</p></div>'}}else{video.src=source.url;setupSubtitleMenu(video,source);if((source.subtitles||[]).length)$('#playerTools').classList.add('show');video.play().catch(()=>{})}}else{
-  frame.innerHTML=`<iframe id="orbitEmbed" src="${esc(source.url)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  frame.innerHTML=`<iframe id="orbitEmbed" src="${esc(source.url)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; display-capture" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
   const iframe=$('#orbitEmbed');
   let loaded=false;
   const failTimer=setTimeout(()=>{if(!loaded&&state.playSources?.length>1){toast('المصدر لم يستجب. نجرب التالي…');selectNextSource()}},12000);
