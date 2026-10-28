@@ -5,62 +5,48 @@ window.ORBIT_PLAYBACK = {
   sources: {}
 };
 
-/*
-  سيرفرات بث شاملة ومجرّبة (FHD 1080p + ترجمة عربية لجميع الأفلام والمسلسلات والأنمي)
-*/
 window.ORBIT_PROVIDERS = [
   {
-    id: "vidlink-pro",
-    label: "سيرفر 1 (VidLink Pro - ممتاز للأنمي ومترجم)",
+    id: "videasy-stream",
+    label: "سيرفر 1 (Videasy - يدعم الأنمي والترجمة)",
     enabled: true,
     type: "embed",
-    movieUrl: "https://vidlink.pro/movie/{id}",
-    tvUrl: "https://vidlink.pro/tv/{id}/{season}/{episode}",
+    movieUrl: "https://player.videasy.net/movie/{id}",
+    tvUrl: "https://player.videasy.net/tv/{id}/{season}/{episode}",
     priority: 10,
-    tags: ["1080p", "عربي"],
+    tags: ["FHD", "عربي"],
     subtitlesMode: "internal"
   },
   {
-    id: "superembed",
-    label: "سيرفر 2 (SuperEmbed - متعدد السيرفرات)",
+    id: "smashy-stream",
+    label: "سيرفر 2 (SmashyStream - مخصص للأنمي الكلاسيكي)",
     enabled: true,
     type: "embed",
-    movieUrl: "https://multiembed.mov/?video_id={id}&tmdb=1",
-    tvUrl: "https://multiembed.mov/?video_id={id}&tmdb=1&s={season}&e={episode}",
+    movieUrl: "https://embed.smashystream.com/playere.php?tmdb={id}",
+    tvUrl: "https://embed.smashystream.com/playere.php?tmdb={id}&season={season}&episode={episode}",
     priority: 20,
-    tags: ["سيرفرات متعددة", "FHD"],
+    tags: ["سيرفر أنمي"],
     subtitlesMode: "internal"
   },
   {
-    id: "vidsrc-cc",
-    label: "سيرفر 3 (VidSrc CC - سريع)",
+    id: "2embed-stream",
+    label: "سيرفر 3 (2Embed - مسلسلات وأنمي)",
     enabled: true,
     type: "embed",
-    movieUrl: "https://vidsrc.cc/v2/embed/movie/{id}",
-    tvUrl: "https://vidsrc.cc/v2/embed/tv/{id}/{season}/{episode}",
+    movieUrl: "https://www.2embed.cc/embed/{id}",
+    tvUrl: "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}",
     priority: 30,
-    tags: ["FHD", "ترجمة عربية"],
+    tags: ["تغطية شاملة"],
     subtitlesMode: "internal"
   },
   {
-    id: "vidsrc-in",
-    label: "سيرفر 4 (VidSrc In - احتياطي)",
+    id: "vidsrc-net",
+    label: "سيرفر 4 (VidSrc Net - بديل)",
     enabled: true,
     type: "embed",
-    movieUrl: "https://vidsrc.in/embed/movie/{id}",
-    tvUrl: "https://vidsrc.in/embed/tv/{id}/{season}/{episode}",
+    movieUrl: "https://vidsrc.net/embed/movie/{id}",
+    tvUrl: "https://vidsrc.net/embed/tv/{id}/{season}/{episode}",
     priority: 40,
-    tags: ["سيرفر بديل"],
-    subtitlesMode: "internal"
-  },
-  {
-    id: "autoembed",
-    label: "سيرفر 5 (AutoEmbed)",
-    enabled: true,
-    type: "embed",
-    movieUrl: "https://player.autoembed.cc/embed/movie/{id}",
-    tvUrl: "https://player.autoembed.cc/embed/tv/{id}/{season}/{episode}",
-    priority: 50,
     tags: ["احتياطي"],
     subtitlesMode: "internal"
   }
